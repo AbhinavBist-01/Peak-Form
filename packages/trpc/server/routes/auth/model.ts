@@ -1,0 +1,14 @@
+import { email, z } from "zod";
+
+export const createUserWithEmailAndPasswordInputModel = z.object({
+  fullName: z.string().describe("fullname of the user"),
+  email: z.string().email().describe("email of the user"),
+  password: z
+    .string()
+    .min(8)
+    .describe("password of the user, should be at least 8 characters long"),
+});
+
+export const createUserWithEmailAndPasswordOuputModel = z.object({
+  id: z.string().describe("id of the user"),
+});
