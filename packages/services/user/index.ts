@@ -3,14 +3,22 @@ import {
   type CreateUserWithEmailAndPasswordInputType,
   createUserWithEmailAndPasswordInput,
 } from "./model";
+import * as JWT from "jsonwebtoken";
 import { db, eq } from "@repo/database";
-
+import { generateUserToken, type GenerateUserTokenType } from "./model";
 import { usersTable } from "@repo/database/models/user";
+import { env } from "../env";
 class UserService {
   private async getUserByEmail(email: string) {
     const result = await db.select().from(usersTable).where(eq(usersTable.email, email));
     if (!result || result.length === 0) return null;
     return result[0];
+  }
+
+  private async generateUserToken(payload: GenerateUserTokenType) {
+    const { id } = await generateUserToken.parseAsync(payload);
+    const token = JWT.sign({ id }, env.JWT_SECRET);
+    return { token };
   }
 
   public async createUserWithEmailAndPassword(payload: CreateUserWithEmailAndPasswordInputType) {
@@ -38,8 +46,12 @@ class UserService {
     if (!userInputResult || userInputResult.length === 0 || !userInputResult[0]?.id)
       throw new Error("Failed to create user");
 
+    const userId = userInputResult[0].id;
+    const { token } = await this.generateUserToken({ id: userId });
+
     return {
-      id: userInputResult[0]?.id,
+      id: userId,
+      token,
     };
   }
 }

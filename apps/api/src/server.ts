@@ -9,6 +9,7 @@ import { apiReference } from "@scalar/express-api-reference";
 import { serverRouter, createContext } from "@repo/trpc/server";
 
 import { env } from "./env";
+import cookieParser from "cookie-parser";
 
 export const app = express();
 const openApiDocument = generateOpenApiDocument(serverRouter, {
@@ -17,13 +18,14 @@ const openApiDocument = generateOpenApiDocument(serverRouter, {
   baseUrl: env.BASE_URL.concat("/api"),
 });
 
-if (env.NODE_ENV !== "prod") {
-  app.use(
-    cors({
-      origin: "*",
-    }),
-  );
-}
+app.use(
+  cors({
+    origin: "localhost:3000",
+    credentials: true,
+  }),
+);
+
+app.use(cookieParser());
 
 app.use(express.json());
 
