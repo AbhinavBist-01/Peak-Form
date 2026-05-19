@@ -12,6 +12,7 @@ import { usersTable } from "@repo/database/models/user";
 import { env } from "../env";
 import { create } from "node:domain";
 import { id } from "zod/v4/locales";
+import { profile } from "node:console";
 class UserService {
   private async getUserByEmail(email: string) {
     const result = await db.select().from(usersTable).where(eq(usersTable.email, email));
@@ -23,6 +24,28 @@ class UserService {
     const { id } = await generateUserToken.parseAsync(payload);
     const token = JWT.sign({ id }, env.JWT_SECRET);
     return { token };
+  }
+
+  private async verifyUserToken(token: string): Promise<GenerateUserTokenType> {
+    try {
+      const verificationResult = JWT.verify(token, env.JWT_SECRET) as GenerateUserTokenType;
+      return verificationResult;
+    } catch (err) {
+      throw new Error("Invalid token");
+    }
+  }
+
+  private async getUserInfoById(id: string) {
+    const user = await db
+      .select({
+        id: usersTable.id,
+        fullName: usersTable.fullName,
+        email: usersTable.email,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.id, id));
+    if (!user || user.length === 0) throw new Error(`User with id ${id} does not exist`);
+    return user[0];
   }
 
   public async createUserWithEmailAndPassword(payload: CreateUserWithEmailAndPasswordInputType) {
@@ -76,6 +99,12 @@ class UserService {
       id: existingUser.id,
       token,
     };
+  }
+
+  public async verifyAndDecodeUserToken(token: string) {
+    const { id } = await this.verifyUserToken(token);
+    const userInfo = await this.getUserInfoById(id);
+    return { ...userInfo };
   }
 }
 

@@ -24,3 +24,11 @@ export const signInUserWithEmailAndPasswordInputModel = z.object({
 export const signInUserWithEmailAndPasswordOuputModel = z.object({
   id: z.string().describe("id of the user"),
 });
+
+export const getLoggedInUserInfoInputModel = z.undefined();
+
+export const getLoggedInUserInfoOutputModel = z.object({
+  id: z.string().describe("id of the user"),
+  fullName: z.string().describe("fullname of the user"),
+  email: z.string().email().describe("email of the user"),
+});
