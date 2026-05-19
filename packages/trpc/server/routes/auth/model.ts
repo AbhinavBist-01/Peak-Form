@@ -12,3 +12,15 @@ export const createUserWithEmailAndPasswordInputModel = z.object({
 export const createUserWithEmailAndPasswordOuputModel = z.object({
   id: z.string().describe("id of the user"),
 });
+
+export const signInUserWithEmailAndPasswordInputModel = z.object({
+  email: z.string().email().describe("email of the user"),
+  password: z
+    .string()
+    .min(8)
+    .describe("password of the user, should be at least 8 characters long"),
+});
+
+export const signInUserWithEmailAndPasswordOuputModel = z.object({
+  id: z.string().describe("id of the user"),
+});

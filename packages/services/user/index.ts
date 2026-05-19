@@ -2,12 +2,16 @@ import { randomBytes, createHmac } from "node:crypto";
 import {
   type CreateUserWithEmailAndPasswordInputType,
   createUserWithEmailAndPasswordInput,
+  type SignInWithEmailAndPasswordInputType,
+  signInWithEmailAndPasswordInput,
 } from "./model";
 import * as JWT from "jsonwebtoken";
 import { db, eq } from "@repo/database";
 import { generateUserToken, type GenerateUserTokenType } from "./model";
 import { usersTable } from "@repo/database/models/user";
 import { env } from "../env";
+import { create } from "node:domain";
+import { id } from "zod/v4/locales";
 class UserService {
   private async getUserByEmail(email: string) {
     const result = await db.select().from(usersTable).where(eq(usersTable.email, email));
@@ -51,6 +55,25 @@ class UserService {
 
     return {
       id: userId,
+      token,
+    };
+  }
+
+  public async signInUserWithEmailAndPassword(payload: SignInWithEmailAndPasswordInputType) {
+    const { email, password } = await signInWithEmailAndPasswordInput.parseAsync(payload);
+
+    const existingUser = await this.getUserByEmail(email);
+    if (!existingUser) throw new Error(`User with email ${email} does not exist`);
+
+    if (!existingUser.salt || !existingUser.password) throw new Error("Invalid user data");
+
+    const hash = createHmac("sha256", existingUser.salt).update(password).digest("hex");
+
+    if (hash !== existingUser.password) throw new Error("Invalid credentials");
+
+    const { token } = await this.generateUserToken({ id: existingUser.id });
+    return {
+      id: existingUser.id,
       token,
     };
   }

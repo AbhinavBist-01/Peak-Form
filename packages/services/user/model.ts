@@ -15,3 +15,10 @@ export const generateUserToken = z.object({
 });
 
 export type GenerateUserTokenType = z.infer<typeof generateUserToken>;
+
+export const signInWithEmailAndPasswordInput = z.object({
+  email: z.email().describe("The email address of the user"),
+  password: z.string().describe("The password for the user account"),
+});
+
+export type SignInWithEmailAndPasswordInputType = z.infer<typeof signInWithEmailAndPasswordInput>;
