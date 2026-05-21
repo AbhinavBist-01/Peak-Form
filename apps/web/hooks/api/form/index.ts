@@ -1,6 +1,7 @@
 import { trpc } from "~/trpc/client";
 
 export const useCreateForm = () => {
+  const utils = trpc.useUtils();
   const {
     mutateAsync: createFormAsync,
     mutate: createForm,
@@ -10,7 +11,11 @@ export const useCreateForm = () => {
     isIdle,
     isSuccess,
     status,
-  } = trpc.form.createForm.useMutation();
+  } = trpc.form.createForm.useMutation({
+    onSuccess: () => {
+      utils.form.invalidate();
+    }
+  });
 
   return {
     createFormAsync,
