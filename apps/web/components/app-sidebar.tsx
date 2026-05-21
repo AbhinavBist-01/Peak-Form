@@ -48,7 +48,7 @@ const data = {
     },
     {
       title: "Forms",
-      url: "/dashboard/forms",
+      url: "/dashboard/form",
       icon: IconClipboardText,
     },
   ],
