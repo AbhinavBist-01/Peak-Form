@@ -14,7 +14,7 @@ export const useCreateForm = () => {
   } = trpc.form.createForm.useMutation({
     onSuccess: () => {
       utils.form.invalidate();
-    }
+    },
   });
 
   return {
@@ -24,6 +24,30 @@ export const useCreateForm = () => {
     failureCount,
     isError,
     isIdle,
+    isSuccess,
+    status,
+  };
+};
+
+export const useListForms = () => {
+  const {
+    data: forms,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
+  } = trpc.form.listForms.useQuery();
+
+  return {
+    forms,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
     isSuccess,
     status,
   };
