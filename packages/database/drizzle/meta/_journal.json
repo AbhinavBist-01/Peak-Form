@@ -8,6 +8,13 @@
       "when": 1779132843651,
       "tag": "0000_fixed_wasp",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779347282642,
+      "tag": "0001_wise_bromley",
+      "breakpoints": true
     }
   ]
 }
