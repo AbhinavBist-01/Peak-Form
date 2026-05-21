@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/com
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { trpc } from "~/trpc/client";
+import { useRouter } from "next/navigation";
 
 type SignupFormValues = {
   name: string;
@@ -15,6 +16,7 @@ type SignupFormValues = {
 };
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
+  const router = useRouter();
   const { mutateAsync: createUserWithEmailAndPasswordAsync } =
     trpc.auth.createUserWithEmailAndPassword.useMutation();
   const { register, handleSubmit } = useForm<SignupFormValues>({
@@ -29,11 +31,12 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const onSubmit = async (values: SignupFormValues) => {
     console.log("Signup form values:", values);
 
-    const { id } = await createUserWithEmailAndPasswordAsync({
+    await createUserWithEmailAndPasswordAsync({
       fullName: values.name,
       email: values.email,
       password: values.password,
     });
+    router.replace("/dashboard");
   };
 
   return (

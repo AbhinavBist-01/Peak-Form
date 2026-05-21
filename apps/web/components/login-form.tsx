@@ -1,10 +1,13 @@
+"use client";
+
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import { useForm } from "react-hook-form";
+import { type FieldErrors, useForm } from "react-hook-form";
 import { useSignin } from "~/hooks/api/auth";
+import { useRouter } from "next/navigation";
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   type FormValues = {
@@ -12,18 +15,20 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     password: string;
   };
 
+  const router = useRouter();
   const { register, handleSubmit } = useForm<FormValues>();
   const { signInWithEmailAndPasswordAsync } = useSignin();
 
   async function onSubmit(values: FormValues) {
     console.log("Login form submitted:", values);
-    const { id } = await signInWithEmailAndPasswordAsync({
+    await signInWithEmailAndPasswordAsync({
       email: values.email,
       password: values.password,
     });
+    router.replace("/dashboard");
   }
 
-  function onError(errors: any) {
+  function onError(errors: FieldErrors<FormValues>) {
     console.log("Login form errors:", errors);
   }
   return (
@@ -74,3 +79,4 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     </div>
   );
 }
+
