@@ -1,9 +1,16 @@
 import { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import { createCookieFactory, getCookieFactory, deleteCookieFactory } from "./utils/cookie";
+
+export interface tRPCCtsUser {
+  id: string;
+}
+
 export interface TRPCContext {
   createCookie: ReturnType<typeof createCookieFactory>;
   getCookie: ReturnType<typeof getCookieFactory>;
   deleteCookie: ReturnType<typeof deleteCookieFactory>;
+
+  user?: tRPCCtsUser;
 }
 
 export async function createContext({
@@ -14,6 +21,7 @@ export async function createContext({
     createCookie: createCookieFactory(res),
     getCookie: getCookieFactory(req),
     deleteCookie: deleteCookieFactory(res),
+    user: undefined,
   };
   return ctx;
 }
