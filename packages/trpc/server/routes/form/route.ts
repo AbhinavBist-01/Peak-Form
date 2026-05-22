@@ -1,4 +1,4 @@
-import { authenticatedProcedure, router } from "../../trpc";
+import { authenticatedProcedure, publicProcedure, router } from "../../trpc";
 import { formFieldService, formService } from "../../services";
 import {
   createFieldInputModel,
@@ -7,6 +7,8 @@ import {
   createFormOutputModel,
   deleteFieldInputModel,
   deleteFieldOutputModel,
+  getFormByIdInputModel,
+  getFormByIdOutputModel,
   getFieldsInputModel,
   getFieldsOutputModel,
   listFormsInputModel,
@@ -62,6 +64,21 @@ export const formRouter = router({
         userId: ctx.user.id,
       });
       return forms;
+    }),
+
+  getFormById: publicProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/getFormById",
+        tags: TAGS,
+        summary: "Get a public form by id",
+      },
+    })
+    .input(getFormByIdInputModel)
+    .output(getFormByIdOutputModel)
+    .query(async ({ input }) => {
+      return formService.getFormById(input);
     }),
 
   createField: authenticatedProcedure
