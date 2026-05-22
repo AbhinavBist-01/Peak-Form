@@ -1,0 +1,31 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>PeakForm logo</title>
+  <path
+    d="M60 346L199 66L340 346H60Z"
+    stroke="#ffffff"
+    stroke-width="28"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+  <path
+    d="M199 66L130 346"
+    stroke="#ffffff"
+    stroke-width="28"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+  <path
+    d="M198 262L240 346"
+    stroke="#ffffff"
+    stroke-width="28"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+  <path
+    d="M238 134L130 346"
+    stroke="#ffffff"
+    stroke-width="28"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+</svg>

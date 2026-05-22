@@ -2,21 +2,10 @@
 
 import * as React from "react";
 import {
-  IconCamera,
-  IconChartBar,
   IconDashboard,
-  IconDatabase,
   IconFileAi,
   IconFileDescription,
-  IconFileWord,
-  IconFolder,
-  IconHelp,
-  IconInnerShadowTop,
-  IconListDetails,
-  IconReport,
-  IconSearch,
   IconSettings,
-  IconUsers,
   IconClipboardText,
 } from "@tabler/icons-react";
 
@@ -81,9 +70,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!">
-              <a href="#">
-                <IconInnerShadowTop className="size-5!" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+              <a href="/dashboard">
+                <img
+                  src="/peakform-logo.svg"
+                  alt="PeakForm"
+                  className="size-6 shrink-0"
+                />
+                <span className="text-base font-semibold">PeakForm</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

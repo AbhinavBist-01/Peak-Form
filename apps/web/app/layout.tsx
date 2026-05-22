@@ -13,8 +13,13 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Streamyst",
-  description: "Media Forwarding",
+  title: "PeakForm",
+  description: "Create forms and collect responses.",
+  icons: {
+    icon: "/peakform-logo.svg",
+    shortcut: "/peakform-logo.svg",
+    apple: "/peakform-logo.svg",
+  },
 };
 
 export default function RootLayout({
