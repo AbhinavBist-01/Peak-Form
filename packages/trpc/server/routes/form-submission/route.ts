@@ -1,6 +1,11 @@
 import { formSubmissionService } from "../../services";
-import { publicProcedure, router } from "../../trpc";
-import { createFormSubmissionInputModel, createFormSubmissionOutputModel } from "./model";
+import { authenticatedProcedure, publicProcedure, router } from "../../trpc";
+import {
+  createFormSubmissionInputModel,
+  createFormSubmissionOutputModel,
+  getFormSubmissionsByFormIdInputModel,
+  getFormSubmissionsByFormIdOutputModel,
+} from "./model";
 
 const TAGS = ["Form submission"];
 
@@ -19,5 +24,24 @@ export const formSubmissionRouter = router({
     .mutation(async ({ input }) => {
       const { id } = await formSubmissionService.createFormSubmission(input);
       return { id };
+    }),
+
+  getFormSubmissionsByFormId: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/getFormSubmissionsByFormId",
+        tags: TAGS,
+        summary: "List submissions for a form owned by the logged-in user",
+        protect: true,
+      },
+    })
+    .input(getFormSubmissionsByFormIdInputModel)
+    .output(getFormSubmissionsByFormIdOutputModel)
+    .query(async ({ input, ctx }) => {
+      return formSubmissionService.getFormSubmissionsByFormIdForUser({
+        formId: input.formId,
+        userId: ctx.user.id,
+      });
     }),
 });

@@ -1,12 +1,18 @@
-import { db, eq } from "@repo/database";
+import { and, db, desc, eq } from "@repo/database";
 import { formFields } from "@repo/database/models/form-field";
 import { formSubmissionsTable } from "@repo/database/models/form-submission";
 import { forms } from "@repo/database/models/form";
 import {
   createFormSubmissionInput,
   createFormSubmissionOutput,
+  getFormSubmissionsByFormIdInput,
+  getFormSubmissionsByFormIdForUserInput,
+  getFormSubmissionsByFormIdOutput,
   type CreateFormSubmissionInputType,
   type CreateFormSubmissionOutputType,
+  type GetFormSubmissionsByFormIdInputType,
+  type GetFormSubmissionsByFormIdForUserInputType,
+  type GetFormSubmissionsByFormIdOutputType,
 } from "./model";
 
 class FormSubmissionService {
@@ -85,6 +91,45 @@ class FormSubmissionService {
     return createFormSubmissionOutput.parse({
       id: result[0].id,
     });
+  }
+
+  public async getFormSubmissionsByFormId(
+    payload: GetFormSubmissionsByFormIdInputType,
+  ): Promise<GetFormSubmissionsByFormIdOutputType> {
+    const { formId } = await getFormSubmissionsByFormIdInput.parseAsync(payload);
+
+    const result = await db
+      .select({
+        id: formSubmissionsTable.id,
+        formId: formSubmissionsTable.formId,
+        values: formSubmissionsTable.values,
+        createdAt: formSubmissionsTable.createdAt,
+      })
+      .from(formSubmissionsTable)
+      .where(eq(formSubmissionsTable.formId, formId))
+      .orderBy(desc(formSubmissionsTable.createdAt));
+
+    return getFormSubmissionsByFormIdOutput.parse(result);
+  }
+
+  public async getFormSubmissionsByFormIdForUser(
+    payload: GetFormSubmissionsByFormIdForUserInputType,
+  ): Promise<GetFormSubmissionsByFormIdOutputType> {
+    const { formId, userId } = await getFormSubmissionsByFormIdForUserInput.parseAsync(payload);
+
+    const result = await db
+      .select({
+        id: formSubmissionsTable.id,
+        formId: formSubmissionsTable.formId,
+        values: formSubmissionsTable.values,
+        createdAt: formSubmissionsTable.createdAt,
+      })
+      .from(formSubmissionsTable)
+      .innerJoin(forms, eq(forms.id, formSubmissionsTable.formId))
+      .where(and(eq(formSubmissionsTable.formId, formId), eq(forms.creatorId, userId)))
+      .orderBy(desc(formSubmissionsTable.createdAt));
+
+    return getFormSubmissionsByFormIdOutput.parse(result);
   }
 }
 
