@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { PencilIcon, PlusIcon } from "lucide-react";
+import { ExternalLinkIcon, PencilIcon, PlusIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 import { AppSidebar } from "~/components/app-sidebar";
@@ -207,9 +207,12 @@ export default function Page() {
             {createdFormId ? (
               <Alert>
                 <AlertTitle>Form created</AlertTitle>
-                <AlertDescription>
+                <AlertDescription className="flex flex-wrap gap-3">
                   <Button variant="link" className="h-auto p-0" asChild>
-                    <Link href={`/dashboard/forms/${createdFormId}`}>Open the editor</Link>
+                    <Link href={`/form/${createdFormId}`}>Open public form</Link>
+                  </Button>
+                  <Button variant="link" className="h-auto p-0" asChild>
+                    <Link href={`/dashboard/forms/${createdFormId}`}>Open editor</Link>
                   </Button>
                 </AlertDescription>
               </Alert>
@@ -253,7 +256,7 @@ export default function Page() {
                                 className="h-auto justify-start p-0 text-left text-foreground"
                                 asChild
                               >
-                                <Link href={`/dashboard/forms/${form.id}`}>{form.title}</Link>
+                                <Link href={`/form/${form.id}`}>{form.title}</Link>
                               </Button>
                               {form.description ? (
                                 <p className="max-w-[28rem] truncate text-sm text-muted-foreground">
@@ -274,12 +277,20 @@ export default function Page() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button size="sm" variant="outline" asChild>
-                              <Link href={`/dashboard/forms/${form.id}`}>
-                                <PencilIcon />
-                                Edit
-                              </Link>
-                            </Button>
+                            <div className="flex justify-end gap-2">
+                              <Button size="sm" variant="outline" asChild>
+                                <Link href={`/form/${form.id}`}>
+                                  <ExternalLinkIcon />
+                                  View
+                                </Link>
+                              </Button>
+                              <Button size="sm" variant="outline" asChild>
+                                <Link href={`/dashboard/forms/${form.id}`}>
+                                  <PencilIcon />
+                                  Edit
+                                </Link>
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
