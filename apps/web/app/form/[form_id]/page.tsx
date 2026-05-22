@@ -19,6 +19,7 @@ import {
 } from "~/components/ui/select";
 import { Separator } from "~/components/ui/separator";
 import { Textarea } from "~/components/ui/textarea";
+import { useCreateFormSubmission } from "~/hooks/api/form-submission";
 import { useGetFormById } from "~/hooks/api/form";
 
 type PublicField = NonNullable<ReturnType<typeof useGetFormById>["fields"]>[number];
@@ -66,7 +67,7 @@ function PublicFormField({ field }: { field: PublicField }) {
         {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
         <Textarea
           id={fieldId}
-          name={field.labelKey}
+          name={field.id}
           placeholder={field.placeholder ?? undefined}
           required={Boolean(field.isRequired)}
           className="min-h-28 resize-y"
@@ -83,7 +84,7 @@ function PublicFormField({ field }: { field: PublicField }) {
           {field.isRequired ? <span className="text-destructive">*</span> : null}
         </FieldLabel>
         {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
-        <RadioGroup name={field.labelKey} required={Boolean(field.isRequired)}>
+        <RadioGroup name={field.id} required={Boolean(field.isRequired)}>
           <div className="flex items-center gap-2">
             <RadioGroupItem id={`${fieldId}-yes`} value="yes" />
             <Label htmlFor={`${fieldId}-yes`}>Yes</Label>
@@ -100,7 +101,7 @@ function PublicFormField({ field }: { field: PublicField }) {
   if (field.type === "CHECKBOX") {
     return (
       <Field orientation="horizontal" className="items-start rounded-md border p-4">
-        <Checkbox id={fieldId} name={field.labelKey} required={Boolean(field.isRequired)} />
+        <Checkbox id={fieldId} name={field.id} required={Boolean(field.isRequired)} />
         <div className="grid gap-1.5">
           <FieldLabel htmlFor={fieldId}>
             {field.label}
@@ -120,7 +121,7 @@ function PublicFormField({ field }: { field: PublicField }) {
           {field.isRequired ? <span className="text-destructive">*</span> : null}
         </FieldLabel>
         {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
-        <Select name={field.labelKey} required={Boolean(field.isRequired)}>
+        <Select name={field.id} required={Boolean(field.isRequired)}>
           <SelectTrigger id={fieldId} className="w-full">
             <SelectValue placeholder={field.placeholder ?? "Select an option"} />
           </SelectTrigger>
@@ -140,7 +141,7 @@ function PublicFormField({ field }: { field: PublicField }) {
           {field.isRequired ? <span className="text-destructive">*</span> : null}
         </FieldLabel>
         {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
-        <RadioGroup name={field.labelKey} required={Boolean(field.isRequired)}>
+        <RadioGroup name={field.id} required={Boolean(field.isRequired)}>
           <div className="flex items-center gap-2">
             <RadioGroupItem id={`${fieldId}-option`} value="option" />
             <Label htmlFor={`${fieldId}-option`}>Option</Label>
@@ -159,7 +160,7 @@ function PublicFormField({ field }: { field: PublicField }) {
       {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
       <Input
         id={fieldId}
-        name={field.labelKey}
+        name={field.id}
         type={getInputType(field.type)}
         placeholder={field.placeholder ?? undefined}
         required={Boolean(field.isRequired)}
@@ -172,6 +173,41 @@ export default function Page() {
   const params = useParams();
   const formId = getFormId(params);
   const { form, fields = [], error, isLoading, isFetching } = useGetFormById(formId);
+  const {
+    createFormSubmissionAsync,
+    error: submissionError,
+    status: createSubmissionStatus,
+  } = useCreateFormSubmission();
+  const [submissionId, setSubmissionId] = React.useState<string | null>(null);
+
+  const isSubmitting = createSubmissionStatus === "pending";
+
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!formId || !fields.length) {
+      return;
+    }
+
+    const formElement = event.currentTarget;
+    const formData = new FormData(formElement);
+    setSubmissionId(null);
+
+    try {
+      const result = await createFormSubmissionAsync({
+        formId,
+        values: fields.map((field) => ({
+          formFieldId: field.id,
+          value: String(formData.get(field.id) ?? ""),
+        })),
+      });
+
+      setSubmissionId(result.id);
+      formElement.reset();
+    } catch {
+      // The mutation exposes its error through submissionError.
+    }
+  };
 
   return (
     <main className="min-h-screen bg-muted/30 px-4 py-8 md:py-12">
@@ -194,9 +230,7 @@ export default function Page() {
         ) : form ? (
           <form
             className="rounded-lg border bg-background p-5 shadow-sm md:p-7"
-            onSubmit={(event) => {
-              event.preventDefault();
-            }}
+            onSubmit={onSubmit}
           >
             <div className="grid gap-2">
               <h1 className="text-2xl font-semibold tracking-normal md:text-3xl">{form.title}</h1>
@@ -206,6 +240,20 @@ export default function Page() {
             </div>
 
             <Separator className="my-6" />
+
+            {submissionId ? (
+              <Alert className="mb-6">
+                <AlertTitle>Response submitted</AlertTitle>
+                <AlertDescription>Your response has been recorded.</AlertDescription>
+              </Alert>
+            ) : null}
+
+            {submissionError ? (
+              <Alert variant="destructive" className="mb-6">
+                <AlertTitle>Could not submit response</AlertTitle>
+                <AlertDescription>{submissionError.message}</AlertDescription>
+              </Alert>
+            ) : null}
 
             {fields.length ? (
               <FieldGroup className="gap-6">
@@ -223,8 +271,8 @@ export default function Page() {
               ) : (
                 <span />
               )}
-              <Button type="submit" disabled={!fields.length}>
-                Submit
+              <Button type="submit" disabled={!fields.length || isSubmitting}>
+                {isSubmitting ? "Submitting..." : "Submit"}
               </Button>
             </div>
           </form>
