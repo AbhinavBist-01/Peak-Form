@@ -53,6 +53,31 @@ export const useListForms = () => {
   };
 };
 
+export const useGetFormById = (formId: string) => {
+  const {
+    data: form,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
+  } = trpc.form.getFormById.useQuery({ formId }, { enabled: Boolean(formId) });
+
+  return {
+    form,
+    fields: form?.fields,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
+  };
+};
+
 export const useCreateField = () => {
   const utils = trpc.useUtils();
   const {
