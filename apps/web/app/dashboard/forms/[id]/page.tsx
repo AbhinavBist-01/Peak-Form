@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeftIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { ArrowLeftIcon, InboxIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 import { AppSidebar } from "~/components/app-sidebar";
@@ -244,6 +244,12 @@ export default function Page() {
                   <Link href="/dashboard/forms">
                     <ArrowLeftIcon />
                     Back
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link href={`/dashboard/forms/${formId}/submissions`}>
+                    <InboxIcon />
+                    Submissions
                   </Link>
                 </Button>
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>

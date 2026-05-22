@@ -78,6 +78,57 @@ export const useGetFormById = (formId: string) => {
   };
 };
 
+export const useCreateFormSubmission = () => {
+  const {
+    mutateAsync: createFormSubmissionAsync,
+    mutate: createFormSubmission,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isSuccess,
+    status,
+  } = trpc.formSubmission.createFormSubmission.useMutation();
+
+  return {
+    createFormSubmissionAsync,
+    createFormSubmission,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isSuccess,
+    status,
+  };
+};
+
+export const useGetFormSubmissionsByFormId = (formId: string) => {
+  const {
+    data: submissions,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
+  } = trpc.formSubmission.getFormSubmissionsByFormId.useQuery(
+    { formId },
+    { enabled: Boolean(formId) },
+  );
+
+  return {
+    submissions,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
+  };
+};
+
 export const useCreateField = () => {
   const utils = trpc.useUtils();
   const {
