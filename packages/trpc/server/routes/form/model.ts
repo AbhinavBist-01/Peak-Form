@@ -33,19 +33,6 @@ export const fieldValidationRulesModel = z
   })
   .strict();
 
-function isValidPattern(pattern: string | null | undefined) {
-  if (!pattern) {
-    return true;
-  }
-
-  try {
-    new RegExp(pattern);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export const createFormInputModel = z.object({
   title: z.string().max(55).describe("title of the form"),
   description: z.string().optional().describe("description of the form"),
@@ -143,8 +130,7 @@ export const listPublicFormsOutputModel = z.array(
   }),
 );
 
-export const createFieldInputModel = z
-  .object({
+export const createFieldInputModel = z.object({
     formId: z.string().uuid().describe("id of the form this field belongs to"),
     label: z.string().min(1).max(100).describe("display label of the field"),
     description: z.string().optional().describe("optional field description"),
@@ -160,14 +146,6 @@ export const createFieldInputModel = z
     isRequired: z.boolean().optional().describe("whether the field is required").default(false),
     type: fieldTypeModel.describe("type of the field"),
     index: z.string().min(1).describe("fractional index used for sorting fields"),
-  })
-  .refine(({ min, max }) => min === undefined || max === undefined || min <= max, {
-    message: "Minimum must be less than or equal to maximum",
-    path: ["min"],
-  })
-  .refine(({ pattern }) => isValidPattern(pattern), {
-    message: "Pattern must be a valid regular expression",
-    path: ["pattern"],
   });
 
 export const createFieldOutputModel = z.object({
@@ -218,15 +196,7 @@ export const updateFieldInputModel = z.object({
   isRequired: z.boolean().optional().describe("whether the field is required"),
   type: fieldTypeModel.optional().describe("type of the field"),
   index: z.string().min(1).optional().describe("fractional index used for sorting fields"),
-})
-  .refine(({ min, max }) => min === undefined || max === undefined || min === null || max === null || min <= max, {
-    message: "Minimum must be less than or equal to maximum",
-    path: ["min"],
-  })
-  .refine(({ pattern }) => isValidPattern(pattern), {
-    message: "Pattern must be a valid regular expression",
-    path: ["pattern"],
-  });
+});
 
 export const updateFieldOutputModel = z.object({
   id: z.string().describe("id of the updated field"),
