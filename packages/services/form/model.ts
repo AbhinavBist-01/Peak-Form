@@ -125,6 +125,31 @@ export const getFormByIdOutput = z.object({
 
 export type GetFormByIdOutputType = z.infer<typeof getFormByIdOutput>;
 
+export const getFormForEditorInput = z.object({
+  formId: z.uuid().describe("The id of the form"),
+  userId: z.uuid().describe("The id of the form owner"),
+});
+
+export type GetFormForEditorInputType = z.infer<typeof getFormForEditorInput>;
+
+export const getFormForEditorOutput = getFormByIdOutput;
+
+export type GetFormForEditorOutputType = z.infer<typeof getFormForEditorOutput>;
+
+export const listPublicFormsOutput = z.array(
+  z.object({
+    id: z.uuid().describe("The id of the form"),
+    title: z.string().describe("The title of the form"),
+    description: z.string().nullable().describe("The description of the form"),
+    publishedAt: z.date().nullable().describe("The date when the form was published"),
+    themeConfig: formThemeConfig.nullable().describe("The visual theme config for the form"),
+    expiresAt: z.date().nullable().describe("The date when the form expires"),
+    createdAt: z.date().nullable().describe("The date when the form was created"),
+  }),
+);
+
+export type ListPublicFormsOutputType = z.infer<typeof listPublicFormsOutput>;
+
 export const updateFormSettingsInput = z.object({
   formId: z.uuid().describe("The id of the form to update"),
   userId: z.uuid().describe("The id of the form owner"),

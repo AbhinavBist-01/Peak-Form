@@ -53,6 +53,30 @@ export const useListForms = () => {
   };
 };
 
+export const useListPublicForms = () => {
+  const {
+    data: forms,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
+  } = trpc.form.listPublicForms.useQuery();
+
+  return {
+    forms,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
+  };
+};
+
 export const useDeleteForm = () => {
   const utils = trpc.useUtils();
   const {
@@ -180,6 +204,31 @@ export const useGetFormById = (formId: string) => {
     isSuccess,
     status,
   } = trpc.form.getFormById.useQuery({ formId }, { enabled: Boolean(formId) });
+
+  return {
+    form,
+    fields: form?.fields,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
+  };
+};
+
+export const useGetFormForEditor = (formId: string) => {
+  const {
+    data: form,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
+  } = trpc.form.getFormForEditor.useQuery({ formId }, { enabled: Boolean(formId) });
 
   return {
     form,

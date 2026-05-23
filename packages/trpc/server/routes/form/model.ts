@@ -123,6 +123,26 @@ export const getFormByIdOutputModel = z.object({
     .describe("fields belonging to the form"),
 });
 
+export const getFormForEditorInputModel = z.object({
+  formId: z.string().uuid().describe("id of the form to fetch for editing"),
+});
+
+export const getFormForEditorOutputModel = getFormByIdOutputModel;
+
+export const listPublicFormsInputModel = z.undefined();
+
+export const listPublicFormsOutputModel = z.array(
+  z.object({
+    id: z.string().describe("id of the form"),
+    title: z.string().describe("title of the form"),
+    description: z.string().nullable().describe("description of the form"),
+    publishedAt: z.date().nullable().describe("published date of the form"),
+    themeConfig: formThemeConfigModel.nullable().describe("visual theme config of the form"),
+    expiresAt: z.date().nullable().describe("expiry date of the form"),
+    createdAt: z.date().nullable().describe("created date of the form"),
+  }),
+);
+
 export const createFieldInputModel = z
   .object({
     formId: z.string().uuid().describe("id of the form this field belongs to"),

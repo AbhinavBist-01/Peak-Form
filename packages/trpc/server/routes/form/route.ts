@@ -11,10 +11,14 @@ import {
   deleteFieldOutputModel,
   getFormByIdInputModel,
   getFormByIdOutputModel,
+  getFormForEditorInputModel,
+  getFormForEditorOutputModel,
   getFieldsInputModel,
   getFieldsOutputModel,
   listFormsInputModel,
   listFormsOutputModel,
+  listPublicFormsInputModel,
+  listPublicFormsOutputModel,
   publishFormInputModel,
   publishFormOutputModel,
   unpublishFormInputModel,
@@ -72,6 +76,21 @@ export const formRouter = router({
         userId: ctx.user.id,
       });
       return forms;
+    }),
+
+  listPublicForms: publicProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/listPublicForms",
+        tags: TAGS,
+        summary: "List published public forms",
+      },
+    })
+    .input(listPublicFormsInputModel)
+    .output(listPublicFormsOutputModel)
+    .query(async () => {
+      return formService.listPublicForms();
     }),
 
   deleteForm: authenticatedProcedure
@@ -176,6 +195,25 @@ export const formRouter = router({
     .output(getFormByIdOutputModel)
     .query(async ({ input }) => {
       return formService.getFormById(input);
+    }),
+
+  getFormForEditor: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/getFormForEditor",
+        tags: TAGS,
+        summary: "Get a form owned by the logged-in user for editing",
+        protect: true,
+      },
+    })
+    .input(getFormForEditorInputModel)
+    .output(getFormForEditorOutputModel)
+    .query(async ({ input, ctx }) => {
+      return formService.getFormForEditor({
+        formId: input.formId,
+        userId: ctx.user.id,
+      });
     }),
 
   createField: authenticatedProcedure

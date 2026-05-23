@@ -3,7 +3,17 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeftIcon, InboxIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ExternalLinkIcon,
+  EyeOffIcon,
+  GlobeIcon,
+  InboxIcon,
+  PencilIcon,
+  PlusIcon,
+  RocketIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 
 import { AppSidebar } from "~/components/app-sidebar";
@@ -51,7 +61,15 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Textarea } from "~/components/ui/textarea";
-import { useCreateField, useDeleteField, useGetFields, useUpdateField } from "~/hooks/api/form";
+import {
+  useCreateField,
+  useDeleteField,
+  useGetFormForEditor,
+  usePublishForm,
+  useUnpublishForm,
+  useUpdateField,
+  useUpdateFormSettings,
+} from "~/hooks/api/form";
 
 const fieldTypes = [
   "TEXT",
@@ -82,7 +100,19 @@ type FieldValues = {
   type: FieldType;
   index: string;
 };
-type FormField = NonNullable<ReturnType<typeof useGetFields>["fields"]>[number];
+type FormField = NonNullable<ReturnType<typeof useGetFormForEditor>["fields"]>[number];
+type EditorForm = NonNullable<ReturnType<typeof useGetFormForEditor>["form"]>;
+type FormSettingsValues = {
+  title: string;
+  description: string;
+  visibility: "public" | "unlisted";
+  expiresAt: string;
+  themeName: string;
+  backgroundColor: string;
+  accentColor: string;
+  textColor: string;
+  fontFamily: string;
+};
 
 const defaultFieldValues: FieldValues = {
   label: "",
@@ -97,6 +127,18 @@ const defaultFieldValues: FieldValues = {
   isRequired: false,
   type: "TEXT",
   index: "1.00",
+};
+
+const defaultSettingsValues: FormSettingsValues = {
+  title: "",
+  description: "",
+  visibility: "unlisted",
+  expiresAt: "",
+  themeName: "",
+  backgroundColor: "",
+  accentColor: "",
+  textColor: "",
+  fontFamily: "",
 };
 
 function getFormId(params: ReturnType<typeof useParams>) {
@@ -131,6 +173,63 @@ function toOptionalText(value: string) {
 function toNullableText(value: string) {
   const trimmed = value.trim();
   return trimmed ? trimmed : null;
+}
+
+function toDateTimeLocalValue(value: Date | string | null | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return offsetDate.toISOString().slice(0, 16);
+}
+
+function getSettingsDefaults(form: EditorForm | undefined): FormSettingsValues {
+  if (!form) {
+    return defaultSettingsValues;
+  }
+
+  return {
+    title: form.title,
+    description: form.description ?? "",
+    visibility: form.visibility,
+    expiresAt: toDateTimeLocalValue(form.expiresAt),
+    themeName: form.themeConfig?.name ?? "",
+    backgroundColor: form.themeConfig?.backgroundColor ?? "",
+    accentColor: form.themeConfig?.accentColor ?? "",
+    textColor: form.themeConfig?.textColor ?? "",
+    fontFamily: form.themeConfig?.fontFamily ?? "",
+  };
+}
+
+function getFormStatusLabel(form: EditorForm | undefined) {
+  if (!form) {
+    return "Loading";
+  }
+
+  if (form.status === "published" && form.expiresAt) {
+    const expiryDate = new Date(form.expiresAt);
+
+    if (!Number.isNaN(expiryDate.getTime()) && expiryDate.getTime() < Date.now()) {
+      return "Expired";
+    }
+  }
+
+  if (form.status === "published") {
+    return "Published";
+  }
+
+  if (form.status === "archived") {
+    return "Archived";
+  }
+
+  return "Draft";
 }
 
 function toOptionalNumber(value: string) {
@@ -190,24 +289,43 @@ export default function Page() {
   const [editingField, setEditingField] = React.useState<FormField | null>(null);
 
   const {
+    form: editorFormData,
     fields = [],
-    error: getFieldsError,
-    isLoading: isLoadingFields,
-    isFetching: isFetchingFields,
-  } = useGetFields(formId);
+    error: getFormError,
+    isLoading: isLoadingForm,
+    isFetching: isFetchingForm,
+  } = useGetFormForEditor(formId);
   const { createFieldAsync, error: createFieldError, status: createFieldStatus } = useCreateField();
   const { updateFieldAsync, error: updateFieldError, status: updateFieldStatus } = useUpdateField();
   const { deleteFieldAsync, error: deleteFieldError, status: deleteFieldStatus } = useDeleteField();
+  const {
+    updateFormSettingsAsync,
+    error: updateFormSettingsError,
+    status: updateFormSettingsStatus,
+  } = useUpdateFormSettings();
+  const { publishFormAsync, error: publishFormError, status: publishFormStatus } = usePublishForm();
+  const {
+    unpublishFormAsync,
+    error: unpublishFormError,
+    status: unpublishFormStatus,
+  } = useUnpublishForm();
 
   const isCreating = createFieldStatus === "pending";
   const isUpdating = updateFieldStatus === "pending";
   const isDeleting = deleteFieldStatus === "pending";
+  const isSavingSettings = updateFormSettingsStatus === "pending";
+  const isPublishing = publishFormStatus === "pending";
+  const isUnpublishing = unpublishFormStatus === "pending";
+  const isPublished = editorFormData?.status === "published";
 
   const createForm = useForm<FieldValues>({
     defaultValues: defaultFieldValues,
   });
   const editForm = useForm<FieldValues>({
     defaultValues: defaultFieldValues,
+  });
+  const settingsForm = useForm<FormSettingsValues>({
+    defaultValues: defaultSettingsValues,
   });
 
   const nextIndex = React.useMemo(() => getNextIndex(fields), [fields]);
@@ -244,10 +362,38 @@ export default function Page() {
     });
   }, [editForm, editingField]);
 
+  React.useEffect(() => {
+    settingsForm.reset(getSettingsDefaults(editorFormData));
+  }, [editorFormData, settingsForm]);
+
   const createType = createForm.watch("type");
   const createIsRequired = createForm.watch("isRequired");
   const editType = editForm.watch("type");
   const editIsRequired = editForm.watch("isRequired");
+
+  const onSaveSettings = async (values: FormSettingsValues) => {
+    if (!formId) {
+      return;
+    }
+
+    const themeConfig = {
+      name: values.themeName.trim() || undefined,
+      backgroundColor: values.backgroundColor.trim() || undefined,
+      accentColor: values.accentColor.trim() || undefined,
+      textColor: values.textColor.trim() || undefined,
+      fontFamily: values.fontFamily.trim() || undefined,
+    };
+    const hasThemeConfig = Object.values(themeConfig).some(Boolean);
+
+    await updateFormSettingsAsync({
+      formId,
+      title: values.title,
+      description: toNullableText(values.description),
+      visibility: values.visibility,
+      expiresAt: values.expiresAt ? new Date(values.expiresAt).toISOString() : null,
+      themeConfig: hasThemeConfig ? themeConfig : null,
+    });
+  };
 
   const onCreateField = async (values: FieldValues) => {
     if (!formId) {
@@ -317,7 +463,24 @@ export default function Page() {
           <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
-                <h2 className="text-2xl font-semibold tracking-normal">Edit form</h2>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-2xl font-semibold tracking-normal">
+                    {editorFormData?.title ?? "Edit form"}
+                  </h2>
+                  <Badge variant={isPublished ? "default" : "outline"}>
+                    {getFormStatusLabel(editorFormData)}
+                  </Badge>
+                  {editorFormData ? (
+                    <Badge variant="outline" className="gap-1 capitalize">
+                      {editorFormData.visibility === "public" ? (
+                        <GlobeIcon className="size-3" />
+                      ) : (
+                        <EyeOffIcon className="size-3" />
+                      )}
+                      {editorFormData.visibility}
+                    </Badge>
+                  ) : null}
+                </div>
                 <p className="text-sm text-muted-foreground">Form ID: {formId}</p>
               </div>
               <div className="flex items-center gap-2">
@@ -333,6 +496,33 @@ export default function Page() {
                     Submissions
                   </Link>
                 </Button>
+                {isPublished ? (
+                  <Button variant="outline" asChild>
+                    <Link href={`/form/${formId}`}>
+                      <ExternalLinkIcon />
+                      View
+                    </Link>
+                  </Button>
+                ) : null}
+                {isPublished ? (
+                  <Button
+                    variant="outline"
+                    disabled={isUnpublishing}
+                    onClick={() => void unpublishFormAsync({ formId })}
+                  >
+                    <EyeOffIcon />
+                    {isUnpublishing ? "Unpublishing..." : "Unpublish"}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    disabled={isPublishing}
+                    onClick={() => void publishFormAsync({ formId })}
+                  >
+                    <RocketIcon />
+                    {isPublishing ? "Publishing..." : "Publish"}
+                  </Button>
+                )}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                   <DialogTrigger asChild>
                     <Button>
@@ -373,10 +563,31 @@ export default function Page() {
               </div>
             </div>
 
-            {getFieldsError ? (
+            {getFormError ? (
               <Alert variant="destructive">
-                <AlertTitle>Could not load fields</AlertTitle>
-                <AlertDescription>{getFieldsError.message}</AlertDescription>
+                <AlertTitle>Could not load form</AlertTitle>
+                <AlertDescription>{getFormError.message}</AlertDescription>
+              </Alert>
+            ) : null}
+
+            {updateFormSettingsError ? (
+              <Alert variant="destructive">
+                <AlertTitle>Could not save settings</AlertTitle>
+                <AlertDescription>{updateFormSettingsError.message}</AlertDescription>
+              </Alert>
+            ) : null}
+
+            {publishFormError ? (
+              <Alert variant="destructive">
+                <AlertTitle>Could not publish form</AlertTitle>
+                <AlertDescription>{publishFormError.message}</AlertDescription>
+              </Alert>
+            ) : null}
+
+            {unpublishFormError ? (
+              <Alert variant="destructive">
+                <AlertTitle>Could not unpublish form</AlertTitle>
+                <AlertDescription>{unpublishFormError.message}</AlertDescription>
               </Alert>
             ) : null}
 
@@ -387,116 +598,135 @@ export default function Page() {
               </Alert>
             ) : null}
 
-            <div className="overflow-hidden rounded-lg border">
-              <Table>
-                <TableHeader className="bg-muted">
-                  <TableRow>
-                    <TableHead>Field</TableHead>
-                    <TableHead className="hidden md:table-cell">Key</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead className="hidden lg:table-cell">Index</TableHead>
-                    <TableHead className="w-36 text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {isLoadingFields ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                        Loading fields...
-                      </TableCell>
-                    </TableRow>
-                  ) : fields.length ? (
-                    fields.map((field) => (
-                      <TableRow key={field.id}>
-                        <TableCell>
-                          <div className="grid gap-1">
-                            <div className="font-medium">{field.label}</div>
-                            {field.description ? (
-                              <p className="max-w-[28rem] truncate text-sm text-muted-foreground">
-                                {field.description}
-                              </p>
-                            ) : null}
-                            {field.helpText ? (
-                              <p className="max-w-[28rem] truncate text-xs text-muted-foreground">
-                                {field.helpText}
-                              </p>
-                            ) : null}
-                            {field.isRequired ? (
-                              <Badge variant="outline" className="w-fit">
-                                Required
-                              </Badge>
-                            ) : null}
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden font-mono text-xs text-muted-foreground md:table-cell">
-                          {field.labelKey}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">{field.type}</Badge>
-                        </TableCell>
-                        <TableCell className="hidden text-muted-foreground lg:table-cell">
-                          {field.index}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              size="icon"
-                              variant="outline"
-                              onClick={() => setEditingField(field)}
-                            >
-                              <PencilIcon />
-                              <span className="sr-only">Edit field</span>
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button size="icon" variant="outline">
-                                  <Trash2Icon />
-                                  <span className="sr-only">Delete field</span>
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete field</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This removes the field from the form.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel disabled={isDeleting}>
-                                    Cancel
-                                  </AlertDialogCancel>
-                                  <AlertDialogAction
-                                    disabled={isDeleting}
-                                    onClick={() => deleteFieldAsync({ id: field.id })}
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </TableCell>
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+              <div className="grid gap-6">
+                <div className="overflow-hidden rounded-lg border">
+                  <Table>
+                    <TableHeader className="bg-muted">
+                      <TableRow>
+                        <TableHead>Field</TableHead>
+                        <TableHead className="hidden md:table-cell">Key</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead className="hidden lg:table-cell">Index</TableHead>
+                        <TableHead className="w-36 text-right">Action</TableHead>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} className="h-32 text-center">
-                        <div className="mx-auto flex max-w-md flex-col items-center gap-2">
-                          <h3 className="text-base font-medium">No fields yet</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Add the first field for this form.
-                          </p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    </TableHeader>
+                    <TableBody>
+                      {isLoadingForm ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                            Loading fields...
+                          </TableCell>
+                        </TableRow>
+                      ) : fields.length ? (
+                        fields.map((field) => (
+                          <TableRow key={field.id}>
+                            <TableCell>
+                              <div className="grid gap-1">
+                                <div className="font-medium">{field.label}</div>
+                                {field.description ? (
+                                  <p className="max-w-[28rem] truncate text-sm text-muted-foreground">
+                                    {field.description}
+                                  </p>
+                                ) : null}
+                                {field.helpText ? (
+                                  <p className="max-w-[28rem] truncate text-xs text-muted-foreground">
+                                    {field.helpText}
+                                  </p>
+                                ) : null}
+                                <div className="flex flex-wrap gap-2">
+                                  {field.isRequired ? (
+                                    <Badge variant="outline" className="w-fit">
+                                      Required
+                                    </Badge>
+                                  ) : null}
+                                  {field.options?.length ? (
+                                    <Badge variant="secondary">{field.options.length} options</Badge>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="hidden font-mono text-xs text-muted-foreground md:table-cell">
+                              {field.labelKey}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="secondary">{field.type}</Badge>
+                            </TableCell>
+                            <TableCell className="hidden text-muted-foreground lg:table-cell">
+                              {field.index}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  size="icon"
+                                  variant="outline"
+                                  onClick={() => setEditingField(field)}
+                                >
+                                  <PencilIcon />
+                                  <span className="sr-only">Edit field</span>
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button size="icon" variant="outline">
+                                      <Trash2Icon />
+                                      <span className="sr-only">Delete field</span>
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete field</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This removes the field from the form.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel disabled={isDeleting}>
+                                        Cancel
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction
+                                        disabled={isDeleting}
+                                        onClick={() => deleteFieldAsync({ id: field.id })}
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={5} className="h-32 text-center">
+                            <div className="mx-auto flex max-w-md flex-col items-center gap-2">
+                              <h3 className="text-base font-medium">No fields yet</h3>
+                              <p className="text-sm text-muted-foreground">
+                                Add the first field for this form.
+                              </p>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
 
-            {isFetchingFields && !isLoadingFields ? (
-              <p className="text-sm text-muted-foreground">Refreshing fields...</p>
-            ) : null}
+                {isFetchingForm && !isLoadingForm ? (
+                  <p className="text-sm text-muted-foreground">Refreshing form...</p>
+                ) : null}
+              </div>
+
+              <aside className="grid content-start gap-4">
+                <FormSettingsPanel
+                  form={editorFormData}
+                  formState={settingsForm}
+                  isSaving={isSavingSettings}
+                  onSave={onSaveSettings}
+                />
+                <FormPreview form={editorFormData} fields={fields} />
+              </aside>
+            </div>
           </div>
         </main>
 
@@ -537,6 +767,197 @@ export default function Page() {
         </Dialog>
       </SidebarInset>
     </SidebarProvider>
+  );
+}
+
+function FormSettingsPanel({
+  form,
+  formState,
+  isSaving,
+  onSave,
+}: {
+  form?: EditorForm;
+  formState: ReturnType<typeof useForm<FormSettingsValues>>;
+  isSaving: boolean;
+  onSave: (values: FormSettingsValues) => Promise<void>;
+}) {
+  const {
+    formState: { errors },
+    handleSubmit,
+    register,
+    setValue,
+    watch,
+  } = formState;
+  const visibility = watch("visibility");
+
+  return (
+    <section className="grid gap-4 rounded-lg border p-4">
+      <div className="space-y-1">
+        <h3 className="text-base font-semibold tracking-normal">Settings</h3>
+        <p className="text-sm text-muted-foreground">
+          {form?.status === "published"
+            ? "Published forms can be shared or listed publicly."
+            : "Draft forms stay private until published."}
+        </p>
+      </div>
+
+      <form className="grid gap-4" onSubmit={handleSubmit(onSave)}>
+        <Field>
+          <FieldLabel htmlFor="settings-title">Title</FieldLabel>
+          <Input
+            id="settings-title"
+            aria-invalid={Boolean(errors.title)}
+            {...register("title", {
+              required: "Title is required",
+              maxLength: {
+                value: 55,
+                message: "Title must be 55 characters or less",
+              },
+            })}
+          />
+          <FieldError errors={[errors.title]} />
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor="settings-description">Description</FieldLabel>
+          <Textarea
+            id="settings-description"
+            className="min-h-20"
+            {...register("description", {
+              maxLength: {
+                value: 500,
+                message: "Description must be 500 characters or less",
+              },
+            })}
+          />
+          <FieldError errors={[errors.description]} />
+        </Field>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+          <Field>
+            <FieldLabel htmlFor="settings-visibility">Visibility</FieldLabel>
+            <Select
+              value={visibility}
+              onValueChange={(value) => setValue("visibility", value as FormSettingsValues["visibility"])}
+            >
+              <SelectTrigger id="settings-visibility" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="unlisted">Unlisted</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="settings-expires">Expires at</FieldLabel>
+            <Input id="settings-expires" type="datetime-local" {...register("expiresAt")} />
+          </Field>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+          <Field>
+            <FieldLabel htmlFor="settings-theme">Theme name</FieldLabel>
+            <Input id="settings-theme" placeholder="Studio night" {...register("themeName")} />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="settings-font">Font family</FieldLabel>
+            <Input id="settings-font" placeholder="Inter" {...register("fontFamily")} />
+          </Field>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
+          <Field>
+            <FieldLabel htmlFor="settings-bg">Background</FieldLabel>
+            <Input id="settings-bg" placeholder="#ffffff" {...register("backgroundColor")} />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="settings-accent">Accent</FieldLabel>
+            <Input id="settings-accent" placeholder="#2563eb" {...register("accentColor")} />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="settings-text">Text</FieldLabel>
+            <Input id="settings-text" placeholder="#111827" {...register("textColor")} />
+          </Field>
+        </div>
+
+        <Button type="submit" disabled={isSaving}>
+          {isSaving ? "Saving..." : "Save settings"}
+        </Button>
+      </form>
+    </section>
+  );
+}
+
+function FormPreview({ form, fields }: { form?: EditorForm; fields: FormField[] }) {
+  const theme = form?.themeConfig;
+
+  return (
+    <section className="grid gap-4 rounded-lg border p-4">
+      <div className="space-y-1">
+        <h3 className="text-base font-semibold tracking-normal">Preview</h3>
+        <p className="text-sm text-muted-foreground">Approximate public form layout.</p>
+      </div>
+
+      <div
+        className="grid gap-4 rounded-lg border bg-background p-4"
+        style={{
+          backgroundColor: theme?.backgroundColor,
+          color: theme?.textColor,
+          fontFamily: theme?.fontFamily,
+        }}
+      >
+        <div className="grid gap-1">
+          <h4 className="text-lg font-semibold tracking-normal">{form?.title ?? "Untitled form"}</h4>
+          {form?.description ? (
+            <p className="text-sm text-muted-foreground">{form.description}</p>
+          ) : null}
+        </div>
+
+        <div className="grid gap-3">
+          {fields.length ? (
+            fields.slice(0, 5).map((field) => (
+              <div key={field.id} className="grid gap-2 rounded-md border bg-background/80 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium">
+                    {field.label}
+                    {field.isRequired ? <span className="text-destructive">*</span> : null}
+                  </span>
+                  <Badge variant="secondary">{field.type}</Badge>
+                </div>
+                {field.helpText ? (
+                  <p className="text-xs text-muted-foreground">{field.helpText}</p>
+                ) : null}
+                {field.options?.length ? (
+                  <div className="flex flex-wrap gap-1">
+                    {field.options.slice(0, 4).map((option) => (
+                      <Badge key={option} variant="outline">
+                        {option}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="h-8 rounded-md border bg-muted/40" />
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">Add fields to preview the form.</p>
+          )}
+        </div>
+
+        <Button
+          type="button"
+          className="w-full"
+          style={{
+            backgroundColor: theme?.accentColor,
+          }}
+        >
+          Submit
+        </Button>
+      </div>
+    </section>
   );
 }
 

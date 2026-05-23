@@ -7,6 +7,7 @@ import {
   IconFileDescription,
   IconSettings,
   IconClipboardText,
+  IconWorldSearch,
 } from "@tabler/icons-react";
 
 import { NavDocuments } from "~/components/nav-documents";
@@ -39,6 +40,11 @@ const data = {
       title: "Forms",
       url: "/dashboard/forms",
       icon: IconClipboardText,
+    },
+    {
+      title: "Explore",
+      url: "/explore",
+      icon: IconWorldSearch,
     },
   ],
 

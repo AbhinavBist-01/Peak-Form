@@ -1,4 +1,4 @@
-import { and, asc, db, desc, eq } from "@repo/database";
+import { and, asc, db, desc, eq, gt, isNull, or } from "@repo/database";
 import { formFields } from "@repo/database/models/form-field";
 import { formSubmissionsTable } from "@repo/database/models/form-submission";
 import { forms } from "@repo/database/models/form";
@@ -9,8 +9,11 @@ import {
   deleteFormOutput,
   getFormByIdInput,
   getFormByIdOutput,
+  getFormForEditorInput,
+  getFormForEditorOutput,
   listFormByUserIdInput,
   listFormByUserIdOutput,
+  listPublicFormsOutput,
   publishFormInput,
   publishFormOutput,
   unpublishFormInput,
@@ -23,8 +26,11 @@ import {
   type DeleteFormOutputType,
   type GetFormByIdInputType,
   type GetFormByIdOutputType,
+  type GetFormForEditorInputType,
+  type GetFormForEditorOutputType,
   type ListFormByUserIdInputType,
   type ListFormByUserIdOutputType,
+  type ListPublicFormsOutputType,
   type PublishFormInputType,
   type PublishFormOutputType,
   type UnpublishFormInputType,
@@ -81,6 +87,30 @@ class FormService {
       .orderBy(desc(forms.createdAt));
 
     return listFormByUserIdOutput.parse(result);
+  }
+
+  public async listPublicForms(): Promise<ListPublicFormsOutputType> {
+    const result = await db
+      .select({
+        id: forms.id,
+        title: forms.title,
+        description: forms.description,
+        publishedAt: forms.publishedAt,
+        themeConfig: forms.themeConfig,
+        expiresAt: forms.expiresAt,
+        createdAt: forms.createdAt,
+      })
+      .from(forms)
+      .where(
+        and(
+          eq(forms.status, "published"),
+          eq(forms.visibility, "public"),
+          or(isNull(forms.expiresAt), gt(forms.expiresAt, new Date())),
+        ),
+      )
+      .orderBy(desc(forms.publishedAt), desc(forms.createdAt));
+
+    return listPublicFormsOutput.parse(result);
   }
 
   public async deleteForm(payload: DeleteFormInputType): Promise<DeleteFormOutputType> {
@@ -166,6 +196,61 @@ class FormService {
     }
 
     return getFormByIdOutput.parse({
+      ...result[0].form,
+      fields: result
+        .map(({ field }) => field)
+        .filter((field): field is NonNullable<typeof field> => Boolean(field?.id)),
+    });
+  }
+
+  public async getFormForEditor(
+    payload: GetFormForEditorInputType,
+  ): Promise<GetFormForEditorOutputType> {
+    const { formId, userId } = await getFormForEditorInput.parseAsync(payload);
+
+    const result = await db
+      .select({
+        form: {
+          id: forms.id,
+          title: forms.title,
+          description: forms.description,
+          status: forms.status,
+          visibility: forms.visibility,
+          publishedAt: forms.publishedAt,
+          themeConfig: forms.themeConfig,
+          expiresAt: forms.expiresAt,
+          createdAt: forms.createdAt,
+          updatedAt: forms.updatedAt,
+        },
+        field: {
+          id: formFields.id,
+          formId: formFields.formId,
+          label: formFields.label,
+          labelKey: formFields.labelKey,
+          description: formFields.description,
+          helpText: formFields.helpText,
+          placeholder: formFields.placeholder,
+          options: formFields.options,
+          validationRules: formFields.validationRules,
+          min: formFields.min,
+          max: formFields.max,
+          pattern: formFields.pattern,
+          isRequired: formFields.isRequired,
+          type: formFields.type,
+          index: formFields.index,
+          createdAt: formFields.createdAt,
+        },
+      })
+      .from(forms)
+      .leftJoin(formFields, eq(formFields.formId, forms.id))
+      .where(and(eq(forms.id, formId), eq(forms.creatorId, userId)))
+      .orderBy(asc(formFields.index));
+
+    if (!result || result.length === 0 || !result[0]?.form.id) {
+      throw new Error(`Form with id ${formId} does not exist`);
+    }
+
+    return getFormForEditorOutput.parse({
       ...result[0].form,
       fields: result
         .map(({ field }) => field)
