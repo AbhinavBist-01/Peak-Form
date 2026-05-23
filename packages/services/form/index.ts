@@ -1,15 +1,20 @@
-import { asc, db, desc, eq } from "@repo/database";
+import { and, asc, db, desc, eq } from "@repo/database";
 import { formFields } from "@repo/database/models/form-field";
+import { formSubmissionsTable } from "@repo/database/models/form-submission";
 import { forms } from "@repo/database/models/form";
 import {
   createFormInput,
   createFormOutput,
+  deleteFormInput,
+  deleteFormOutput,
   getFormByIdInput,
   getFormByIdOutput,
   listFormByUserIdInput,
   listFormByUserIdOutput,
   type CreateFormInputType,
   type CreateFormOutputType,
+  type DeleteFormInputType,
+  type DeleteFormOutputType,
   type GetFormByIdInputType,
   type GetFormByIdOutputType,
   type ListFormByUserIdInputType,
@@ -60,6 +65,39 @@ class FormService {
       .orderBy(desc(forms.createdAt));
 
     return listFormByUserIdOutput.parse(result);
+  }
+
+  public async deleteForm(payload: DeleteFormInputType): Promise<DeleteFormOutputType> {
+    const { formId, userId } = await deleteFormInput.parseAsync(payload);
+
+    const result = await db.transaction(async (tx) => {
+      const [ownedForm] = await tx
+        .select({
+          id: forms.id,
+        })
+        .from(forms)
+        .where(and(eq(forms.id, formId), eq(forms.creatorId, userId)))
+        .limit(1);
+
+      if (!ownedForm) {
+        return [];
+      }
+
+      await tx.delete(formSubmissionsTable).where(eq(formSubmissionsTable.formId, formId));
+      await tx.delete(formFields).where(eq(formFields.formId, formId));
+
+      return tx.delete(forms).where(eq(forms.id, formId)).returning({
+        id: forms.id,
+      });
+    });
+
+    if (!result || result.length === 0 || !result[0]?.id) {
+      throw new Error(`Form with id ${formId} does not exist`);
+    }
+
+    return deleteFormOutput.parse({
+      id: result[0].id,
+    });
   }
 
   public async getFormById(payload: GetFormByIdInputType): Promise<GetFormByIdOutputType> {

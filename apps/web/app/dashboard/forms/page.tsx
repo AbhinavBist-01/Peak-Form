@@ -2,14 +2,25 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ExternalLinkIcon, PencilIcon, PlusIcon } from "lucide-react";
+import { ExternalLinkIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 import { AppSidebar } from "~/components/app-sidebar";
 import { SiteHeader } from "~/components/site-header";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +42,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Textarea } from "~/components/ui/textarea";
-import { useCreateForm, useListForms } from "~/hooks/api/form";
+import { useCreateForm, useDeleteForm, useListForms } from "~/hooks/api/form";
 
 type CreateFormValues = {
   title: string;
@@ -75,7 +86,9 @@ function getFormStatus(expiresAt: Date | string | null | undefined) {
 export default function Page() {
   const [open, setOpen] = React.useState(false);
   const [createdFormId, setCreatedFormId] = React.useState<string | null>(null);
+  const [deletingFormId, setDeletingFormId] = React.useState<string | null>(null);
   const { createFormAsync, error, status } = useCreateForm();
+  const { deleteFormAsync, error: deleteFormError, status: deleteFormStatus } = useDeleteForm();
   const {
     forms = [],
     error: listFormsError,
@@ -83,6 +96,7 @@ export default function Page() {
     isFetching: isFetchingForms,
   } = useListForms();
   const isCreating = status === "pending";
+  const isDeleting = deleteFormStatus === "pending";
 
   const {
     register,
@@ -107,6 +121,20 @@ export default function Page() {
     setCreatedFormId(result.id);
     reset();
     setOpen(false);
+  };
+
+  const onDeleteForm = async (formId: string) => {
+    setDeletingFormId(formId);
+
+    try {
+      await deleteFormAsync({ formId });
+
+      if (createdFormId === formId) {
+        setCreatedFormId(null);
+      }
+    } finally {
+      setDeletingFormId(null);
+    }
   };
 
   return (
@@ -225,6 +253,13 @@ export default function Page() {
               </Alert>
             ) : null}
 
+            {deleteFormError ? (
+              <Alert variant="destructive">
+                <AlertTitle>Could not delete form</AlertTitle>
+                <AlertDescription>{deleteFormError.message}</AlertDescription>
+              </Alert>
+            ) : null}
+
             <div className="overflow-hidden rounded-lg border">
               <Table>
                 <TableHeader className="bg-muted">
@@ -233,7 +268,7 @@ export default function Page() {
                     <TableHead className="hidden md:table-cell">Created</TableHead>
                     <TableHead className="hidden lg:table-cell">Expires</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="w-24 text-right">Action</TableHead>
+                    <TableHead className="w-72 text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -290,6 +325,35 @@ export default function Page() {
                                   Edit
                                 </Link>
                               </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="sm" variant="destructive" disabled={isDeleting}>
+                                    <Trash2Icon />
+                                    Delete
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete form?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This will permanently delete "{form.title}" and all of its
+                                      fields and submissions.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel disabled={deletingFormId === form.id}>
+                                      Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      className={buttonVariants({ variant: "destructive" })}
+                                      disabled={deletingFormId === form.id}
+                                      onClick={() => void onDeleteForm(form.id)}
+                                    >
+                                      {deletingFormId === form.id ? "Deleting..." : "Delete form"}
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </div>
                           </TableCell>
                         </TableRow>

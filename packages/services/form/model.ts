@@ -61,6 +61,19 @@ export const listFormByUserIdOutput = z.array(
 
 export type ListFormByUserIdOutputType = z.infer<typeof listFormByUserIdOutput>;
 
+export const deleteFormInput = z.object({
+  formId: z.uuid().describe("The id of the form to delete"),
+  userId: z.uuid().describe("The id of the user deleting the form"),
+});
+
+export type DeleteFormInputType = z.infer<typeof deleteFormInput>;
+
+export const deleteFormOutput = z.object({
+  id: z.uuid().describe("The id of the deleted form"),
+});
+
+export type DeleteFormOutputType = z.infer<typeof deleteFormOutput>;
+
 export const getFormByIdInput = z.object({
   formId: z.uuid().describe("The id of the form"),
 });

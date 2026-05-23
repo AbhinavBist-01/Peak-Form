@@ -37,6 +37,14 @@ export const listFormsOutputModel = z.array(
   }),
 );
 
+export const deleteFormInputModel = z.object({
+  formId: z.string().uuid().describe("id of the form to delete"),
+});
+
+export const deleteFormOutputModel = z.object({
+  id: z.string().describe("id of the deleted form"),
+});
+
 export const getFormByIdInputModel = z.object({
   formId: z.string().uuid().describe("id of the public form to fetch"),
 });

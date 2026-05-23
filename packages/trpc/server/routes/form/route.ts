@@ -5,6 +5,8 @@ import {
   createFieldOutputModel,
   createFormInputModel,
   createFormOutputModel,
+  deleteFormInputModel,
+  deleteFormOutputModel,
   deleteFieldInputModel,
   deleteFieldOutputModel,
   getFormByIdInputModel,
@@ -64,6 +66,26 @@ export const formRouter = router({
         userId: ctx.user.id,
       });
       return forms;
+    }),
+
+  deleteForm: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "DELETE",
+        path: "/deleteForm",
+        tags: TAGS,
+        summary: "Delete a form created by the logged-in user",
+        protect: true,
+      },
+    })
+    .input(deleteFormInputModel)
+    .output(deleteFormOutputModel)
+    .mutation(async ({ input, ctx }) => {
+      const { id } = await formService.deleteForm({
+        formId: input.formId,
+        userId: ctx.user.id,
+      });
+      return { id };
     }),
 
   getFormById: publicProcedure
