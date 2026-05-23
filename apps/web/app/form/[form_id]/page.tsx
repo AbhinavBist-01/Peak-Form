@@ -53,6 +53,36 @@ function getInputType(type: PublicField["type"]) {
   return "text";
 }
 
+function FieldHelp({ field }: { field: PublicField }) {
+  return (
+    <>
+      {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
+      {field.helpText ? <FieldDescription>{field.helpText}</FieldDescription> : null}
+    </>
+  );
+}
+
+function getFieldOptions(field: PublicField) {
+  return field.options?.length ? field.options : ["Option"];
+}
+
+function getRatingOptions(field: PublicField) {
+  const min = field.min ?? 1;
+  const max = field.max ?? 5;
+  const safeMin = Math.max(1, Math.min(min, max));
+  const safeMax = Math.max(safeMin, max);
+
+  return Array.from({ length: safeMax - safeMin + 1 }, (_, index) => String(safeMin + index));
+}
+
+function getSubmittedValue(formData: FormData, field: PublicField) {
+  if (field.type === "CHECKBOX" && field.options?.length) {
+    return formData.getAll(field.id).map(String).join(",");
+  }
+
+  return String(formData.get(field.id) ?? "");
+}
+
 function PublicFormField({ field }: { field: PublicField }) {
   const fieldId = `field-${field.id}`;
 
@@ -63,12 +93,14 @@ function PublicFormField({ field }: { field: PublicField }) {
           {field.label}
           {field.isRequired ? <span className="text-destructive">*</span> : null}
         </FieldLabel>
-        {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
+        <FieldHelp field={field} />
         <Textarea
           id={fieldId}
           name={field.id}
           placeholder={field.placeholder ?? undefined}
           required={Boolean(field.isRequired)}
+          minLength={field.min ?? undefined}
+          maxLength={field.max ?? undefined}
           className="min-h-28 resize-y"
         />
       </Field>
@@ -82,7 +114,7 @@ function PublicFormField({ field }: { field: PublicField }) {
           {field.label}
           {field.isRequired ? <span className="text-destructive">*</span> : null}
         </FieldLabel>
-        {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
+        <FieldHelp field={field} />
         <RadioGroup name={field.id} required={Boolean(field.isRequired)}>
           <div className="flex items-center gap-2">
             <RadioGroupItem id={`${fieldId}-yes`} value="yes" />
@@ -98,6 +130,26 @@ function PublicFormField({ field }: { field: PublicField }) {
   }
 
   if (field.type === "CHECKBOX") {
+    if (field.options?.length) {
+      return (
+        <Field>
+          <FieldLabel>
+            {field.label}
+            {field.isRequired ? <span className="text-destructive">*</span> : null}
+          </FieldLabel>
+          <FieldHelp field={field} />
+          <div className="grid gap-3">
+            {field.options.map((option) => (
+              <Field key={option} orientation="horizontal" className="items-start rounded-md border p-4">
+                <Checkbox id={`${fieldId}-${option}`} name={field.id} value={option} />
+                <FieldLabel htmlFor={`${fieldId}-${option}`}>{option}</FieldLabel>
+              </Field>
+            ))}
+          </div>
+        </Field>
+      );
+    }
+
     return (
       <Field orientation="horizontal" className="items-start rounded-md border p-4">
         <Checkbox id={fieldId} name={field.id} required={Boolean(field.isRequired)} />
@@ -106,7 +158,7 @@ function PublicFormField({ field }: { field: PublicField }) {
             {field.label}
             {field.isRequired ? <span className="text-destructive">*</span> : null}
           </FieldLabel>
-          {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
+          <FieldHelp field={field} />
         </div>
       </Field>
     );
@@ -119,13 +171,17 @@ function PublicFormField({ field }: { field: PublicField }) {
           {field.label}
           {field.isRequired ? <span className="text-destructive">*</span> : null}
         </FieldLabel>
-        {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
+        <FieldHelp field={field} />
         <Select name={field.id} required={Boolean(field.isRequired)}>
           <SelectTrigger id={fieldId} className="w-full">
             <SelectValue placeholder={field.placeholder ?? "Select an option"} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="option">Option</SelectItem>
+            {getFieldOptions(field).map((option) => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </Field>
@@ -139,12 +195,34 @@ function PublicFormField({ field }: { field: PublicField }) {
           {field.label}
           {field.isRequired ? <span className="text-destructive">*</span> : null}
         </FieldLabel>
-        {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
+        <FieldHelp field={field} />
         <RadioGroup name={field.id} required={Boolean(field.isRequired)}>
-          <div className="flex items-center gap-2">
-            <RadioGroupItem id={`${fieldId}-option`} value="option" />
-            <Label htmlFor={`${fieldId}-option`}>Option</Label>
-          </div>
+          {getFieldOptions(field).map((option) => (
+            <div key={option} className="flex items-center gap-2">
+              <RadioGroupItem id={`${fieldId}-${option}`} value={option} />
+              <Label htmlFor={`${fieldId}-${option}`}>{option}</Label>
+            </div>
+          ))}
+        </RadioGroup>
+      </Field>
+    );
+  }
+
+  if (field.type === "RATING") {
+    return (
+      <Field>
+        <FieldLabel>
+          {field.label}
+          {field.isRequired ? <span className="text-destructive">*</span> : null}
+        </FieldLabel>
+        <FieldHelp field={field} />
+        <RadioGroup name={field.id} required={Boolean(field.isRequired)} className="flex flex-wrap gap-2">
+          {getRatingOptions(field).map((rating) => (
+            <div key={rating} className="flex items-center gap-2 rounded-md border px-3 py-2">
+              <RadioGroupItem id={`${fieldId}-${rating}`} value={rating} />
+              <Label htmlFor={`${fieldId}-${rating}`}>{rating}</Label>
+            </div>
+          ))}
         </RadioGroup>
       </Field>
     );
@@ -156,13 +234,18 @@ function PublicFormField({ field }: { field: PublicField }) {
         {field.label}
         {field.isRequired ? <span className="text-destructive">*</span> : null}
       </FieldLabel>
-      {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
+      <FieldHelp field={field} />
       <Input
         id={fieldId}
         name={field.id}
         type={getInputType(field.type)}
         placeholder={field.placeholder ?? undefined}
         required={Boolean(field.isRequired)}
+        min={field.type === "NUMBER" ? field.min ?? undefined : undefined}
+        max={field.type === "NUMBER" ? field.max ?? undefined : undefined}
+        minLength={field.type !== "NUMBER" ? field.min ?? undefined : undefined}
+        maxLength={field.type !== "NUMBER" ? field.max ?? undefined : undefined}
+        pattern={field.pattern ?? undefined}
       />
     </Field>
   );
@@ -198,7 +281,7 @@ export default function Page() {
         formId,
         values: fields.map((field) => ({
           formFieldId: field.id,
-          value: String(formData.get(field.id) ?? ""),
+          value: getSubmittedValue(formData, field),
         })),
       });
 

@@ -64,13 +64,20 @@ const fieldTypes = [
   "YES_NO",
   "DATE",
   "NUMBER",
+  "RATING",
 ] as const;
 
 type FieldType = (typeof fieldTypes)[number];
 type FieldValues = {
   label: string;
   description: string;
+  helpText: string;
   placeholder: string;
+  optionsText: string;
+  min: string;
+  max: string;
+  pattern: string;
+  customErrorMessage: string;
   isRequired: boolean;
   type: FieldType;
   index: string;
@@ -80,7 +87,13 @@ type FormField = NonNullable<ReturnType<typeof useGetFields>["fields"]>[number];
 const defaultFieldValues: FieldValues = {
   label: "",
   description: "",
+  helpText: "",
   placeholder: "",
+  optionsText: "",
+  min: "",
+  max: "",
+  pattern: "",
+  customErrorMessage: "",
   isRequired: false,
   type: "TEXT",
   index: "1.00",
@@ -118,6 +131,56 @@ function toOptionalText(value: string) {
 function toNullableText(value: string) {
   const trimmed = value.trim();
   return trimmed ? trimmed : null;
+}
+
+function toOptionalNumber(value: string) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return undefined;
+  }
+
+  return Number(trimmed);
+}
+
+function toNullableNumber(value: string) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  return Number(trimmed);
+}
+
+function parseOptions(value: string) {
+  const options = value
+    .split(/\r?\n/)
+    .map((option) => option.trim())
+    .filter(Boolean);
+
+  return options.length ? options : undefined;
+}
+
+function parseNullableOptions(value: string) {
+  return parseOptions(value) ?? null;
+}
+
+function formatOptions(options: string[] | null | undefined) {
+  return options?.join("\n") ?? "";
+}
+
+function supportsOptions(type: FieldType) {
+  return type === "SELECT" || type === "RADIO" || type === "CHECKBOX";
+}
+
+function toOptionalValidationRules(value: string) {
+  const customErrorMessage = value.trim();
+  return customErrorMessage ? { customErrorMessage } : undefined;
+}
+
+function toNullableValidationRules(value: string) {
+  return toOptionalValidationRules(value) ?? null;
 }
 
 export default function Page() {
@@ -168,7 +231,13 @@ export default function Page() {
     editForm.reset({
       label: editingField.label,
       description: editingField.description ?? "",
+      helpText: editingField.helpText ?? "",
       placeholder: editingField.placeholder ?? "",
+      optionsText: formatOptions(editingField.options),
+      min: editingField.min === null ? "" : String(editingField.min),
+      max: editingField.max === null ? "" : String(editingField.max),
+      pattern: editingField.pattern ?? "",
+      customErrorMessage: editingField.validationRules?.customErrorMessage ?? "",
       isRequired: Boolean(editingField.isRequired),
       type: editingField.type,
       index: editingField.index,
@@ -189,7 +258,13 @@ export default function Page() {
       formId,
       label: values.label,
       description: toOptionalText(values.description),
+      helpText: toOptionalText(values.helpText),
       placeholder: toOptionalText(values.placeholder),
+      options: supportsOptions(values.type) ? parseOptions(values.optionsText) : undefined,
+      validationRules: toOptionalValidationRules(values.customErrorMessage),
+      min: toOptionalNumber(values.min),
+      max: toOptionalNumber(values.max),
+      pattern: toOptionalText(values.pattern),
       isRequired: values.isRequired,
       type: values.type,
       index: values.index,
@@ -211,7 +286,13 @@ export default function Page() {
       id: editingField.id,
       label: values.label,
       description: toNullableText(values.description),
+      helpText: toNullableText(values.helpText),
       placeholder: toNullableText(values.placeholder),
+      options: supportsOptions(values.type) ? parseNullableOptions(values.optionsText) : null,
+      validationRules: toNullableValidationRules(values.customErrorMessage),
+      min: toNullableNumber(values.min),
+      max: toNullableNumber(values.max),
+      pattern: toNullableText(values.pattern),
       isRequired: values.isRequired,
       type: values.type,
       index: values.index,
@@ -333,6 +414,11 @@ export default function Page() {
                             {field.description ? (
                               <p className="max-w-[28rem] truncate text-sm text-muted-foreground">
                                 {field.description}
+                              </p>
+                            ) : null}
+                            {field.helpText ? (
+                              <p className="max-w-[28rem] truncate text-xs text-muted-foreground">
+                                {field.helpText}
                               </p>
                             ) : null}
                             {field.isRequired ? (
@@ -528,12 +614,89 @@ function FieldEditor({
       </Field>
 
       <Field>
+        <FieldLabel htmlFor="helpText">Help text</FieldLabel>
+        <Input
+          id="helpText"
+          placeholder="A short hint shown below the question."
+          {...register("helpText")}
+        />
+      </Field>
+
+      <Field>
         <FieldLabel htmlFor="description">Description</FieldLabel>
         <Textarea
           id="description"
           placeholder="Shown near the field."
           className="min-h-20"
           {...register("description")}
+        />
+      </Field>
+
+      {["SELECT", "RADIO", "CHECKBOX"].includes(type) ? (
+        <Field>
+          <FieldLabel htmlFor="optionsText">Options</FieldLabel>
+          <Textarea
+            id="optionsText"
+            placeholder={"One option per line\nStarter\nPro\nEnterprise"}
+            className="min-h-24"
+            {...register("optionsText")}
+          />
+          <FieldDescription>Used by select, radio, and multi-checkbox fields.</FieldDescription>
+        </Field>
+      ) : null}
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Field>
+          <FieldLabel htmlFor="min">Minimum</FieldLabel>
+          <Input
+            id="min"
+            type="number"
+            placeholder={type === "RATING" ? "1" : "Optional"}
+            {...register("min", {
+              validate: (value) =>
+                !value.trim() || Number.isFinite(Number(value)) || "Minimum must be a number",
+            })}
+          />
+          <FieldDescription>
+            Text length, number lower bound, or rating minimum.
+          </FieldDescription>
+          <FieldError errors={[errors.min]} />
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor="max">Maximum</FieldLabel>
+          <Input
+            id="max"
+            type="number"
+            placeholder={type === "RATING" ? "5" : "Optional"}
+            {...register("max", {
+              validate: (value) =>
+                !value.trim() || Number.isFinite(Number(value)) || "Maximum must be a number",
+            })}
+          />
+          <FieldDescription>
+            Text length, number upper bound, or rating maximum.
+          </FieldDescription>
+          <FieldError errors={[errors.max]} />
+        </Field>
+      </div>
+
+      <Field>
+        <FieldLabel htmlFor="pattern">Pattern</FieldLabel>
+        <Input
+          id="pattern"
+          placeholder="^[A-Z0-9]+$"
+          {...register("pattern")}
+        />
+        <FieldDescription>Regular expression for text-like fields.</FieldDescription>
+      </Field>
+
+      <Field>
+        <FieldLabel htmlFor="customErrorMessage">Validation message</FieldLabel>
+        <Input
+          id="customErrorMessage"
+          placeholder="Use a valid company email."
+          {...register("customErrorMessage")}
         />
       </Field>
 

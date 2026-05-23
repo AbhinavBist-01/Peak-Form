@@ -26,6 +26,26 @@ export const fieldTypeModel = z.enum([
   "RATING",
 ]);
 
+export const fieldOptionsModel = z.array(z.string().min(1).max(100)).max(50);
+export const fieldValidationRulesModel = z
+  .object({
+    customErrorMessage: z.string().min(1).max(200).optional(),
+  })
+  .strict();
+
+function isValidPattern(pattern: string | null | undefined) {
+  if (!pattern) {
+    return true;
+  }
+
+  try {
+    new RegExp(pattern);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const createFormInputModel = z.object({
   title: z.string().max(55).describe("title of the form"),
   description: z.string().optional().describe("description of the form"),
@@ -85,7 +105,15 @@ export const getFormByIdOutputModel = z.object({
         label: z.string().describe("display label of the field"),
         labelKey: z.string().describe("stable slug key generated from the original label"),
         description: z.string().nullable().describe("optional field description"),
+        helpText: z.string().nullable().describe("optional respondent-facing helper text"),
         placeholder: z.string().nullable().describe("optional field placeholder"),
+        options: z.array(z.string()).nullable().describe("options for choice-based fields"),
+        validationRules: fieldValidationRulesModel
+          .nullable()
+          .describe("additional validation configuration"),
+        min: z.number().nullable().describe("minimum value or length"),
+        max: z.number().nullable().describe("maximum value or length"),
+        pattern: z.string().nullable().describe("regular expression pattern for text validation"),
         isRequired: z.boolean().nullable().default(false).describe("whether the field is required"),
         type: fieldTypeModel.describe("type of the field"),
         index: z.string().describe("fractional index used for sorting fields"),
@@ -95,15 +123,32 @@ export const getFormByIdOutputModel = z.object({
     .describe("fields belonging to the form"),
 });
 
-export const createFieldInputModel = z.object({
-  formId: z.string().uuid().describe("id of the form this field belongs to"),
-  label: z.string().min(1).max(100).describe("display label of the field"),
-  description: z.string().optional().describe("optional field description"),
-  placeholder: z.string().optional().describe("optional field placeholder"),
-  isRequired: z.boolean().optional().describe("whether the field is required").default(false),
-  type: fieldTypeModel.describe("type of the field"),
-  index: z.string().min(1).describe("fractional index used for sorting fields"),
-});
+export const createFieldInputModel = z
+  .object({
+    formId: z.string().uuid().describe("id of the form this field belongs to"),
+    label: z.string().min(1).max(100).describe("display label of the field"),
+    description: z.string().optional().describe("optional field description"),
+    helpText: z.string().optional().describe("optional respondent-facing helper text"),
+    placeholder: z.string().optional().describe("optional field placeholder"),
+    options: fieldOptionsModel.optional().describe("options for choice-based fields"),
+    validationRules: fieldValidationRulesModel
+      .optional()
+      .describe("additional validation configuration"),
+    min: z.number().int().optional().describe("minimum value or length"),
+    max: z.number().int().optional().describe("maximum value or length"),
+    pattern: z.string().optional().describe("regular expression pattern for text validation"),
+    isRequired: z.boolean().optional().describe("whether the field is required").default(false),
+    type: fieldTypeModel.describe("type of the field"),
+    index: z.string().min(1).describe("fractional index used for sorting fields"),
+  })
+  .refine(({ min, max }) => min === undefined || max === undefined || min <= max, {
+    message: "Minimum must be less than or equal to maximum",
+    path: ["min"],
+  })
+  .refine(({ pattern }) => isValidPattern(pattern), {
+    message: "Pattern must be a valid regular expression",
+    path: ["pattern"],
+  });
 
 export const createFieldOutputModel = z.object({
   id: z.string().describe("id of the created field"),
@@ -120,7 +165,15 @@ export const getFieldsOutputModel = z.array(
     label: z.string().describe("display label of the field"),
     labelKey: z.string().describe("stable slug key generated from the original label"),
     description: z.string().nullable().describe("optional field description"),
+    helpText: z.string().nullable().describe("optional respondent-facing helper text"),
     placeholder: z.string().nullable().describe("optional field placeholder"),
+    options: z.array(z.string()).nullable().describe("options for choice-based fields"),
+    validationRules: fieldValidationRulesModel
+      .nullable()
+      .describe("additional validation configuration"),
+    min: z.number().nullable().describe("minimum value or length"),
+    max: z.number().nullable().describe("maximum value or length"),
+    pattern: z.string().nullable().describe("regular expression pattern for text validation"),
     isRequired: z.boolean().nullable().default(false).describe("whether the field is required"),
     type: fieldTypeModel.describe("type of the field"),
     index: z.string().describe("fractional index used for sorting fields"),
@@ -132,11 +185,28 @@ export const updateFieldInputModel = z.object({
   id: z.string().uuid().describe("id of the field to update"),
   label: z.string().min(1).max(100).optional().describe("display label of the field"),
   description: z.string().optional().nullable().describe("optional field description"),
+  helpText: z.string().optional().nullable().describe("optional respondent-facing helper text"),
   placeholder: z.string().optional().nullable().describe("optional field placeholder"),
+  options: fieldOptionsModel.optional().nullable().describe("options for choice-based fields"),
+  validationRules: fieldValidationRulesModel
+    .optional()
+    .nullable()
+    .describe("additional validation configuration"),
+  min: z.number().int().optional().nullable().describe("minimum value or length"),
+  max: z.number().int().optional().nullable().describe("maximum value or length"),
+  pattern: z.string().optional().nullable().describe("regular expression pattern for text validation"),
   isRequired: z.boolean().optional().describe("whether the field is required"),
   type: fieldTypeModel.optional().describe("type of the field"),
   index: z.string().min(1).optional().describe("fractional index used for sorting fields"),
-});
+})
+  .refine(({ min, max }) => min === undefined || max === undefined || min === null || max === null || min <= max, {
+    message: "Minimum must be less than or equal to maximum",
+    path: ["min"],
+  })
+  .refine(({ pattern }) => isValidPattern(pattern), {
+    message: "Pattern must be a valid regular expression",
+    path: ["pattern"],
+  });
 
 export const updateFieldOutputModel = z.object({
   id: z.string().describe("id of the updated field"),

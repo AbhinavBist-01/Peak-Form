@@ -18,7 +18,19 @@ const publicFormFieldOutput = z.object({
   label: z.string().describe("The display label of the field"),
   labelKey: z.string().describe("The stable slug key generated from the original label"),
   description: z.string().nullable().describe("The optional field description"),
+  helpText: z.string().nullable().describe("The optional respondent-facing helper text"),
   placeholder: z.string().nullable().describe("The optional field placeholder"),
+  options: z.array(z.string()).nullable().describe("The options for choice-based fields"),
+  validationRules: z
+    .object({
+      customErrorMessage: z.string().optional(),
+    })
+    .strict()
+    .nullable()
+    .describe("Additional validation configuration"),
+  min: z.number().nullable().describe("The minimum value or length"),
+  max: z.number().nullable().describe("The maximum value or length"),
+  pattern: z.string().nullable().describe("A regular expression pattern for text validation"),
   isRequired: z.boolean().nullable().describe("Whether the field is required"),
   type: z
     .enum([
@@ -32,6 +44,7 @@ const publicFormFieldOutput = z.object({
       "YES_NO",
       "DATE",
       "NUMBER",
+      "RATING",
     ])
     .describe("The type of the field"),
   index: z.string().describe("The fractional index used for sorting fields"),

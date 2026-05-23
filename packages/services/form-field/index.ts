@@ -25,7 +25,21 @@ function createLabelKey(label: string) {
 
 class FormFieldService {
   public async createField(payload: CreateFieldInputType) {
-    const { formId, label, description, placeholder, isRequired, type, index } =
+    const {
+      formId,
+      label,
+      description,
+      helpText,
+      placeholder,
+      options,
+      validationRules,
+      min,
+      max,
+      pattern,
+      isRequired,
+      type,
+      index,
+    } =
       await createFieldInput.parseAsync(payload);
 
     const result = await db
@@ -35,7 +49,13 @@ class FormFieldService {
         label,
         labelKey: createLabelKey(label),
         description,
+        helpText,
         placeholder,
+        options,
+        validationRules,
+        min,
+        max,
+        pattern,
         isRequired,
         type,
         index,
@@ -63,7 +83,13 @@ class FormFieldService {
         label: formFields.label,
         labelKey: formFields.labelKey,
         description: formFields.description,
+        helpText: formFields.helpText,
         placeholder: formFields.placeholder,
+        options: formFields.options,
+        validationRules: formFields.validationRules,
+        min: formFields.min,
+        max: formFields.max,
+        pattern: formFields.pattern,
         isRequired: formFields.isRequired,
         type: formFields.type,
         index: formFields.index,
@@ -75,7 +101,21 @@ class FormFieldService {
   }
 
   public async updateField(payload: UpdateFieldInputType) {
-    const { id, label, description, placeholder, isRequired, type, index } =
+    const {
+      id,
+      label,
+      description,
+      helpText,
+      placeholder,
+      options,
+      validationRules,
+      min,
+      max,
+      pattern,
+      isRequired,
+      type,
+      index,
+    } =
       await updateFieldInput.parseAsync(payload);
 
     const result = await db
@@ -83,7 +123,13 @@ class FormFieldService {
       .set({
         label,
         description,
+        helpText,
         placeholder,
+        options,
+        validationRules,
+        min,
+        max,
+        pattern,
         isRequired,
         type,
         index,

@@ -15,6 +15,123 @@ import {
   type GetFormSubmissionsByFormIdOutputType,
 } from "./model";
 
+type ValidationField = {
+  id: string;
+  label: string;
+  isRequired: boolean | null;
+  type:
+    | "TEXT"
+    | "TEXTAREA"
+    | "SELECT"
+    | "RADIO"
+    | "CHECKBOX"
+    | "PASSWORD"
+    | "EMAIL"
+    | "YES_NO"
+    | "DATE"
+    | "NUMBER"
+    | "RATING";
+  options: string[] | null;
+  validationRules: {
+    customErrorMessage?: string;
+  } | null;
+  min: number | null;
+  max: number | null;
+  pattern: string | null;
+};
+
+function getValidationMessage(field: ValidationField, fallback: string) {
+  return field.validationRules?.customErrorMessage || fallback;
+}
+
+function getMultiValue(value: string) {
+  return value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function validateSubmittedValue(field: ValidationField, rawValue: string) {
+  const value = rawValue.trim();
+
+  if (!value) {
+    if (field.isRequired) {
+      throw new Error(getValidationMessage(field, `${field.label} is required`));
+    }
+
+    return;
+  }
+
+  const options = field.options ?? [];
+
+  if ((field.type === "SELECT" || field.type === "RADIO") && options.length > 0) {
+    if (!options.includes(value)) {
+      throw new Error(getValidationMessage(field, `${field.label} must be one of the configured options`));
+    }
+  }
+
+  if (field.type === "CHECKBOX" && options.length > 0) {
+    const submittedOptions = getMultiValue(value);
+
+    if (field.isRequired && submittedOptions.length === 0) {
+      throw new Error(getValidationMessage(field, `${field.label} is required`));
+    }
+
+    if (submittedOptions.some((option) => !options.includes(option))) {
+      throw new Error(getValidationMessage(field, `${field.label} contains an invalid option`));
+    }
+  }
+
+  if (field.type === "YES_NO" && !["yes", "no"].includes(value)) {
+    throw new Error(getValidationMessage(field, `${field.label} must be yes or no`));
+  }
+
+  if (field.type === "EMAIL" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    throw new Error(getValidationMessage(field, `${field.label} must be a valid email`));
+  }
+
+  if (field.type === "DATE" && Number.isNaN(new Date(value).getTime())) {
+    throw new Error(getValidationMessage(field, `${field.label} must be a valid date`));
+  }
+
+  if (field.type === "NUMBER" || field.type === "RATING") {
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue)) {
+      throw new Error(getValidationMessage(field, `${field.label} must be a number`));
+    }
+
+    const min = field.type === "RATING" ? field.min ?? 1 : field.min;
+    const max = field.type === "RATING" ? field.max ?? 5 : field.max;
+
+    if (min !== null && numericValue < min) {
+      throw new Error(getValidationMessage(field, `${field.label} must be at least ${min}`));
+    }
+
+    if (max !== null && numericValue > max) {
+      throw new Error(getValidationMessage(field, `${field.label} must be at most ${max}`));
+    }
+  }
+
+  if (["TEXT", "TEXTAREA", "PASSWORD", "EMAIL"].includes(field.type)) {
+    if (field.min !== null && value.length < field.min) {
+      throw new Error(getValidationMessage(field, `${field.label} must be at least ${field.min} characters`));
+    }
+
+    if (field.max !== null && value.length > field.max) {
+      throw new Error(getValidationMessage(field, `${field.label} must be at most ${field.max} characters`));
+    }
+
+    if (field.pattern) {
+      const pattern = new RegExp(field.pattern);
+
+      if (!pattern.test(value)) {
+        throw new Error(getValidationMessage(field, `${field.label} has an invalid format`));
+      }
+    }
+  }
+}
+
 class FormSubmissionService {
   public async createFormSubmission(
     payload: CreateFormSubmissionInputType,
@@ -48,6 +165,12 @@ class FormSubmissionService {
         id: formFields.id,
         label: formFields.label,
         isRequired: formFields.isRequired,
+        type: formFields.type,
+        options: formFields.options,
+        validationRules: formFields.validationRules,
+        min: formFields.min,
+        max: formFields.max,
+        pattern: formFields.pattern,
       })
       .from(formFields)
       .where(eq(formFields.formId, formId));
@@ -68,15 +191,8 @@ class FormSubmissionService {
     }
 
     for (const field of fields) {
-      if (!field.isRequired) {
-        continue;
-      }
-
       const submittedValue = values.find((value) => value.formFieldId === field.id);
-
-      if (!submittedValue?.value.trim()) {
-        throw new Error(`${field.label} is required`);
-      }
+      validateSubmittedValue(field, submittedValue?.value ?? "");
     }
 
     const result = await db

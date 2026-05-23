@@ -6,8 +6,10 @@ import {
   boolean,
   text,
   numeric,
+  integer,
   pgEnum,
   unique,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { forms } from "../schema";
 
@@ -22,7 +24,12 @@ export const fieldTypesEnum = pgEnum("field_types", [
   "YES_NO",
   "DATE",
   "NUMBER",
+  "RATING",
 ]);
+
+export interface FieldValidationRules {
+  customErrorMessage?: string;
+}
 
 export const formFields = pgTable(
   "form_fields",
@@ -37,7 +44,13 @@ export const formFields = pgTable(
     labelKey: varchar("label_key", { length: 100 }).notNull(),
 
     description: text("description"),
+    helpText: text("help_text"),
     placeholder: text("placeholder"),
+    options: jsonb("options").$type<string[]>(),
+    validationRules: jsonb("validation_rules").$type<FieldValidationRules>(),
+    min: integer("min"),
+    max: integer("max"),
+    pattern: text("pattern"),
 
     isRequired: boolean("is_required").default(false),
 
