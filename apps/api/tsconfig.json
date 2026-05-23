@@ -10,7 +10,7 @@
     "declarationMap": false,
     "declaration": false,
     "sourceMap": false,
-    "ignoreDeprecations": "6.0"
+    "ignoreDeprecations": "5.0"
   },
   "include": ["src"],
   "ts-node": {
