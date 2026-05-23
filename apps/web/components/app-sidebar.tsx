@@ -8,6 +8,7 @@ import {
   IconSettings,
   IconClipboardText,
   IconWorldSearch,
+  IconCreditCard,
 } from "@tabler/icons-react";
 
 import { NavDocuments } from "~/components/nav-documents";
@@ -46,6 +47,11 @@ const data = {
       url: "/explore",
       icon: IconWorldSearch,
     },
+    {
+      title: "Pricing",
+      url: "/pricing",
+      icon: IconCreditCard,
+    },
   ],
 
   navSecondary: [
@@ -77,11 +83,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!">
               <a href="/dashboard">
-                <img
-                  src="/peakform-logo.svg"
-                  alt="PeakForm"
-                  className="size-6 shrink-0"
-                />
+                <img src="/peakform-logo.svg" alt="PeakForm" className="size-6 shrink-0" />
                 <span className="text-base font-semibold">PeakForm</span>
               </a>
             </SidebarMenuButton>
