@@ -21,10 +21,10 @@ export default function NotFound() {
         <div className="relative min-h-[560px] overflow-hidden rounded-md bg-zinc-950 sm:min-h-[620px]">
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-cover bg-center"
+            className="absolute inset-0 scale-110 bg-cover bg-center opacity-70 blur-md"
             style={{ backgroundImage: 'url("/not-found-mountains.png")' }}
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,16,28,0.55),rgba(11,16,28,0.18)_42%,rgba(11,16,28,0.82))]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,16,28,0.76),rgba(11,16,28,0.36)_42%,rgba(11,16,28,0.9))]" />
 
           <header className="relative z-10 flex items-center justify-between gap-4 px-4 py-4 sm:px-6">
             <Link

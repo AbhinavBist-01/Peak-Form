@@ -294,6 +294,98 @@ export const useGetFormSubmissionsByFormId = (formId: string) => {
   };
 };
 
+export const useGetFormSubmissionAnalytics = (formId: string) => {
+  const {
+    data: analytics,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
+  } = trpc.formSubmission.getFormSubmissionAnalytics.useQuery(
+    { formId },
+    { enabled: Boolean(formId) },
+  );
+
+  return {
+    analytics,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
+  };
+};
+
+export const useGetFormSubmissionById = (submissionId: string | null) => {
+  const {
+    data: submission,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
+  } = trpc.formSubmission.getFormSubmissionById.useQuery(
+    { submissionId: submissionId ?? "" },
+    { enabled: Boolean(submissionId) },
+  );
+
+  return {
+    submission,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
+  };
+};
+
+export const useDeleteFormSubmission = () => {
+  const utils = trpc.useUtils();
+  const {
+    mutateAsync: deleteFormSubmissionAsync,
+    mutate: deleteFormSubmission,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isSuccess,
+    status,
+  } = trpc.formSubmission.deleteFormSubmission.useMutation({
+    onSuccess: () => {
+      utils.formSubmission.invalidate();
+    },
+  });
+
+  return {
+    deleteFormSubmissionAsync,
+    deleteFormSubmission,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isSuccess,
+    status,
+  };
+};
+
+export const useExportFormSubmissionsCsv = () => {
+  const utils = trpc.useUtils();
+
+  return {
+    exportFormSubmissionsCsvAsync: (formId: string) =>
+      utils.formSubmission.exportFormSubmissionsCsv.fetch({ formId }),
+  };
+};
+
 export const useCreateField = () => {
   const utils = trpc.useUtils();
   const {
