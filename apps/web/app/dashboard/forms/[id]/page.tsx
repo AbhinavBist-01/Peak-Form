@@ -89,13 +89,10 @@ type FieldType = (typeof fieldTypes)[number];
 type FieldValues = {
   label: string;
   description: string;
-  helpText: string;
   placeholder: string;
   optionsText: string;
   min: string;
   max: string;
-  pattern: string;
-  customErrorMessage: string;
   isRequired: boolean;
   type: FieldType;
   index: string;
@@ -117,13 +114,10 @@ type FormSettingsValues = {
 const defaultFieldValues: FieldValues = {
   label: "",
   description: "",
-  helpText: "",
   placeholder: "",
   optionsText: "",
   min: "",
   max: "",
-  pattern: "",
-  customErrorMessage: "",
   isRequired: false,
   type: "TEXT",
   index: "1.00",
@@ -273,15 +267,6 @@ function supportsOptions(type: FieldType) {
   return type === "SELECT" || type === "RADIO" || type === "CHECKBOX";
 }
 
-function toOptionalValidationRules(value: string) {
-  const customErrorMessage = value.trim();
-  return customErrorMessage ? { customErrorMessage } : undefined;
-}
-
-function toNullableValidationRules(value: string) {
-  return toOptionalValidationRules(value) ?? null;
-}
-
 export default function Page() {
   const params = useParams();
   const formId = getFormId(params);
@@ -349,13 +334,10 @@ export default function Page() {
     editForm.reset({
       label: editingField.label,
       description: editingField.description ?? "",
-      helpText: editingField.helpText ?? "",
       placeholder: editingField.placeholder ?? "",
       optionsText: formatOptions(editingField.options),
       min: editingField.min === null ? "" : String(editingField.min),
       max: editingField.max === null ? "" : String(editingField.max),
-      pattern: editingField.pattern ?? "",
-      customErrorMessage: editingField.validationRules?.customErrorMessage ?? "",
       isRequired: Boolean(editingField.isRequired),
       type: editingField.type,
       index: editingField.index,
@@ -404,13 +386,10 @@ export default function Page() {
       formId,
       label: values.label,
       description: toOptionalText(values.description),
-      helpText: toOptionalText(values.helpText),
       placeholder: toOptionalText(values.placeholder),
       options: supportsOptions(values.type) ? parseOptions(values.optionsText) : undefined,
-      validationRules: toOptionalValidationRules(values.customErrorMessage),
       min: toOptionalNumber(values.min),
       max: toOptionalNumber(values.max),
-      pattern: toOptionalText(values.pattern),
       isRequired: values.isRequired,
       type: values.type,
       index: values.index,
@@ -432,13 +411,10 @@ export default function Page() {
       id: editingField.id,
       label: values.label,
       description: toNullableText(values.description),
-      helpText: toNullableText(values.helpText),
       placeholder: toNullableText(values.placeholder),
       options: supportsOptions(values.type) ? parseNullableOptions(values.optionsText) : null,
-      validationRules: toNullableValidationRules(values.customErrorMessage),
       min: toNullableNumber(values.min),
       max: toNullableNumber(values.max),
-      pattern: toNullableText(values.pattern),
       isRequired: values.isRequired,
       type: values.type,
       index: values.index,
@@ -627,11 +603,6 @@ export default function Page() {
                                 {field.description ? (
                                   <p className="max-w-[28rem] truncate text-sm text-muted-foreground">
                                     {field.description}
-                                  </p>
-                                ) : null}
-                                {field.helpText ? (
-                                  <p className="max-w-[28rem] truncate text-xs text-muted-foreground">
-                                    {field.helpText}
                                   </p>
                                 ) : null}
                                 <div className="flex flex-wrap gap-2">
@@ -926,9 +897,6 @@ function FormPreview({ form, fields }: { form?: EditorForm; fields: FormField[] 
                   </span>
                   <Badge variant="secondary">{field.type}</Badge>
                 </div>
-                {field.helpText ? (
-                  <p className="text-xs text-muted-foreground">{field.helpText}</p>
-                ) : null}
                 {field.options?.length ? (
                   <div className="flex flex-wrap gap-1">
                     {field.options.slice(0, 4).map((option) => (
@@ -1035,15 +1003,6 @@ function FieldEditor({
       </Field>
 
       <Field>
-        <FieldLabel htmlFor="helpText">Help text</FieldLabel>
-        <Input
-          id="helpText"
-          placeholder="A short hint shown below the question."
-          {...register("helpText")}
-        />
-      </Field>
-
-      <Field>
         <FieldLabel htmlFor="description">Description</FieldLabel>
         <Textarea
           id="description"
@@ -1101,25 +1060,6 @@ function FieldEditor({
           <FieldError errors={[errors.max]} />
         </Field>
       </div>
-
-      <Field>
-        <FieldLabel htmlFor="pattern">Pattern</FieldLabel>
-        <Input
-          id="pattern"
-          placeholder="^[A-Z0-9]+$"
-          {...register("pattern")}
-        />
-        <FieldDescription>Regular expression for text-like fields.</FieldDescription>
-      </Field>
-
-      <Field>
-        <FieldLabel htmlFor="customErrorMessage">Validation message</FieldLabel>
-        <Input
-          id="customErrorMessage"
-          placeholder="Use a valid company email."
-          {...register("customErrorMessage")}
-        />
-      </Field>
 
       <Field orientation="horizontal" className="justify-between rounded-lg border p-3">
         <div className="space-y-1">
