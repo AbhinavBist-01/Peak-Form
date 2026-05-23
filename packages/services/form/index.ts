@@ -11,6 +11,12 @@ import {
   getFormByIdOutput,
   listFormByUserIdInput,
   listFormByUserIdOutput,
+  publishFormInput,
+  publishFormOutput,
+  unpublishFormInput,
+  unpublishFormOutput,
+  updateFormSettingsInput,
+  updateFormSettingsOutput,
   type CreateFormInputType,
   type CreateFormOutputType,
   type DeleteFormInputType,
@@ -19,6 +25,12 @@ import {
   type GetFormByIdOutputType,
   type ListFormByUserIdInputType,
   type ListFormByUserIdOutputType,
+  type PublishFormInputType,
+  type PublishFormOutputType,
+  type UnpublishFormInputType,
+  type UnpublishFormOutputType,
+  type UpdateFormSettingsInputType,
+  type UpdateFormSettingsOutputType,
 } from "./model";
 
 class FormService {
@@ -56,6 +68,10 @@ class FormService {
         title: forms.title,
         description: forms.description,
         creatorId: forms.creatorId,
+        status: forms.status,
+        visibility: forms.visibility,
+        publishedAt: forms.publishedAt,
+        themeConfig: forms.themeConfig,
         expiresAt: forms.expiresAt,
         createdAt: forms.createdAt,
         updatedAt: forms.updatedAt,
@@ -109,6 +125,10 @@ class FormService {
           id: forms.id,
           title: forms.title,
           description: forms.description,
+          status: forms.status,
+          visibility: forms.visibility,
+          publishedAt: forms.publishedAt,
+          themeConfig: forms.themeConfig,
           expiresAt: forms.expiresAt,
           createdAt: forms.createdAt,
           updatedAt: forms.updatedAt,
@@ -128,11 +148,15 @@ class FormService {
       })
       .from(forms)
       .leftJoin(formFields, eq(formFields.formId, forms.id))
-      .where(eq(forms.id, formId))
+      .where(and(eq(forms.id, formId), eq(forms.status, "published")))
       .orderBy(asc(formFields.index));
 
     if (!result || result.length === 0 || !result[0]?.form.id) {
       throw new Error(`Form with id ${formId} does not exist`);
+    }
+
+    if (result[0].form.expiresAt && result[0].form.expiresAt.getTime() < Date.now()) {
+      throw new Error("This form is no longer accepting submissions");
     }
 
     return getFormByIdOutput.parse({
@@ -140,6 +164,84 @@ class FormService {
       fields: result
         .map(({ field }) => field)
         .filter((field): field is NonNullable<typeof field> => Boolean(field?.id)),
+    });
+  }
+
+  public async updateFormSettings(
+    payload: UpdateFormSettingsInputType,
+  ): Promise<UpdateFormSettingsOutputType> {
+    const { formId, userId, title, description, visibility, expiresAt, themeConfig } =
+      await updateFormSettingsInput.parseAsync(payload);
+
+    const result = await db
+      .update(forms)
+      .set({
+        title,
+        description,
+        visibility,
+        expiresAt,
+        themeConfig,
+      })
+      .where(and(eq(forms.id, formId), eq(forms.creatorId, userId)))
+      .returning({
+        id: forms.id,
+      });
+
+    if (!result || result.length === 0 || !result[0]?.id) {
+      throw new Error(`Form with id ${formId} does not exist`);
+    }
+
+    return updateFormSettingsOutput.parse({
+      id: result[0].id,
+    });
+  }
+
+  public async publishForm(payload: PublishFormInputType): Promise<PublishFormOutputType> {
+    const { formId, userId } = await publishFormInput.parseAsync(payload);
+    const publishedAt = new Date();
+
+    const result = await db
+      .update(forms)
+      .set({
+        status: "published",
+        publishedAt,
+      })
+      .where(and(eq(forms.id, formId), eq(forms.creatorId, userId)))
+      .returning({
+        id: forms.id,
+        publishedAt: forms.publishedAt,
+      });
+
+    if (!result || result.length === 0 || !result[0]?.id || !result[0].publishedAt) {
+      throw new Error(`Form with id ${formId} does not exist`);
+    }
+
+    return publishFormOutput.parse({
+      id: result[0].id,
+      publishedAt: result[0].publishedAt,
+    });
+  }
+
+  public async unpublishForm(payload: UnpublishFormInputType): Promise<UnpublishFormOutputType> {
+    const { formId, userId } = await unpublishFormInput.parseAsync(payload);
+
+    const result = await db
+      .update(forms)
+      .set({
+        status: "draft",
+        publishedAt: null,
+      })
+      .where(and(eq(forms.id, formId), eq(forms.creatorId, userId)))
+      .returning({
+        id: forms.id,
+      });
+
+    if (!result || result.length === 0 || !result[0]?.id) {
+      throw new Error(`Form with id ${formId} does not exist`);
+    }
+
+    return unpublishFormOutput.parse({
+      id: result[0].id,
     });
   }
 }

@@ -1,5 +1,17 @@
 import { z } from "zod";
 
+export const formStatusModel = z.enum(["draft", "published", "archived"]);
+export const formVisibilityModel = z.enum(["public", "unlisted"]);
+export const formThemeConfigModel = z
+  .object({
+    name: z.string().optional(),
+    backgroundColor: z.string().optional(),
+    accentColor: z.string().optional(),
+    textColor: z.string().optional(),
+    fontFamily: z.string().optional(),
+  })
+  .strict();
+
 export const fieldTypeModel = z.enum([
   "TEXT",
   "TEXTAREA",
@@ -11,6 +23,7 @@ export const fieldTypeModel = z.enum([
   "YES_NO",
   "DATE",
   "NUMBER",
+  "RATING",
 ]);
 
 export const createFormInputModel = z.object({
@@ -31,6 +44,10 @@ export const listFormsOutputModel = z.array(
     title: z.string().describe("title of the form"),
     description: z.string().nullable().describe("description of the form"),
     creatorId: z.string().describe("id of the user who created the form"),
+    status: formStatusModel.describe("lifecycle status of the form"),
+    visibility: formVisibilityModel.describe("public listing visibility of the form"),
+    publishedAt: z.date().nullable().describe("published date of the form"),
+    themeConfig: formThemeConfigModel.nullable().describe("visual theme config of the form"),
     expiresAt: z.date().nullable().describe("expiry date of the form"),
     createdAt: z.date().nullable().describe("created date of the form"),
     updatedAt: z.date().nullable().describe("updated date of the form"),
@@ -53,6 +70,10 @@ export const getFormByIdOutputModel = z.object({
   id: z.string().describe("id of the form"),
   title: z.string().describe("title of the form"),
   description: z.string().nullable().describe("description of the form"),
+  status: formStatusModel.describe("lifecycle status of the form"),
+  visibility: formVisibilityModel.describe("public listing visibility of the form"),
+  publishedAt: z.date().nullable().describe("published date of the form"),
+  themeConfig: formThemeConfigModel.nullable().describe("visual theme config of the form"),
   expiresAt: z.date().nullable().describe("expiry date of the form"),
   createdAt: z.date().nullable().describe("created date of the form"),
   updatedAt: z.date().nullable().describe("updated date of the form"),
@@ -127,4 +148,37 @@ export const deleteFieldInputModel = z.object({
 
 export const deleteFieldOutputModel = z.object({
   id: z.string().describe("id of the deleted field"),
+});
+
+export const updateFormSettingsInputModel = z.object({
+  formId: z.string().uuid().describe("id of the form to update"),
+  title: z.string().max(55).optional().describe("title of the form"),
+  description: z.string().max(500).nullable().optional().describe("description of the form"),
+  visibility: formVisibilityModel.optional().describe("public listing visibility of the form"),
+  expiresAt: z.string().datetime().nullable().optional().describe("expiry date of the form"),
+  themeConfig: formThemeConfigModel
+    .nullable()
+    .optional()
+    .describe("visual theme config of the form"),
+});
+
+export const updateFormSettingsOutputModel = z.object({
+  id: z.string().describe("id of the updated form"),
+});
+
+export const publishFormInputModel = z.object({
+  formId: z.string().uuid().describe("id of the form to publish"),
+});
+
+export const publishFormOutputModel = z.object({
+  id: z.string().describe("id of the published form"),
+  publishedAt: z.date().describe("published date of the form"),
+});
+
+export const unpublishFormInputModel = z.object({
+  formId: z.string().uuid().describe("id of the form to unpublish"),
+});
+
+export const unpublishFormOutputModel = z.object({
+  id: z.string().describe("id of the unpublished form"),
 });

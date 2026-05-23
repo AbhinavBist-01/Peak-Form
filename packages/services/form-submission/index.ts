@@ -24,6 +24,7 @@ class FormSubmissionService {
     const [form] = await db
       .select({
         id: forms.id,
+        status: forms.status,
         expiresAt: forms.expiresAt,
       })
       .from(forms)
@@ -32,6 +33,10 @@ class FormSubmissionService {
 
     if (!form) {
       throw new Error(`Form with id ${formId} does not exist`);
+    }
+
+    if (form.status !== "published") {
+      throw new Error("This form is not accepting submissions");
     }
 
     if (form.expiresAt && form.expiresAt.getTime() < Date.now()) {

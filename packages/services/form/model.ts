@@ -1,5 +1,17 @@
 import { z } from "zod";
 
+export const formStatus = z.enum(["draft", "published", "archived"]);
+export const formVisibility = z.enum(["public", "unlisted"]);
+export const formThemeConfig = z
+  .object({
+    name: z.string().optional(),
+    backgroundColor: z.string().optional(),
+    accentColor: z.string().optional(),
+    textColor: z.string().optional(),
+    fontFamily: z.string().optional(),
+  })
+  .strict();
+
 const publicFormFieldOutput = z.object({
   id: z.uuid().describe("The id of the field"),
   formId: z.uuid().describe("The id of the form this field belongs to"),
@@ -53,6 +65,10 @@ export const listFormByUserIdOutput = z.array(
     title: z.string().describe("The title of the form"),
     description: z.string().nullable().describe("The description of the form"),
     creatorId: z.uuid().describe("The id of the user who created the form"),
+    status: formStatus.describe("The lifecycle status of the form"),
+    visibility: formVisibility.describe("Whether the form appears in public listings"),
+    publishedAt: z.date().nullable().describe("The date when the form was published"),
+    themeConfig: formThemeConfig.nullable().describe("The visual theme config for the form"),
     expiresAt: z.date().nullable().describe("The date when the form expires"),
     createdAt: z.date().nullable().describe("The date when the form was created"),
     updatedAt: z.date().nullable().describe("The date when the form was updated"),
@@ -84,6 +100,10 @@ export const getFormByIdOutput = z.object({
   id: z.uuid().describe("The id of the form"),
   title: z.string().describe("The title of the form"),
   description: z.string().nullable().describe("The description of the form"),
+  status: formStatus.describe("The lifecycle status of the form"),
+  visibility: formVisibility.describe("Whether the form appears in public listings"),
+  publishedAt: z.date().nullable().describe("The date when the form was published"),
+  themeConfig: formThemeConfig.nullable().describe("The visual theme config for the form"),
   expiresAt: z.date().nullable().describe("The date when the form expires"),
   createdAt: z.date().nullable().describe("The date when the form was created"),
   updatedAt: z.date().nullable().describe("The date when the form was updated"),
@@ -91,3 +111,48 @@ export const getFormByIdOutput = z.object({
 });
 
 export type GetFormByIdOutputType = z.infer<typeof getFormByIdOutput>;
+
+export const updateFormSettingsInput = z.object({
+  formId: z.uuid().describe("The id of the form to update"),
+  userId: z.uuid().describe("The id of the form owner"),
+  title: z.string().max(55).optional().describe("The title of the form"),
+  description: z.string().max(500).nullable().optional().describe("The description of the form"),
+  visibility: formVisibility.optional().describe("Whether the form appears in public listings"),
+  expiresAt: z.date().nullable().optional().describe("The date when the form expires"),
+  themeConfig: formThemeConfig.nullable().optional().describe("The visual theme config for the form"),
+});
+
+export type UpdateFormSettingsInputType = z.infer<typeof updateFormSettingsInput>;
+
+export const updateFormSettingsOutput = z.object({
+  id: z.uuid().describe("The id of the updated form"),
+});
+
+export type UpdateFormSettingsOutputType = z.infer<typeof updateFormSettingsOutput>;
+
+export const publishFormInput = z.object({
+  formId: z.uuid().describe("The id of the form to publish"),
+  userId: z.uuid().describe("The id of the form owner"),
+});
+
+export type PublishFormInputType = z.infer<typeof publishFormInput>;
+
+export const publishFormOutput = z.object({
+  id: z.uuid().describe("The id of the published form"),
+  publishedAt: z.date().describe("The date when the form was published"),
+});
+
+export type PublishFormOutputType = z.infer<typeof publishFormOutput>;
+
+export const unpublishFormInput = z.object({
+  formId: z.uuid().describe("The id of the form to unpublish"),
+  userId: z.uuid().describe("The id of the form owner"),
+});
+
+export type UnpublishFormInputType = z.infer<typeof unpublishFormInput>;
+
+export const unpublishFormOutput = z.object({
+  id: z.uuid().describe("The id of the unpublished form"),
+});
+
+export type UnpublishFormOutputType = z.infer<typeof unpublishFormOutput>;

@@ -82,6 +82,93 @@ export const useDeleteForm = () => {
   };
 };
 
+export const useUpdateFormSettings = () => {
+  const utils = trpc.useUtils();
+  const {
+    mutateAsync: updateFormSettingsAsync,
+    mutate: updateFormSettings,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isSuccess,
+    status,
+  } = trpc.form.updateFormSettings.useMutation({
+    onSuccess: () => {
+      utils.form.invalidate();
+    },
+  });
+
+  return {
+    updateFormSettingsAsync,
+    updateFormSettings,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isSuccess,
+    status,
+  };
+};
+
+export const usePublishForm = () => {
+  const utils = trpc.useUtils();
+  const {
+    mutateAsync: publishFormAsync,
+    mutate: publishForm,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isSuccess,
+    status,
+  } = trpc.form.publishForm.useMutation({
+    onSuccess: () => {
+      utils.form.invalidate();
+    },
+  });
+
+  return {
+    publishFormAsync,
+    publishForm,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isSuccess,
+    status,
+  };
+};
+
+export const useUnpublishForm = () => {
+  const utils = trpc.useUtils();
+  const {
+    mutateAsync: unpublishFormAsync,
+    mutate: unpublishForm,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isSuccess,
+    status,
+  } = trpc.form.unpublishForm.useMutation({
+    onSuccess: () => {
+      utils.form.invalidate();
+    },
+  });
+
+  return {
+    unpublishFormAsync,
+    unpublishForm,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isSuccess,
+    status,
+  };
+};
+
 export const useGetFormById = (formId: string) => {
   const {
     data: form,

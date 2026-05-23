@@ -15,8 +15,14 @@ import {
   getFieldsOutputModel,
   listFormsInputModel,
   listFormsOutputModel,
+  publishFormInputModel,
+  publishFormOutputModel,
+  unpublishFormInputModel,
+  unpublishFormOutputModel,
   updateFieldInputModel,
   updateFieldOutputModel,
+  updateFormSettingsInputModel,
+  updateFormSettingsOutputModel,
 } from "./model";
 import { generatePath } from "../../utils/path-generator";
 
@@ -88,6 +94,75 @@ export const formRouter = router({
       return { id };
     }),
 
+  updateFormSettings: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "PATCH",
+        path: "/updateFormSettings",
+        tags: TAGS,
+        summary: "Update form lifecycle and presentation settings",
+        protect: true,
+      },
+    })
+    .input(updateFormSettingsInputModel)
+    .output(updateFormSettingsOutputModel)
+    .mutation(async ({ input, ctx }) => {
+      const { id } = await formService.updateFormSettings({
+        formId: input.formId,
+        userId: ctx.user.id,
+        title: input.title,
+        description: input.description,
+        visibility: input.visibility,
+        expiresAt:
+          input.expiresAt === undefined
+            ? undefined
+            : input.expiresAt === null
+              ? null
+              : new Date(input.expiresAt),
+        themeConfig: input.themeConfig,
+      });
+
+      return { id };
+    }),
+
+  publishForm: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/publishForm",
+        tags: TAGS,
+        summary: "Publish a form",
+        protect: true,
+      },
+    })
+    .input(publishFormInputModel)
+    .output(publishFormOutputModel)
+    .mutation(async ({ input, ctx }) => {
+      return formService.publishForm({
+        formId: input.formId,
+        userId: ctx.user.id,
+      });
+    }),
+
+  unpublishForm: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/unpublishForm",
+        tags: TAGS,
+        summary: "Unpublish a form",
+        protect: true,
+      },
+    })
+    .input(unpublishFormInputModel)
+    .output(unpublishFormOutputModel)
+    .mutation(async ({ input, ctx }) => {
+      return formService.unpublishForm({
+        formId: input.formId,
+        userId: ctx.user.id,
+      });
+    }),
+
   getFormById: publicProcedure
     .meta({
       openapi: {
@@ -116,7 +191,9 @@ export const formRouter = router({
     .input(createFieldInputModel)
     .output(createFieldOutputModel)
     .mutation(async ({ input }) => {
-      const { id } = await formFieldService.createField(input);
+      const { id } = await formFieldService.createField(
+        input as Parameters<typeof formFieldService.createField>[0],
+      );
       return { id };
     }),
 
@@ -149,7 +226,9 @@ export const formRouter = router({
     .input(updateFieldInputModel)
     .output(updateFieldOutputModel)
     .mutation(async ({ input }) => {
-      const { id } = await formFieldService.updateField(input);
+      const { id } = await formFieldService.updateField(
+        input as Parameters<typeof formFieldService.updateField>[0],
+      );
       return { id };
     }),
 

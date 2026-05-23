@@ -180,6 +180,7 @@ export default function Page() {
   const [submissionId, setSubmissionId] = React.useState<string | null>(null);
 
   const isSubmitting = createSubmissionStatus === "pending";
+  const theme = form?.themeConfig;
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -209,7 +210,14 @@ export default function Page() {
   };
 
   return (
-    <main className="min-h-screen bg-muted/30 px-4 py-8 md:py-12">
+    <main
+      className="min-h-screen bg-muted/30 px-4 py-8 md:py-12"
+      style={{
+        backgroundColor: theme?.backgroundColor,
+        color: theme?.textColor,
+        fontFamily: theme?.fontFamily,
+      }}
+    >
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
         {isLoading ? (
           <div className="rounded-lg border bg-background p-6 shadow-sm">
@@ -229,6 +237,10 @@ export default function Page() {
         ) : form ? (
           <form
             className="rounded-lg border bg-background p-5 shadow-sm md:p-7"
+            style={{
+              color: theme?.textColor,
+              fontFamily: theme?.fontFamily,
+            }}
             onSubmit={onSubmit}
           >
             <div className="grid gap-2">
@@ -270,7 +282,13 @@ export default function Page() {
               ) : (
                 <span />
               )}
-              <Button type="submit" disabled={!fields.length || isSubmitting}>
+              <Button
+                type="submit"
+                disabled={!fields.length || isSubmitting}
+                style={{
+                  backgroundColor: theme?.accentColor,
+                }}
+              >
                 {isSubmitting ? "Submitting..." : "Submit"}
               </Button>
             </div>
