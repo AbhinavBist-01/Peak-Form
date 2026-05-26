@@ -77,14 +77,16 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="offcanvas" className="border-[#c3c8c1]/50 bg-[#f9faf8]/85 backdrop-blur-xl" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!">
               <a href="/dashboard">
-                <img src="/peakform-logo.svg" alt="PeakForm" className="size-6 shrink-0" />
-                <span className="text-base font-semibold">PeakForm</span>
+                <span className="grid size-8 shrink-0 place-items-center rounded-md bg-[#061b0e]">
+                  <img src="/peakform-logo.svg" alt="PeakForm" className="size-5 invert" />
+                </span>
+                <span className="peak-serif text-lg font-semibold tracking-normal text-[#061b0e]">PeakForm</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

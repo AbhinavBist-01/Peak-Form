@@ -1,11 +1,39 @@
-import { LoginForm } from "~/components/login-form"
+import Link from "next/link";
+import { MountainIcon } from "lucide-react";
+
+import { LoginForm } from "~/components/login-form";
 
 export default function Page() {
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
+    <main className="relative grid min-h-svh overflow-hidden bg-[#061b0e] text-white lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="absolute inset-0 lg:relative">
+        <video
+          className="h-full w-full object-cover"
+          src="/peakform-mountain-loop.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="/peakform-builder-preview.png"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,27,14,0.78),rgba(6,27,14,0.48),rgba(6,27,14,0.9))]" />
+        <div className="absolute inset-0 peak-topography opacity-30" />
+      </div>
+
+      <section className="relative z-10 flex min-h-svh items-center justify-center px-5 py-10 lg:bg-[#f9faf8]/92 lg:text-[#191c1b] lg:backdrop-blur-xl">
+        <Link href="/" className="absolute left-5 top-5 flex items-center gap-2 text-white lg:text-[#061b0e]">
+          <img src="/peakform-logo.svg" alt="PeakForm" className="size-8 rounded-md bg-white p-1.5" />
+          <span className="peak-serif text-xl font-semibold">PeakForm</span>
+        </Link>
+
+        <div className="w-full max-w-md">
+          <div className="mb-6 hidden rounded-lg border border-[#c3c8c1]/60 bg-white/64 p-4 text-sm text-[#434843] shadow-sm lg:flex lg:items-center lg:gap-3">
+            <MountainIcon className="size-5 text-[#4d6453]" />
+            <span>Return to your form workspace and keep collecting clean responses.</span>
+          </div>
         <LoginForm />
       </div>
-    </div>
-  )
+      </section>
+    </main>
+  );
 }

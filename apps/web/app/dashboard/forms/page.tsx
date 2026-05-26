@@ -206,18 +206,20 @@ export default function Page() {
       <SidebarInset>
         <SiteHeader title="Forms" />
         <main className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6 peak-topography">
+            <div className="peak-glass grid gap-5 rounded-xl p-5 md:grid-cols-[1fr_auto] md:items-center md:p-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-semibold tracking-normal">Forms</h2>
-                <p className="text-sm text-muted-foreground">
-                  Create and manage forms for collecting responses.
+                <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#061b0e]">
+                  Forms
+                </h2>
+                <p className="max-w-2xl text-sm leading-6 text-[#59645b]">
+                  Create, publish, and manage public or unlisted forms with themes that feel calm and intentional.
                 </p>
               </div>
 
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                  <Button>
+                  <Button className="bg-[#061b0e] text-white hover:bg-[#1b3022]">
                     <PlusIcon />
                     New form
                   </Button>
@@ -314,9 +316,9 @@ export default function Page() {
               </Alert>
             ) : null}
 
-            <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-hidden rounded-xl border border-[#c3c8c1]/65 bg-white/78 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
               <Table>
-                <TableHeader className="bg-muted">
+                <TableHeader className="bg-[#edf1ec]">
                     <TableRow>
                       <TableHead>Title</TableHead>
                       <TableHead className="hidden md:table-cell">Created</TableHead>

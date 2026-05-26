@@ -1,4 +1,3 @@
-import { Button } from "~/components/ui/button"
 import { Separator } from "~/components/ui/separator"
 import { SidebarTrigger } from "~/components/ui/sidebar"
 
@@ -8,25 +7,18 @@ interface SiteHeaderProps {
 
 export function SiteHeader({ title = "Documents" }: SiteHeaderProps) {
   return (
-    <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
+    <header className="sticky top-0 z-20 flex h-(--header-height) shrink-0 items-center gap-2 border-b border-[#c3c8c1]/55 bg-[#f9faf8]/82 backdrop-blur-xl transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
         <SidebarTrigger className="-ml-1" />
         <Separator
           orientation="vertical"
-          className="mx-2 data-[orientation=vertical]:h-4"
+          className="mx-2 bg-[#c3c8c1] data-[orientation=vertical]:h-4"
         />
-        <h1 className="text-base font-medium">{title}</h1>
+        <h1 className="peak-serif text-lg font-semibold tracking-normal text-[#061b0e]">{title}</h1>
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
-            <a
-              href="https://github.com/shadcn-ui/ui/tree/main/apps/v4/app/(examples)/dashboard"
-              rel="noopener noreferrer"
-              target="_blank"
-              className="dark:text-foreground"
-            >
-              GitHub
-            </a>
-          </Button>
+          <span className="hidden rounded-md border border-[#c3c8c1]/70 bg-white/60 px-3 py-1 text-xs font-medium text-[#59645b] sm:inline-flex">
+            Alpine workspace
+          </span>
         </div>
       </div>
     </header>

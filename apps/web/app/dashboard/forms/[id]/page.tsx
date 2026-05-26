@@ -436,11 +436,11 @@ export default function Page() {
       <SidebarInset>
         <SiteHeader title="Edit form" />
         <main className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6 peak-topography">
+            <div className="peak-glass grid gap-5 rounded-xl p-5 xl:grid-cols-[1fr_auto] xl:items-center">
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-2xl font-semibold tracking-normal">
+                  <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#061b0e]">
                     {editorFormData?.title ?? "Edit form"}
                   </h2>
                   <Badge variant={isPublished ? "default" : "outline"}>
@@ -457,7 +457,7 @@ export default function Page() {
                     </Badge>
                   ) : null}
                 </div>
-                <p className="text-sm text-muted-foreground">Form ID: {formId}</p>
+                <p className="text-sm text-[#59645b]">Form ID: {formId}</p>
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" asChild>
@@ -501,7 +501,7 @@ export default function Page() {
                 )}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button className="bg-[#061b0e] text-white hover:bg-[#1b3022]">
                       <PlusIcon />
                       Add field
                     </Button>
@@ -576,9 +576,9 @@ export default function Page() {
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
               <div className="grid gap-6">
-                <div className="overflow-hidden rounded-lg border">
+                <div className="overflow-hidden rounded-xl border border-[#c3c8c1]/65 bg-white/78 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
                   <Table>
-                    <TableHeader className="bg-muted">
+                    <TableHeader className="bg-[#edf1ec]">
                       <TableRow>
                         <TableHead>Field</TableHead>
                         <TableHead className="hidden md:table-cell">Key</TableHead>
@@ -762,10 +762,10 @@ function FormSettingsPanel({
   const visibility = watch("visibility");
 
   return (
-    <section className="grid gap-4 rounded-lg border p-4">
+    <section className="peak-glass grid gap-4 rounded-xl p-4">
       <div className="space-y-1">
-        <h3 className="text-base font-semibold tracking-normal">Settings</h3>
-        <p className="text-sm text-muted-foreground">
+        <h3 className="peak-serif text-lg font-semibold tracking-normal text-[#061b0e]">Settings</h3>
+        <p className="text-sm text-[#59645b]">
           {form?.status === "published"
             ? "Published forms can be shared or listed publicly."
             : "Draft forms stay private until published."}
@@ -865,14 +865,14 @@ function FormPreview({ form, fields }: { form?: EditorForm; fields: FormField[] 
   const theme = form?.themeConfig;
 
   return (
-    <section className="grid gap-4 rounded-lg border p-4">
+    <section className="peak-glass grid gap-4 rounded-xl p-4">
       <div className="space-y-1">
-        <h3 className="text-base font-semibold tracking-normal">Preview</h3>
-        <p className="text-sm text-muted-foreground">Approximate public form layout.</p>
+        <h3 className="peak-serif text-lg font-semibold tracking-normal text-[#061b0e]">Preview</h3>
+        <p className="text-sm text-[#59645b]">Approximate public form layout.</p>
       </div>
 
       <div
-        className="grid gap-4 rounded-lg border bg-background p-4"
+        className="grid gap-4 rounded-xl border border-[#c3c8c1]/60 bg-white/84 p-4"
         style={{
           backgroundColor: theme?.backgroundColor,
           color: theme?.textColor,
@@ -889,7 +889,7 @@ function FormPreview({ form, fields }: { form?: EditorForm; fields: FormField[] 
         <div className="grid gap-3">
           {fields.length ? (
             fields.slice(0, 5).map((field) => (
-              <div key={field.id} className="grid gap-2 rounded-md border bg-background/80 p-3">
+              <div key={field.id} className="grid gap-2 rounded-lg border border-[#c3c8c1]/60 bg-white/78 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm font-medium">
                     {field.label}

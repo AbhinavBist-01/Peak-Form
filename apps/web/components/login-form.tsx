@@ -7,6 +7,7 @@ import { Field, FieldDescription, FieldGroup, FieldLabel } from "~/components/ui
 import { Input } from "~/components/ui/input";
 import { type FieldErrors, useForm } from "react-hook-form";
 import { useSignin } from "~/hooks/api/auth";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
@@ -33,10 +34,14 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   }
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
-          <CardDescription>Enter your email below to login to your account</CardDescription>
+      <Card className="peak-glass border-[#c3c8c1]/70 bg-white/86 shadow-2xl">
+        <CardHeader className="gap-3">
+          <CardTitle className="peak-serif text-3xl font-semibold tracking-normal text-[#061b0e]">
+            Welcome back
+          </CardTitle>
+          <CardDescription className="text-[#59645b]">
+            Sign in to manage your forms, responses, and public links.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit, onError)}>
@@ -56,7 +61,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                   <FieldLabel htmlFor="password">Password</FieldLabel>
                   <a
                     href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                    className="ml-auto inline-block text-sm text-[#4d6453] underline-offset-4 hover:underline"
                   >
                     Forgot your password?
                   </a>
@@ -64,12 +69,17 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 <Input id="password" type="password" required {...register("password")} />
               </Field>
               <Field>
-                <Button type="submit">Login</Button>
-                <Button variant="outline" type="button">
+                <Button type="submit" className="bg-[#061b0e] text-white hover:bg-[#1b3022]">
+                  Login
+                </Button>
+                <Button variant="outline" type="button" className="border-[#4d6453]/35 bg-white/60">
                   Login with Google
                 </Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Don&apos;t have an account?{" "}
+                  <Link href="/signup" className="font-medium text-[#4d6453] underline-offset-4 hover:underline">
+                    Sign up
+                  </Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

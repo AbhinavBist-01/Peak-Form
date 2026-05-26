@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/com
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { trpc } from "~/trpc/client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 type SignupFormValues = {
@@ -40,10 +41,14 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   };
 
   return (
-    <Card {...props}>
-      <CardHeader>
-        <CardTitle>Create an account</CardTitle>
-        <CardDescription>Enter your information below to create your account</CardDescription>
+    <Card className="peak-glass border-[#c3c8c1]/70 bg-white/86 shadow-2xl" {...props}>
+      <CardHeader className="gap-3">
+        <CardTitle className="peak-serif text-3xl font-semibold tracking-normal text-[#061b0e]">
+          Create your PeakForm account
+        </CardTitle>
+        <CardDescription className="text-[#59645b]">
+          Start building polished public forms and response dashboards.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -62,7 +67,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 {...register("email")}
               />
               <FieldDescription>
-                We&apos;ll use this to contact you. We will not share your email with anyone else.
+                Used for creator notifications and account access.
               </FieldDescription>
             </Field>
             <Field>
@@ -82,12 +87,17 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
             </Field>
             <FieldGroup>
               <Field>
-                <Button type="submit">Create Account</Button>
-                <Button variant="outline" type="button">
+                <Button type="submit" className="bg-[#061b0e] text-white hover:bg-[#1b3022]">
+                  Create Account
+                </Button>
+                <Button variant="outline" type="button" className="border-[#4d6453]/35 bg-white/60">
                   Sign up with Google
                 </Button>
                 <FieldDescription className="px-6 text-center">
-                  Already have an account? <a href="#">Sign in</a>
+                  Already have an account?{" "}
+                  <Link href="/login" className="font-medium text-[#4d6453] underline-offset-4 hover:underline">
+                    Sign in
+                  </Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>
