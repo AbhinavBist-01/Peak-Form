@@ -71,7 +71,9 @@ export default function Page() {
 
   const publishedForms = forms.filter((form) => form.status === "published");
   const draftForms = forms.filter((form) => form.status === "draft");
-  const publicForms = forms.filter((form) => form.visibility === "public");
+  const publicForms = forms.filter(
+    (form) => form.status === "published" && form.visibility === "public",
+  );
   const recentForms = forms.slice(0, 5);
 
   const metrics = [

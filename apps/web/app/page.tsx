@@ -16,6 +16,7 @@ import {
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { MarketingFooter, MarketingNavbar } from "~/components/marketing-chrome";
 
 const productPillars = [
   {
@@ -54,6 +55,7 @@ const capabilities = [
 export default function Home() {
   return (
     <main className="min-h-screen overflow-hidden bg-[#f9faf8] text-[#191c1b]">
+      <MarketingNavbar />
       <section className="relative min-h-[92svh] overflow-hidden">
         <video
           aria-hidden="true"
@@ -70,41 +72,7 @@ export default function Home() {
         <div className="absolute inset-x-0 top-0 h-36 bg-[linear-gradient(180deg,rgba(6,27,14,0.72),transparent)]" />
         <div className="absolute inset-0 peak-topography peak-topography-motion opacity-35" />
 
-        <header className="peak-reveal relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-5 md:px-8">
-          <Link href="/" className="flex items-center gap-3 text-white">
-            <Image
-              src="/peakform-logo.svg"
-              alt="PeakForm"
-              width={36}
-              height={36}
-              className="size-9"
-            />
-            <span className="peak-serif text-2xl font-semibold tracking-normal">PeakForm</span>
-          </Link>
-
-          <nav className="hidden items-center gap-7 text-sm font-medium text-white/78 md:flex">
-            <Link href="/explore" className="transition hover:text-white">
-              Explore
-            </Link>
-            <Link href="/pricing" className="transition hover:text-white">
-              Pricing
-            </Link>
-            <Link href="http://localhost:8000/docs" className="transition hover:text-white">
-              API docs
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" asChild className="peak-button-motion hidden text-white hover:bg-white/12 hover:text-white sm:inline-flex">
-              <Link href="/login">Sign in</Link>
-            </Button>
-            <Button asChild className="peak-button-motion bg-white text-[#061b0e] hover:bg-[#d0e9d4]">
-              <Link href="/signup">Sign up</Link>
-            </Button>
-          </div>
-        </header>
-
-        <div className="relative z-10 mx-auto flex min-h-[calc(92svh-84px)] w-full max-w-7xl flex-col justify-center px-5 pb-24 pt-14 md:px-8">
+        <div className="relative z-10 mx-auto flex min-h-[92svh] w-full max-w-7xl flex-col justify-center px-5 pb-24 pt-14 md:px-8">
           <div className="peak-stagger max-w-3xl">
             <Badge className="mb-5 gap-2 bg-white/16 text-white ring-1 ring-white/20 backdrop-blur-md">
               <MountainIcon className="peak-icon-breathe size-3.5" />
@@ -226,6 +194,7 @@ export default function Home() {
           </Button>
         </div>
       </section>
+      <MarketingFooter />
     </main>
   );
 }

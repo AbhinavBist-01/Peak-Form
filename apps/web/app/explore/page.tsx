@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   ArrowRightIcon,
   EyeOffIcon,
@@ -15,6 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { MarketingFooter, MarketingNavbar } from "~/components/marketing-chrome";
 import { useListPublicForms } from "~/hooks/api/form";
 
 type PublicForm = NonNullable<ReturnType<typeof useListPublicForms>["forms"]>[number];
@@ -57,32 +57,9 @@ export default function ExplorePage() {
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#f9faf8] text-[#191c1b]">
+      <MarketingNavbar />
       <section className="peak-topography peak-topography-motion border-b border-[#c3c8c1]/55 bg-[#edf1ec]/55">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-5 py-5 md:px-8 md:py-8">
-          <header className="peak-reveal flex items-center justify-between gap-4">
-            <Link href="/" className="flex items-center gap-3 font-semibold text-[#061b0e]">
-              <Image
-                src="/peakform-logo.svg"
-                alt="PeakForm"
-                width={34}
-                height={34}
-                className="size-8 invert"
-              />
-              <span className="peak-serif text-xl tracking-normal">PeakForm</span>
-            </Link>
-            <nav className="hidden items-center gap-6 text-sm font-medium text-[#59645b] md:flex">
-              <Link href="/pricing" className="transition hover:text-[#061b0e]">
-                Pricing
-              </Link>
-              <Link href="/login" className="transition hover:text-[#061b0e]">
-                Sign in
-              </Link>
-            </nav>
-            <Button className="peak-button-motion bg-[#061b0e] text-white hover:bg-[#1b3022]" asChild>
-              <Link href="/dashboard/forms">Creator dashboard</Link>
-            </Button>
-          </header>
-
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-5 py-10 md:px-8 md:py-12">
           <div className="peak-glass peak-reveal grid gap-6 rounded-xl p-6 md:grid-cols-[1fr_22rem] md:items-end md:p-8">
             <div className="peak-stagger grid gap-4">
               <Badge className="w-fit gap-2 bg-[#061b0e] text-white">
@@ -147,6 +124,7 @@ export default function ExplorePage() {
           <p className="mt-4 text-sm text-[#59645b]">Refreshing forms...</p>
         ) : null}
       </section>
+      <MarketingFooter />
     </main>
   );
 }

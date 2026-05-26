@@ -10,6 +10,20 @@ import { useSignin } from "~/hooks/api/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+function getSafeNextPath() {
+  if (typeof window === "undefined") {
+    return "/dashboard";
+  }
+
+  const nextPath = new URLSearchParams(window.location.search).get("next");
+
+  if (!nextPath || !nextPath.startsWith("/") || nextPath.startsWith("//")) {
+    return "/dashboard";
+  }
+
+  return nextPath;
+}
+
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   type FormValues = {
     email: string;
@@ -25,7 +39,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       email: values.email,
       password: values.password,
     });
-    router.replace("/dashboard");
+    router.replace(getSafeNextPath());
   }
 
   function onError(errors: FieldErrors<FormValues>) {

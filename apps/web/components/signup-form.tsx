@@ -9,6 +9,20 @@ import { trpc } from "~/trpc/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+function getSafeNextPath() {
+  if (typeof window === "undefined") {
+    return "/dashboard";
+  }
+
+  const nextPath = new URLSearchParams(window.location.search).get("next");
+
+  if (!nextPath || !nextPath.startsWith("/") || nextPath.startsWith("//")) {
+    return "/dashboard";
+  }
+
+  return nextPath;
+}
+
 type SignupFormValues = {
   name: string;
   email: string;
@@ -35,7 +49,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
       email: values.email,
       password: values.password,
     });
-    router.replace("/dashboard");
+    router.replace(getSafeNextPath());
   };
 
   return (

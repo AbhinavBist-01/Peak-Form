@@ -15,6 +15,7 @@ import * as React from "react";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { MarketingFooter, MarketingNavbar } from "~/components/marketing-chrome";
 import {
   Card,
   CardContent,
@@ -95,6 +96,7 @@ export default function PricingPage() {
 
   return (
     <main className="min-h-screen bg-[#f9faf8] text-[#191c1b]">
+      <MarketingNavbar />
       <section className="peak-topography peak-topography-motion relative overflow-hidden border-b border-[#c3c8c1]/60">
         <Image
           src="/pricing-mountains.svg"
@@ -106,41 +108,7 @@ export default function PricingPage() {
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(249,250,248,0.97),rgba(237,241,236,0.78)_50%,rgba(249,250,248,0.96))]" />
 
-        <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 py-5 md:px-6 md:py-8">
-          <header className="peak-reveal flex items-center justify-between gap-4">
-            <Link href="/" className="flex items-center gap-2 font-semibold">
-              <Image
-                src="/peakform-logo.svg"
-                alt="PeakForm"
-                width={32}
-                height={32}
-                className="size-8 invert"
-              />
-              <span>PeakForm</span>
-            </Link>
-
-            <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
-              <Link href="/dashboard/forms" className="transition hover:text-slate-950">
-                Forms
-              </Link>
-              <Link href="/explore" className="transition hover:text-slate-950">
-                Explore
-              </Link>
-              <Link href="/pricing" className="text-slate-950">
-                Pricing
-              </Link>
-            </nav>
-
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" asChild className="peak-button-motion hidden sm:inline-flex">
-                <Link href="/login">Login</Link>
-              </Button>
-              <Button asChild className="peak-button-motion bg-[#061b0e] text-white hover:bg-[#1b3022]">
-                <Link href="/signup">Free trial</Link>
-              </Button>
-            </div>
-          </header>
-
+        <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 py-14 md:px-6 md:py-16">
           <div className="peak-stagger mx-auto flex max-w-4xl flex-col items-center gap-6 text-center">
             <Badge className="gap-1 bg-slate-950 text-white">
               <Mountain className="size-3" />
@@ -180,17 +148,17 @@ export default function PricingPage() {
               <Card
                 key={plan.name}
                 className={cn(
-                  "peak-lift peak-shine relative min-h-[520px] rounded-lg border-[#c3c8c1]/65 bg-white/92 py-0 shadow-xl shadow-[#4c616c]/12 backdrop-blur",
+                  "peak-lift peak-shine relative min-h-[520px] overflow-hidden rounded-lg border-[#c3c8c1]/65 bg-white/92 py-0 shadow-xl shadow-[#4c616c]/12 backdrop-blur",
                   plan.highlighted && "border-[#061b0e] ring-2 ring-[#b4cdb8]"
                 )}
               >
                 {plan.highlighted ? (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#d0e9d4] px-4 py-1 text-xs font-bold text-[#061b0e] shadow-lg">
+                  <div className="bg-[#d0e9d4] px-4 py-2 text-center text-xs font-bold uppercase tracking-[0.12em] text-[#061b0e]">
                     Best for teams
                   </div>
                 ) : null}
 
-                <CardHeader className="gap-5 p-6 text-center">
+                <CardHeader className={cn("gap-5 p-6 text-center", plan.highlighted && "pt-5")}>
                   <Badge
                     variant={plan.highlighted ? "default" : "secondary"}
                     className={cn(
@@ -308,6 +276,7 @@ export default function PricingPage() {
           </Button>
         </div>
       </section>
+      <MarketingFooter />
     </main>
   );
 }
