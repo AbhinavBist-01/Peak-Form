@@ -114,7 +114,7 @@ export default function PricingPage() {
                 alt="PeakForm"
                 width={32}
                 height={32}
-                className="size-8 rounded-md bg-slate-950 p-1.5"
+                className="size-8 invert"
               />
               <span>PeakForm</span>
             </Link>

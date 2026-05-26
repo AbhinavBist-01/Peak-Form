@@ -62,15 +62,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!">
               <a href="/dashboard">
-                <span className="grid size-8 shrink-0 place-items-center rounded-md bg-[#061b0e]">
-                  <Image
-                    src="/peakform-logo.svg"
-                    alt="PeakForm"
-                    width={20}
-                    height={20}
-                    className="size-5 invert"
-                  />
-                </span>
+                <Image
+                  src="/peakform-logo.svg"
+                  alt="PeakForm"
+                  width={32}
+                  height={32}
+                  className="size-8 shrink-0 invert"
+                />
                 <span className="peak-serif text-lg font-semibold tracking-normal text-[#061b0e]">PeakForm</span>
               </a>
             </SidebarMenuButton>

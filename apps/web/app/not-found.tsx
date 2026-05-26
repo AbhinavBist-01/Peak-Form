@@ -37,7 +37,7 @@ export default function NotFound() {
                 alt="PeakForm"
                 width={32}
                 height={32}
-                className="size-8 rounded-md bg-white/10 p-1 ring-1 ring-white/20"
+                className="size-8"
               />
               <span>PeakForm</span>
             </Link>

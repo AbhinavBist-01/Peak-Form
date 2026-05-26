@@ -74,7 +74,7 @@ export default function Home() {
               alt="PeakForm"
               width={36}
               height={36}
-              className="size-9 rounded-md bg-white/90 p-1.5"
+              className="size-9"
             />
             <span className="peak-serif text-2xl font-semibold tracking-normal">PeakForm</span>
           </Link>

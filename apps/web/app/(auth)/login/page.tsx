@@ -28,7 +28,7 @@ export default function Page() {
             alt="PeakForm"
             width={32}
             height={32}
-            className="size-8 rounded-md bg-white p-1.5"
+            className="size-8 lg:invert"
           />
           <span className="peak-serif text-xl font-semibold">PeakForm</span>
         </Link>
