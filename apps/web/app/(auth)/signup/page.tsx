@@ -29,7 +29,7 @@ export default function Page() {
       </div>
 
       <section className="relative z-10 flex min-h-svh items-center justify-center px-5 py-10 lg:bg-[#f9faf8]/92 lg:text-[#191c1b] lg:backdrop-blur-xl">
-        <Link href="/" className="absolute left-5 top-5 flex items-center gap-2 text-white lg:text-[#061b0e]">
+        <Link href="/" className="peak-reveal absolute left-5 top-5 flex items-center gap-2 text-white lg:text-[#061b0e]">
           <Image
             src="/peakform-logo.svg"
             alt="PeakForm"
@@ -40,7 +40,7 @@ export default function Page() {
           <span className="peak-serif text-xl font-semibold">PeakForm</span>
         </Link>
 
-        <div className="w-full max-w-md">
+        <div className="peak-reveal w-full max-w-md">
         <SignupForm />
       </div>
       </section>

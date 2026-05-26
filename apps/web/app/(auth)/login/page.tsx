@@ -18,11 +18,11 @@ export default function Page() {
           poster="/peakform-builder-preview.png"
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,27,14,0.78),rgba(6,27,14,0.48),rgba(6,27,14,0.9))]" />
-        <div className="absolute inset-0 peak-topography opacity-30" />
+        <div className="absolute inset-0 peak-topography peak-topography-motion opacity-30" />
       </div>
 
       <section className="relative z-10 flex min-h-svh items-center justify-center px-5 py-10 lg:bg-[#f9faf8]/92 lg:text-[#191c1b] lg:backdrop-blur-xl">
-        <Link href="/" className="absolute left-5 top-5 flex items-center gap-2 text-white lg:text-[#061b0e]">
+        <Link href="/" className="peak-reveal absolute left-5 top-5 flex items-center gap-2 text-white lg:text-[#061b0e]">
           <Image
             src="/peakform-logo.svg"
             alt="PeakForm"
@@ -33,9 +33,9 @@ export default function Page() {
           <span className="peak-serif text-xl font-semibold">PeakForm</span>
         </Link>
 
-        <div className="w-full max-w-md">
-          <div className="mb-6 hidden rounded-lg border border-[#c3c8c1]/60 bg-white/64 p-4 text-sm text-[#434843] shadow-sm lg:flex lg:items-center lg:gap-3">
-            <MountainIcon className="size-5 text-[#4d6453]" />
+        <div className="peak-reveal w-full max-w-md">
+          <div className="peak-lift mb-6 hidden rounded-lg border border-[#c3c8c1]/60 bg-white/64 p-4 text-sm text-[#434843] shadow-sm lg:flex lg:items-center lg:gap-3">
+            <MountainIcon className="peak-icon-breathe size-5 text-[#4d6453]" />
             <span>Return to your form workspace and keep collecting clean responses.</span>
           </div>
         <LoginForm />

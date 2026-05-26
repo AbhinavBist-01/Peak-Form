@@ -191,8 +191,8 @@ export default function Page() {
   };
 
   return (
-    <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6 peak-topography">
-            <div className="peak-glass grid gap-5 rounded-xl p-5 md:grid-cols-[1fr_auto] md:items-center md:p-6">
+    <div className="@container/main peak-topography peak-topography-motion flex flex-1 flex-col gap-6 p-4 md:p-6">
+            <div className="peak-glass peak-reveal peak-shine grid gap-5 rounded-xl p-5 md:grid-cols-[1fr_auto] md:items-center md:p-6">
               <div className="space-y-1">
                 <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#061b0e]">
                   Forms
@@ -204,7 +204,7 @@ export default function Page() {
 
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-[#061b0e] text-white hover:bg-[#1b3022]">
+                  <Button className="peak-button-motion bg-[#061b0e] text-white hover:bg-[#1b3022]">
                     <PlusIcon />
                     New form
                   </Button>
@@ -301,7 +301,7 @@ export default function Page() {
               </Alert>
             ) : null}
 
-            <div className="overflow-hidden rounded-xl border border-[#c3c8c1]/65 bg-white/78 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
+            <div className="peak-reveal overflow-hidden rounded-xl border border-[#c3c8c1]/65 bg-white/78 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
               <Table>
                 <TableHeader className="bg-[#edf1ec]">
                     <TableRow>
@@ -326,7 +326,7 @@ export default function Page() {
                       const isPublished = form.status === "published";
 
                       return (
-                        <TableRow key={form.id}>
+                        <TableRow key={form.id} className="transition-colors hover:bg-[#edf1ec]/65">
                           <TableCell>
                             <div className="grid gap-1">
                               {isPublished ? (

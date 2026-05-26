@@ -166,7 +166,7 @@ export default function Page() {
 
   return (
     <>
-      <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6 peak-topography">
+      <div className="@container/main peak-topography peak-topography-motion flex flex-1 flex-col gap-6 p-4 md:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
                 <h2 className="text-2xl font-semibold tracking-normal">Submissions</h2>
@@ -199,7 +199,7 @@ export default function Page() {
               ) : null,
             )}
 
-            <section className="grid gap-3 md:grid-cols-4">
+            <section className="peak-stagger grid gap-3 md:grid-cols-4">
               <Metric
                 icon={<BarChart3Icon className="size-4" />}
                 label="Responses"
@@ -212,7 +212,7 @@ export default function Page() {
 
             <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
               <div className="grid gap-4">
-                <div className="rounded-lg border p-4">
+                <div className="peak-lift rounded-lg border p-4">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div>
                       <h3 className="text-base font-semibold tracking-normal">Completion trend</h3>
@@ -360,7 +360,7 @@ export default function Page() {
               </div>
 
               <aside className="grid content-start gap-4">
-                <div className="rounded-lg border p-4">
+                <div className="peak-lift rounded-lg border p-4">
                   <h3 className="mb-3 text-base font-semibold tracking-normal">Rating averages</h3>
                   <div className="grid gap-3">
                     {ratingSummaries.length ? (
@@ -431,7 +431,7 @@ export default function Page() {
             {distributionSummaries.length ? (
               <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {distributionSummaries.map((summary) => (
-                  <div key={summary.fieldId} className="rounded-lg border p-4">
+                  <div key={summary.fieldId} className="peak-lift rounded-lg border p-4">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <h3 className="text-base font-semibold tracking-normal">{summary.label}</h3>
                       <Badge variant="outline">{summary.type}</Badge>
@@ -512,7 +512,7 @@ function Metric({
   value: number;
 }) {
   return (
-    <div className="rounded-lg border p-4">
+    <div className="peak-lift rounded-lg border bg-white/70 p-4 backdrop-blur">
       <div className="mb-3 flex items-center justify-between gap-3 text-muted-foreground">
         <span className="text-sm">{label}</span>
         {icon}

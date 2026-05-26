@@ -107,7 +107,7 @@ export default function PricingPage() {
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(247,250,252,0.96),rgba(247,250,252,0.82)_50%,rgba(247,250,252,0.96))]" />
 
         <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 py-5 md:px-6 md:py-8">
-          <header className="flex items-center justify-between gap-4">
+          <header className="peak-reveal flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-2 font-semibold">
               <Image
                 src="/peakform-logo.svg"
@@ -132,16 +132,16 @@ export default function PricingPage() {
             </nav>
 
             <div className="flex items-center gap-2">
-              <Button variant="ghost" asChild className="hidden sm:inline-flex">
+              <Button variant="ghost" asChild className="peak-button-motion hidden sm:inline-flex">
                 <Link href="/login">Login</Link>
               </Button>
-              <Button asChild className="bg-orange-400 text-slate-950 hover:bg-orange-300">
+              <Button asChild className="peak-button-motion bg-orange-400 text-slate-950 hover:bg-orange-300">
                 <Link href="/signup">Free trial</Link>
               </Button>
             </div>
           </header>
 
-          <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 text-center">
+          <div className="peak-stagger mx-auto flex max-w-4xl flex-col items-center gap-6 text-center">
             <Badge className="gap-1 bg-slate-950 text-white">
               <Mountain className="size-3" />
               Mountain-ready form growth
@@ -175,12 +175,12 @@ export default function PricingPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="peak-stagger grid gap-4 lg:grid-cols-3">
             {plans.map((plan) => (
               <Card
                 key={plan.name}
                 className={cn(
-                  "relative min-h-[520px] rounded-md border-slate-200 bg-white/92 py-0 shadow-xl shadow-slate-200/70 backdrop-blur",
+                  "peak-lift peak-shine relative min-h-[520px] rounded-md border-slate-200 bg-white/92 py-0 shadow-xl shadow-slate-200/70 backdrop-blur",
                   plan.highlighted && "border-slate-950 ring-2 ring-orange-300"
                 )}
               >
@@ -300,7 +300,7 @@ export default function PricingPage() {
               Build a form, publish the share link, and start collecting responses without waiting for a full workspace setup.
             </p>
           </div>
-          <Button asChild className="bg-orange-400 text-slate-950 hover:bg-orange-300">
+          <Button asChild className="peak-button-motion bg-orange-400 text-slate-950 hover:bg-orange-300">
             <Link href="/dashboard/forms">
               Open forms
               <CircleDollarSign className="size-4" />

@@ -56,7 +56,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   return (
-    <Sidebar collapsible="offcanvas" className="border-[#c3c8c1]/50 bg-[#f9faf8]/85 backdrop-blur-xl" {...props}>
+    <Sidebar
+      collapsible="offcanvas"
+      className="peak-reveal border-[#c3c8c1]/50 bg-[#f9faf8]/85 backdrop-blur-xl"
+      {...props}
+    >
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -67,7 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   alt="PeakForm"
                   width={32}
                   height={32}
-                  className="size-8 shrink-0 invert"
+                  className="peak-icon-breathe size-8 shrink-0 invert"
                 />
                 <span className="peak-serif text-lg font-semibold tracking-normal text-[#061b0e]">PeakForm</span>
               </a>

@@ -1,6 +1,8 @@
 "use client"
 
 import { type Icon } from "@tabler/icons-react"
+import { usePathname } from "next/navigation"
+
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -8,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar"
+import { cn } from "~/lib/utils"
 
 export function NavMain({
   items,
@@ -18,20 +21,38 @@ export function NavMain({
     icon?: Icon
   }[]
 }) {
+  const pathname = usePathname()
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
-        <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title} asChild>
-                <a href={item.url}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+        <SidebarMenu className="peak-stagger">
+          {items.map((item) => {
+            const isActive =
+              pathname === item.url ||
+              (item.url !== "/dashboard" && pathname.startsWith(item.url))
+
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton
+                  tooltip={item.title}
+                  isActive={isActive}
+                  asChild
+                  className={cn(
+                    "peak-lift h-10 rounded-lg text-[#59645b] transition-colors hover:bg-[#d0e9d4]/70 hover:text-[#061b0e]",
+                    isActive && "bg-[#d0e9d4] font-semibold text-[#061b0e] shadow-sm"
+                  )}
+                >
+                  <a href={item.url} className="group/nav">
+                    {item.icon && (
+                      <item.icon className="transition-transform group-hover/nav:scale-110" />
+                    )}
+                    <span>{item.title}</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
+          })}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

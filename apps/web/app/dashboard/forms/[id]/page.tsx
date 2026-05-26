@@ -422,8 +422,8 @@ export default function Page() {
 
   return (
     <>
-      <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6 peak-topography">
-            <div className="peak-glass grid gap-5 rounded-xl p-5 xl:grid-cols-[1fr_auto] xl:items-center">
+      <div className="@container/main peak-topography peak-topography-motion flex flex-1 flex-col gap-6 p-4 md:p-6">
+            <div className="peak-glass peak-reveal peak-shine grid gap-5 rounded-xl p-5 xl:grid-cols-[1fr_auto] xl:items-center">
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#061b0e]">
@@ -562,7 +562,7 @@ export default function Page() {
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
               <div className="grid gap-6">
-                <div className="overflow-hidden rounded-xl border border-[#c3c8c1]/65 bg-white/78 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
+                <div className="peak-reveal overflow-hidden rounded-xl border border-[#c3c8c1]/65 bg-white/78 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
                   <Table>
                     <TableHeader className="bg-[#edf1ec]">
                       <TableRow>
@@ -746,7 +746,7 @@ function FormSettingsPanel({
   const visibility = watch("visibility");
 
   return (
-    <section className="peak-glass grid gap-4 rounded-xl p-4">
+    <section className="peak-glass peak-lift grid gap-4 rounded-xl p-4">
       <div className="space-y-1">
         <h3 className="peak-serif text-lg font-semibold tracking-normal text-[#061b0e]">Settings</h3>
         <p className="text-sm text-[#59645b]">
@@ -849,7 +849,7 @@ function FormPreview({ form, fields }: { form?: EditorForm; fields: FormField[] 
   const theme = form?.themeConfig;
 
   return (
-    <section className="peak-glass grid gap-4 rounded-xl p-4">
+    <section className="peak-glass peak-lift grid gap-4 rounded-xl p-4">
       <div className="space-y-1">
         <h3 className="peak-serif text-lg font-semibold tracking-normal text-[#061b0e]">Preview</h3>
         <p className="text-sm text-[#59645b]">Approximate public form layout.</p>
