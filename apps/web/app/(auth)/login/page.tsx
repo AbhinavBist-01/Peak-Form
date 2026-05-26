@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { MountainIcon } from "lucide-react";
 
 import { LoginForm } from "~/components/login-form";
@@ -22,7 +23,13 @@ export default function Page() {
 
       <section className="relative z-10 flex min-h-svh items-center justify-center px-5 py-10 lg:bg-[#f9faf8]/92 lg:text-[#191c1b] lg:backdrop-blur-xl">
         <Link href="/" className="absolute left-5 top-5 flex items-center gap-2 text-white lg:text-[#061b0e]">
-          <img src="/peakform-logo.svg" alt="PeakForm" className="size-8 rounded-md bg-white p-1.5" />
+          <Image
+            src="/peakform-logo.svg"
+            alt="PeakForm"
+            width={32}
+            height={32}
+            className="size-8 rounded-md bg-white p-1.5"
+          />
           <span className="peak-serif text-xl font-semibold">PeakForm</span>
         </Link>
 

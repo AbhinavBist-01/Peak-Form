@@ -14,8 +14,6 @@ import {
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 
-import { AppSidebar } from "~/components/app-sidebar";
-import { SiteHeader } from "~/components/site-header";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import {
   AlertDialog,
@@ -48,7 +46,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 import {
   Table,
   TableBody,
@@ -194,19 +191,7 @@ export default function Page() {
   };
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader title="Forms" />
-        <main className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6 peak-topography">
+    <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6 peak-topography">
             <div className="peak-glass grid gap-5 rounded-xl p-5 md:grid-cols-[1fr_auto] md:items-center md:p-6">
               <div className="space-y-1">
                 <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#061b0e]">
@@ -424,8 +409,9 @@ export default function Page() {
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>Delete form?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      This will permanently delete "{form.title}" and all of its
-                                      fields and submissions.
+                                      This will permanently delete{" "}
+                                      <span className="font-medium">{form.title}</span> and all
+                                      of its fields and submissions.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
@@ -467,9 +453,6 @@ export default function Page() {
               <p className="text-sm text-muted-foreground">Refreshing forms...</p>
             ) : null}
           </div>
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
   );
 }
 

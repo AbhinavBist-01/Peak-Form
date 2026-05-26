@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRightIcon,
   BarChart3Icon,
@@ -68,7 +69,13 @@ export default function Home() {
 
         <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-5 md:px-8">
           <Link href="/" className="flex items-center gap-3 text-white">
-            <img src="/peakform-logo.svg" alt="PeakForm" className="size-9 rounded-md bg-white/90 p-1.5" />
+            <Image
+              src="/peakform-logo.svg"
+              alt="PeakForm"
+              width={36}
+              height={36}
+              className="size-9 rounded-md bg-white/90 p-1.5"
+            />
             <span className="peak-serif text-2xl font-semibold tracking-normal">PeakForm</span>
           </Link>
 
@@ -170,9 +177,11 @@ export default function Home() {
         </div>
 
         <div className="peak-glass peak-shadow overflow-hidden rounded-2xl p-3">
-          <img
+          <Image
             src="/peakform-builder-preview.png"
             alt="PeakForm builder interface"
+            width={1280}
+            height={800}
             className="aspect-[16/10] w-full rounded-xl object-cover object-top"
           />
         </div>

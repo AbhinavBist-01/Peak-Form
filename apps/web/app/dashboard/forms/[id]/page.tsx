@@ -16,8 +16,6 @@ import {
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 
-import { AppSidebar } from "~/components/app-sidebar";
-import { SiteHeader } from "~/components/site-header";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import {
   AlertDialog,
@@ -50,7 +48,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 import { Switch } from "~/components/ui/switch";
 import {
   Table,
@@ -424,19 +421,8 @@ export default function Page() {
   };
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader title="Edit form" />
-        <main className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6 peak-topography">
+    <>
+      <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6 peak-topography">
             <div className="peak-glass grid gap-5 rounded-xl p-5 xl:grid-cols-[1fr_auto] xl:items-center">
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
@@ -699,7 +685,6 @@ export default function Page() {
               </aside>
             </div>
           </div>
-        </main>
 
         <Dialog
           open={Boolean(editingField)}
@@ -736,8 +721,7 @@ export default function Page() {
             </form>
           </DialogContent>
         </Dialog>
-      </SidebarInset>
-    </SidebarProvider>
+    </>
   );
 }
 

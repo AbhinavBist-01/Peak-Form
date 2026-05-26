@@ -1,5 +1,6 @@
 import { ArrowLeft, Home, LogIn, Search } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard" },
@@ -31,9 +32,11 @@ export default function NotFound() {
               href="/"
               className="flex items-center gap-2 text-sm font-semibold text-white"
             >
-              <img
+              <Image
                 src="/peakform-logo.svg"
                 alt="PeakForm"
+                width={32}
+                height={32}
                 className="size-8 rounded-md bg-white/10 p-1 ring-1 ring-white/20"
               />
               <span>PeakForm</span>

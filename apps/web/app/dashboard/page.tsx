@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRightIcon,
   BarChart3Icon,
@@ -10,11 +11,8 @@ import {
   SendIcon,
 } from "lucide-react";
 
-import { AppSidebar } from "~/components/app-sidebar";
-import { SiteHeader } from "~/components/site-header";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 
 const quickActions = [
   {
@@ -45,19 +43,7 @@ const systemCards = [
 
 export default function Page() {
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader title="Dashboard" />
-        <main className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6 peak-topography">
+    <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6 peak-topography">
             <section className="peak-glass grid overflow-hidden rounded-xl lg:grid-cols-[1fr_25rem]">
               <div className="grid content-center gap-6 p-6 md:p-8">
                 <Badge className="w-fit gap-2 bg-[#061b0e] text-white">
@@ -84,9 +70,11 @@ export default function Page() {
                   </Button>
                 </div>
               </div>
-              <img
+              <Image
                 src="/peakform-builder-preview.png"
                 alt=""
+                width={640}
+                height={520}
                 className="hidden h-full min-h-80 w-full object-cover object-left-top lg:block"
               />
             </section>
@@ -129,8 +117,5 @@ export default function Page() {
               })}
             </section>
           </div>
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
   );
 }

@@ -12,8 +12,6 @@ import {
   Trash2Icon,
 } from "lucide-react";
 
-import { AppSidebar } from "~/components/app-sidebar";
-import { SiteHeader } from "~/components/site-header";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import {
   AlertDialog,
@@ -35,7 +33,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 import {
   Table,
   TableBody,
@@ -168,19 +165,8 @@ export default function Page() {
   };
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader title="Submissions" />
-        <main className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6">
+    <>
+      <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6 peak-topography">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
                 <h2 className="text-2xl font-semibold tracking-normal">Submissions</h2>
@@ -477,7 +463,6 @@ export default function Page() {
               <p className="text-sm text-muted-foreground">Refreshing submissions...</p>
             ) : null}
           </div>
-        </main>
 
         <Dialog
           open={Boolean(selectedSubmissionId)}
@@ -510,11 +495,10 @@ export default function Page() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">Response not found.</p>
-            )}
-          </DialogContent>
-        </Dialog>
-      </SidebarInset>
-    </SidebarProvider>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

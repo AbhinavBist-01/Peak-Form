@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import {
   IconDashboard,
   IconClipboardText,
@@ -62,7 +63,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!">
               <a href="/dashboard">
                 <span className="grid size-8 shrink-0 place-items-center rounded-md bg-[#061b0e]">
-                  <img src="/peakform-logo.svg" alt="PeakForm" className="size-5 invert" />
+                  <Image
+                    src="/peakform-logo.svg"
+                    alt="PeakForm"
+                    width={20}
+                    height={20}
+                    className="size-5 invert"
+                  />
                 </span>
                 <span className="peak-serif text-lg font-semibold tracking-normal text-[#061b0e]">PeakForm</span>
               </a>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
   Check,
@@ -95,10 +96,12 @@ export default function PricingPage() {
   return (
     <main className="min-h-screen bg-[#f7fafc] text-slate-950">
       <section className="relative overflow-hidden border-b border-slate-200/80">
-        <img
+        <Image
           src="/pricing-mountains.svg"
           alt=""
           aria-hidden="true"
+          width={1600}
+          height={430}
           className="absolute inset-x-0 bottom-0 h-[430px] w-full object-cover opacity-75"
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(247,250,252,0.96),rgba(247,250,252,0.82)_50%,rgba(247,250,252,0.96))]" />
@@ -106,9 +109,11 @@ export default function PricingPage() {
         <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 py-5 md:px-6 md:py-8">
           <header className="flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-2 font-semibold">
-              <img
+              <Image
                 src="/peakform-logo.svg"
                 alt="PeakForm"
+                width={32}
+                height={32}
                 className="size-8 rounded-md bg-slate-950 p-1.5"
               />
               <span>PeakForm</span>
