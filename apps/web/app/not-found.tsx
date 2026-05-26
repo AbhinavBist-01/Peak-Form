@@ -18,14 +18,15 @@ export default function NotFound() {
       />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,10,18,0.24),rgba(6,10,18,0.86))]" />
 
-      <section className="relative w-full max-w-5xl rounded-md bg-white p-3 shadow-2xl shadow-black/45 sm:p-5">
+      <section className="peak-reveal relative w-full max-w-5xl rounded-xl bg-white p-3 shadow-2xl shadow-black/45 sm:p-5">
         <div className="relative min-h-[560px] overflow-hidden rounded-md bg-zinc-950 sm:min-h-[620px]">
           <div
             aria-hidden="true"
             className="absolute inset-0 scale-110 bg-cover bg-center opacity-70 blur-md"
             style={{ backgroundImage: 'url("/not-found-mountains.png")' }}
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,16,28,0.76),rgba(11,16,28,0.36)_42%,rgba(11,16,28,0.9))]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,27,14,0.76),rgba(6,27,14,0.34)_42%,rgba(6,27,14,0.92))]" />
+          <div className="absolute inset-0 peak-topography peak-topography-motion opacity-25" />
 
           <header className="relative z-10 flex items-center justify-between gap-4 px-4 py-4 sm:px-6">
             <Link
@@ -56,7 +57,7 @@ export default function NotFound() {
 
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 rounded-full bg-orange-400 px-4 py-2 text-xs font-bold text-zinc-950 shadow-lg shadow-black/20 transition hover:bg-orange-300"
+              className="peak-button-motion inline-flex items-center gap-2 rounded-full bg-[#d0e9d4] px-4 py-2 text-xs font-bold text-[#061b0e] shadow-lg shadow-black/20 transition hover:bg-white"
             >
               <LogIn className="size-4" />
               Login
@@ -77,10 +78,10 @@ export default function NotFound() {
               Oops! Looks like this page got lost in the mountains.
             </p>
 
-            <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
+            <div className="peak-stagger mt-10 flex flex-col items-center gap-3 sm:flex-row">
               <Link
                 href="/dashboard"
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-orange-400 px-6 text-sm font-bold text-zinc-950 shadow-lg shadow-black/25 transition hover:bg-orange-300"
+                className="peak-button-motion inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#d0e9d4] px-6 text-sm font-bold text-[#061b0e] shadow-lg shadow-black/25 transition hover:bg-white"
               >
                 <Home className="size-4" />
                 Dashboard

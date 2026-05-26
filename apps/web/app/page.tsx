@@ -56,15 +56,18 @@ export default function Home() {
     <main className="min-h-screen overflow-hidden bg-[#f9faf8] text-[#191c1b]">
       <section className="relative min-h-[92svh] overflow-hidden">
         <video
-          className="absolute inset-0 h-full w-full object-cover"
-          src="/peakform-mountain-loop.mp4"
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full scale-[1.03] object-cover brightness-[0.82] saturate-[1.08]"
+          src="/peakform-mountain-loop%20-%20Trim.mp4"
           autoPlay
           muted
           loop
           playsInline
+          preload="auto"
           poster="/peakform-builder-preview.png"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,27,14,0.66),rgba(6,27,14,0.38)_42%,rgba(249,250,248,0.96)_96%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_26%,rgba(208,233,212,0.16),transparent_30%),linear-gradient(180deg,rgba(6,27,14,0.72),rgba(6,27,14,0.42)_42%,rgba(249,250,248,0.96)_96%)]" />
+        <div className="absolute inset-x-0 top-0 h-36 bg-[linear-gradient(180deg,rgba(6,27,14,0.72),transparent)]" />
         <div className="absolute inset-0 peak-topography peak-topography-motion opacity-35" />
 
         <header className="peak-reveal relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-5 md:px-8">

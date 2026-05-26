@@ -1,9 +1,13 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useParams } from "next/navigation";
+import { CheckCircle2Icon, MountainIcon } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "~/components/ui/field";
@@ -88,7 +92,7 @@ function PublicFormField({ field }: { field: PublicField }) {
 
   if (field.type === "TEXTAREA") {
     return (
-      <Field>
+      <Field className="peak-lift rounded-xl border border-[#c3c8c1]/60 bg-white/70 p-4 backdrop-blur">
         <FieldLabel htmlFor={fieldId}>
           {field.label}
           {field.isRequired ? <span className="text-destructive">*</span> : null}
@@ -109,7 +113,7 @@ function PublicFormField({ field }: { field: PublicField }) {
 
   if (field.type === "YES_NO") {
     return (
-      <Field>
+      <Field className="peak-lift rounded-xl border border-[#c3c8c1]/60 bg-white/70 p-4 backdrop-blur">
         <FieldLabel>
           {field.label}
           {field.isRequired ? <span className="text-destructive">*</span> : null}
@@ -140,7 +144,7 @@ function PublicFormField({ field }: { field: PublicField }) {
           <FieldHelp field={field} />
           <div className="grid gap-3">
             {field.options.map((option) => (
-              <Field key={option} orientation="horizontal" className="items-start rounded-md border p-4">
+              <Field key={option} orientation="horizontal" className="items-start rounded-lg border border-[#c3c8c1]/60 bg-white/60 p-4">
                 <Checkbox id={`${fieldId}-${option}`} name={field.id} value={option} />
                 <FieldLabel htmlFor={`${fieldId}-${option}`}>{option}</FieldLabel>
               </Field>
@@ -151,7 +155,7 @@ function PublicFormField({ field }: { field: PublicField }) {
     }
 
     return (
-      <Field orientation="horizontal" className="items-start rounded-md border p-4">
+      <Field orientation="horizontal" className="peak-lift items-start rounded-xl border border-[#c3c8c1]/60 bg-white/70 p-4 backdrop-blur">
         <Checkbox id={fieldId} name={field.id} required={Boolean(field.isRequired)} />
         <div className="grid gap-1.5">
           <FieldLabel htmlFor={fieldId}>
@@ -166,7 +170,7 @@ function PublicFormField({ field }: { field: PublicField }) {
 
   if (field.type === "SELECT") {
     return (
-      <Field>
+      <Field className="peak-lift rounded-xl border border-[#c3c8c1]/60 bg-white/70 p-4 backdrop-blur">
         <FieldLabel htmlFor={fieldId}>
           {field.label}
           {field.isRequired ? <span className="text-destructive">*</span> : null}
@@ -190,7 +194,7 @@ function PublicFormField({ field }: { field: PublicField }) {
 
   if (field.type === "RADIO") {
     return (
-      <Field>
+      <Field className="peak-lift rounded-xl border border-[#c3c8c1]/60 bg-white/70 p-4 backdrop-blur">
         <FieldLabel>
           {field.label}
           {field.isRequired ? <span className="text-destructive">*</span> : null}
@@ -198,7 +202,7 @@ function PublicFormField({ field }: { field: PublicField }) {
         <FieldHelp field={field} />
         <RadioGroup name={field.id} required={Boolean(field.isRequired)}>
           {getFieldOptions(field).map((option) => (
-            <div key={option} className="flex items-center gap-2">
+            <div key={option} className="flex items-center gap-2 rounded-lg border border-[#c3c8c1]/55 bg-white/60 px-3 py-2">
               <RadioGroupItem id={`${fieldId}-${option}`} value={option} />
               <Label htmlFor={`${fieldId}-${option}`}>{option}</Label>
             </div>
@@ -210,7 +214,7 @@ function PublicFormField({ field }: { field: PublicField }) {
 
   if (field.type === "RATING") {
     return (
-      <Field>
+      <Field className="peak-lift rounded-xl border border-[#c3c8c1]/60 bg-white/70 p-4 backdrop-blur">
         <FieldLabel>
           {field.label}
           {field.isRequired ? <span className="text-destructive">*</span> : null}
@@ -218,7 +222,7 @@ function PublicFormField({ field }: { field: PublicField }) {
         <FieldHelp field={field} />
         <RadioGroup name={field.id} required={Boolean(field.isRequired)} className="flex flex-wrap gap-2">
           {getRatingOptions(field).map((rating) => (
-            <div key={rating} className="flex items-center gap-2 rounded-md border px-3 py-2">
+            <div key={rating} className="flex items-center gap-2 rounded-lg border border-[#c3c8c1]/60 bg-white/65 px-3 py-2">
               <RadioGroupItem id={`${fieldId}-${rating}`} value={rating} />
               <Label htmlFor={`${fieldId}-${rating}`}>{rating}</Label>
             </div>
@@ -229,7 +233,7 @@ function PublicFormField({ field }: { field: PublicField }) {
   }
 
   return (
-    <Field>
+    <Field className="peak-lift rounded-xl border border-[#c3c8c1]/60 bg-white/70 p-4 backdrop-blur">
       <FieldLabel htmlFor={fieldId}>
         {field.label}
         {field.isRequired ? <span className="text-destructive">*</span> : null}
@@ -294,16 +298,33 @@ export default function Page() {
 
   return (
     <main
-      className="min-h-screen bg-muted/30 px-4 py-8 md:py-12"
+      className="peak-topography peak-topography-motion min-h-screen overflow-hidden bg-[#f9faf8] px-4 py-6 md:py-10"
       style={{
         backgroundColor: theme?.backgroundColor,
         color: theme?.textColor,
         fontFamily: theme?.fontFamily,
       }}
     >
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+        <header className="peak-reveal flex items-center justify-between gap-4">
+          <Link href="/" className="flex items-center gap-3 font-semibold text-[#061b0e]">
+            <Image
+              src="/peakform-logo.svg"
+              alt="PeakForm"
+              width={34}
+              height={34}
+              className="size-8 invert"
+            />
+            <span className="peak-serif text-xl tracking-normal">PeakForm</span>
+          </Link>
+          <Badge className="gap-2 bg-[#061b0e] text-white">
+            <MountainIcon className="size-3.5" />
+            Public form
+          </Badge>
+        </header>
+
         {isLoading ? (
-          <div className="rounded-lg border bg-background p-6 shadow-sm">
+          <div className="peak-glass rounded-xl p-6">
             <div className="h-7 w-2/3 animate-pulse rounded bg-muted" />
             <div className="mt-3 h-4 w-full animate-pulse rounded bg-muted" />
             <div className="mt-8 grid gap-5">
@@ -319,24 +340,30 @@ export default function Page() {
           </Alert>
         ) : form ? (
           <form
-            className="rounded-lg border bg-background p-5 shadow-sm md:p-7"
+            className="peak-glass peak-reveal rounded-xl p-5 md:p-7"
             style={{
               color: theme?.textColor,
               fontFamily: theme?.fontFamily,
             }}
             onSubmit={onSubmit}
           >
-            <div className="grid gap-2">
-              <h1 className="text-2xl font-semibold tracking-normal md:text-3xl">{form.title}</h1>
+            <div className="peak-stagger grid gap-3">
+              <Badge variant="secondary" className="w-fit bg-[#d0e9d4] text-[#061b0e]">
+                {theme?.name ?? "PeakForm"}
+              </Badge>
+              <h1 className="peak-serif text-3xl font-semibold tracking-normal text-[#061b0e] md:text-5xl">
+                {form.title}
+              </h1>
               {form.description ? (
-                <p className="text-sm leading-6 text-muted-foreground">{form.description}</p>
+                <p className="max-w-2xl text-sm leading-6 text-[#59645b] md:text-base md:leading-7">{form.description}</p>
               ) : null}
             </div>
 
             <Separator className="my-6" />
 
             {submissionId ? (
-              <Alert className="mb-6">
+              <Alert className="mb-6 border-[#b4cdb8] bg-[#d0e9d4]/55">
+                <CheckCircle2Icon className="size-4" />
                 <AlertTitle>Response submitted</AlertTitle>
                 <AlertDescription>Your response has been recorded.</AlertDescription>
               </Alert>
@@ -350,7 +377,7 @@ export default function Page() {
             ) : null}
 
             {fields.length ? (
-              <FieldGroup className="gap-6">
+              <FieldGroup className="gap-5">
                 {fields.map((field) => (
                   <PublicFormField key={field.id} field={field} />
                 ))}
@@ -368,8 +395,10 @@ export default function Page() {
               <Button
                 type="submit"
                 disabled={!fields.length || isSubmitting}
+                className="peak-button-motion"
                 style={{
-                  backgroundColor: theme?.accentColor,
+                  backgroundColor: theme?.accentColor ?? "#061b0e",
+                  color: "#ffffff",
                 }}
               >
                 {isSubmitting ? "Submitting..." : "Submit"}

@@ -94,8 +94,8 @@ export default function PricingPage() {
   const [annual, setAnnual] = React.useState(true);
 
   return (
-    <main className="min-h-screen bg-[#f7fafc] text-slate-950">
-      <section className="relative overflow-hidden border-b border-slate-200/80">
+    <main className="min-h-screen bg-[#f9faf8] text-[#191c1b]">
+      <section className="peak-topography peak-topography-motion relative overflow-hidden border-b border-[#c3c8c1]/60">
         <Image
           src="/pricing-mountains.svg"
           alt=""
@@ -104,7 +104,7 @@ export default function PricingPage() {
           height={430}
           className="absolute inset-x-0 bottom-0 h-[430px] w-full object-cover opacity-75"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(247,250,252,0.96),rgba(247,250,252,0.82)_50%,rgba(247,250,252,0.96))]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(249,250,248,0.97),rgba(237,241,236,0.78)_50%,rgba(249,250,248,0.96))]" />
 
         <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 py-5 md:px-6 md:py-8">
           <header className="peak-reveal flex items-center justify-between gap-4">
@@ -135,7 +135,7 @@ export default function PricingPage() {
               <Button variant="ghost" asChild className="peak-button-motion hidden sm:inline-flex">
                 <Link href="/login">Login</Link>
               </Button>
-              <Button asChild className="peak-button-motion bg-orange-400 text-slate-950 hover:bg-orange-300">
+              <Button asChild className="peak-button-motion bg-[#061b0e] text-white hover:bg-[#1b3022]">
                 <Link href="/signup">Free trial</Link>
               </Button>
             </div>
@@ -164,7 +164,7 @@ export default function PricingPage() {
                 checked={annual}
                 onCheckedChange={setAnnual}
                 aria-label="Use annual billing"
-                className="data-[state=checked]:bg-orange-400"
+                className="data-[state=checked]:bg-[#4d6453]"
               />
               <span className={cn("text-sm", annual ? "font-semibold text-slate-950" : "text-slate-500")}>
                 Annually
@@ -180,12 +180,12 @@ export default function PricingPage() {
               <Card
                 key={plan.name}
                 className={cn(
-                  "peak-lift peak-shine relative min-h-[520px] rounded-md border-slate-200 bg-white/92 py-0 shadow-xl shadow-slate-200/70 backdrop-blur",
-                  plan.highlighted && "border-slate-950 ring-2 ring-orange-300"
+                  "peak-lift peak-shine relative min-h-[520px] rounded-lg border-[#c3c8c1]/65 bg-white/92 py-0 shadow-xl shadow-[#4c616c]/12 backdrop-blur",
+                  plan.highlighted && "border-[#061b0e] ring-2 ring-[#b4cdb8]"
                 )}
               >
                 {plan.highlighted ? (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-orange-400 px-4 py-1 text-xs font-bold text-slate-950 shadow-lg">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#d0e9d4] px-4 py-1 text-xs font-bold text-[#061b0e] shadow-lg">
                     Best for teams
                   </div>
                 ) : null}
@@ -226,7 +226,7 @@ export default function PricingPage() {
                   <ul className="grid gap-3 text-sm text-slate-600">
                     {plan.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-3">
-                        <Check className="mt-0.5 size-4 shrink-0 text-sky-500" />
+                        <Check className="mt-0.5 size-4 shrink-0 text-[#4d6453]" />
                         <span>{feature}</span>
                       </li>
                     ))}
@@ -237,7 +237,7 @@ export default function PricingPage() {
                     variant={plan.highlighted ? "default" : "outline"}
                     className={cn(
                       "w-full",
-                      plan.highlighted && "bg-orange-400 text-slate-950 hover:bg-orange-300"
+                      plan.highlighted && "bg-[#061b0e] text-white hover:bg-[#1b3022]"
                     )}
                   >
                     <Link href={plan.href}>
@@ -261,16 +261,16 @@ export default function PricingPage() {
           </p>
         </div>
 
-        <div className="grid overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm md:grid-cols-2">
+        <div className="peak-glass grid overflow-hidden rounded-xl md:grid-cols-2">
           {discounts.map((discount, index) => (
             <article
               key={discount.title}
               className={cn(
                 "grid gap-5 p-8 text-center",
-                index === 0 && "border-b border-slate-200 md:border-b-0 md:border-r"
+                index === 0 && "border-b border-[#c3c8c1]/60 md:border-b-0 md:border-r"
               )}
             >
-              <div className="mx-auto grid size-12 place-items-center rounded-md bg-slate-950 text-white">
+              <div className="mx-auto grid size-12 place-items-center rounded-lg bg-[#061b0e] text-white">
                 {index === 0 ? <FileText className="size-5" /> : <ShieldCheck className="size-5" />}
               </div>
               <div className="grid gap-2">
@@ -279,7 +279,7 @@ export default function PricingPage() {
                   {discount.description}
                 </p>
               </div>
-              <Button variant="link" asChild className="text-sky-600">
+              <Button variant="link" asChild className="text-[#4d6453]">
                 <Link href="/dashboard/forms">
                   Learn more
                   <ArrowRight className="size-4" />
@@ -289,7 +289,7 @@ export default function PricingPage() {
           ))}
         </div>
 
-        <div className="grid gap-4 rounded-md border border-slate-200 bg-slate-950 p-6 text-white shadow-xl md:grid-cols-[1fr_auto] md:items-center">
+        <div className="peak-shine grid gap-4 rounded-xl border border-[#c3c8c1]/55 bg-[#061b0e] p-6 text-white shadow-xl md:grid-cols-[1fr_auto] md:items-center">
           <div className="grid gap-2">
             <Badge className="w-fit bg-white text-slate-950">
               <Sparkles className="size-3" />
@@ -300,7 +300,7 @@ export default function PricingPage() {
               Build a form, publish the share link, and start collecting responses without waiting for a full workspace setup.
             </p>
           </div>
-          <Button asChild className="peak-button-motion bg-orange-400 text-slate-950 hover:bg-orange-300">
+          <Button asChild className="peak-button-motion bg-[#d0e9d4] text-[#061b0e] hover:bg-white">
             <Link href="/dashboard/forms">
               Open forms
               <CircleDollarSign className="size-4" />

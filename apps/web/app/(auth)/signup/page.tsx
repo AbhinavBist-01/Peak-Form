@@ -10,11 +10,12 @@ export default function Page() {
       <div className="absolute inset-0 lg:relative">
         <video
           className="h-full w-full object-cover"
-          src="/peakform-mountain-loop.mp4"
+          src="/peakform-mountain-loop%20-%20Trim.mp4"
           autoPlay
           muted
           loop
           playsInline
+          preload="auto"
           poster="/peakform-builder-preview.png"
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,27,14,0.8),rgba(6,27,14,0.5),rgba(6,27,14,0.9))]" />

@@ -30,8 +30,6 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   });
 
   const onSubmit = async (values: SignupFormValues) => {
-    console.log("Signup form values:", values);
-
     await createUserWithEmailAndPasswordAsync({
       fullName: values.name,
       email: values.email,
@@ -41,7 +39,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   };
 
   return (
-    <Card className="peak-glass border-[#c3c8c1]/70 bg-white/86 shadow-2xl" {...props}>
+    <Card className="peak-glass peak-shine border-[#c3c8c1]/70 bg-white/86 shadow-2xl" {...props}>
       <CardHeader className="gap-3">
         <CardTitle className="peak-serif text-3xl font-semibold tracking-normal text-[#061b0e]">
           Create your PeakForm account
@@ -87,11 +85,8 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
             </Field>
             <FieldGroup>
               <Field>
-                <Button type="submit" className="bg-[#061b0e] text-white hover:bg-[#1b3022]">
+                <Button type="submit" className="peak-button-motion bg-[#061b0e] text-white hover:bg-[#1b3022]">
                   Create Account
-                </Button>
-                <Button variant="outline" type="button" className="border-[#4d6453]/35 bg-white/60">
-                  Sign up with Google
                 </Button>
                 <FieldDescription className="px-6 text-center">
                   Already have an account?{" "}
