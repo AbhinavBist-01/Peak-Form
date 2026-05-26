@@ -3,18 +3,14 @@
 import * as React from "react";
 import {
   IconDashboard,
-  IconFileAi,
-  IconFileDescription,
-  IconSettings,
   IconClipboardText,
   IconWorldSearch,
   IconCreditCard,
 } from "@tabler/icons-react";
 
-import { NavDocuments } from "~/components/nav-documents";
 import { NavMain } from "~/components/nav-main";
-import { NavSecondary } from "~/components/nav-secondary";
 import { NavUser } from "~/components/nav-user";
+import { useUser } from "~/hooks/api/auth";
 import {
   Sidebar,
   SidebarContent,
@@ -26,11 +22,6 @@ import {
 } from "~/components/ui/sidebar";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
@@ -53,29 +44,16 @@ const data = {
       icon: IconCreditCard,
     },
   ],
-
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
-  ],
-  documents: [
-    {
-      name: "Meeting notes",
-      url: "#",
-      icon: IconFileDescription,
-    },
-    {
-      name: "Design system",
-      url: "#",
-      icon: IconFileAi,
-    },
-  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useUser();
+  const displayUser = {
+    name: user?.fullName ?? "PeakForm user",
+    email: user?.email ?? "Signed in workspace",
+    avatar: "",
+  };
+
   return (
     <Sidebar collapsible="offcanvas" className="border-[#c3c8c1]/50 bg-[#f9faf8]/85 backdrop-blur-xl" {...props}>
       <SidebarHeader>
@@ -94,11 +72,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={displayUser} />
       </SidebarFooter>
     </Sidebar>
   );
