@@ -2,16 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import {
-  ExternalLinkIcon,
-  EyeOffIcon,
-  GlobeIcon,
-  PencilIcon,
-  PlusIcon,
-  RocketIcon,
-  SettingsIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
@@ -37,15 +28,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "~/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import {
   Table,
   TableBody,
@@ -59,78 +43,21 @@ import {
   useCreateForm,
   useDeleteForm,
   useListForms,
-  usePublishForm,
-  useUnpublishForm,
-  useUpdateFormSettings,
 } from "~/hooks/api/form";
 
 type CreateFormValues = {
   title: string;
   description: string;
-  expiresAt: string;
 };
 type FormRow = NonNullable<ReturnType<typeof useListForms>["forms"]>[number];
-type SettingsFormValues = {
-  title: string;
-  description: string;
-  visibility: "public" | "unlisted";
-  expiresAt: string;
-  themeName: string;
-  backgroundColor: string;
-  accentColor: string;
-  textColor: string;
-  fontFamily: string;
-};
-
-const dateFormatter = new Intl.DateTimeFormat("en", {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
-
-function formatDate(value: Date | string | null | undefined) {
-  if (!value) {
-    return "No expiry";
-  }
-
-  const date = value instanceof Date ? value : new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Invalid date";
-  }
-
-  return dateFormatter.format(date);
-}
-
-function toDateTimeLocalValue(value: Date | string | null | undefined) {
-  if (!value) {
-    return "";
-  }
-
-  const date = value instanceof Date ? value : new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
-  return offsetDate.toISOString().slice(0, 16);
-}
 
 function getFormStatus(form: FormRow) {
-  if (form.status === "published" && form.expiresAt) {
-    const expiryDate = new Date(form.expiresAt);
-
-    if (!Number.isNaN(expiryDate.getTime()) && expiryDate.getTime() < Date.now()) {
-      return "Expired";
-    }
-  }
-
   if (form.status === "published") {
     return "Published";
   }
 
   if (form.status === "archived") {
-    return "Archived";
+    return "Unpublished";
   }
 
   return "Draft";
@@ -160,7 +87,6 @@ export default function Page() {
     defaultValues: {
       title: "",
       description: "",
-      expiresAt: "",
     },
   });
 
@@ -168,7 +94,6 @@ export default function Page() {
     const result = await createFormAsync({
       title: values.title,
       description: values.description || undefined,
-      expiresAt: values.expiresAt ? new Date(values.expiresAt).toISOString() : undefined,
     });
 
     setCreatedFormId(result.id);
@@ -198,7 +123,7 @@ export default function Page() {
                   Forms
                 </h2>
                 <p className="max-w-2xl text-sm leading-6 text-[#59645b]">
-                  Create, publish, and manage public or unlisted forms with themes that feel calm and intentional.
+                  Keep this list simple. Open a form to manage fields, publishing, visibility, themes, and responses.
                 </p>
               </div>
 
@@ -213,7 +138,7 @@ export default function Page() {
                   <DialogHeader>
                     <DialogTitle>Create form</DialogTitle>
                     <DialogDescription>
-                      Add the basic details. Fields can be configured after the form exists.
+                      Add the basic details. Publishing, visibility, and theme settings live inside the form editor.
                     </DialogDescription>
                   </DialogHeader>
 
@@ -244,14 +169,6 @@ export default function Page() {
                           className="min-h-24"
                           {...register("description")}
                         />
-                      </Field>
-
-                      <Field>
-                        <FieldLabel htmlFor="expiresAt">Expires at</FieldLabel>
-                        <Input id="expiresAt" type="datetime-local" {...register("expiresAt")} />
-                        <FieldDescription>
-                          Leave empty if the form should stay open.
-                        </FieldDescription>
                       </Field>
 
                       {error ? <FieldError>{error.message}</FieldError> : null}
@@ -305,41 +222,32 @@ export default function Page() {
               <Table>
                 <TableHeader className="bg-[#edf1ec]">
                     <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead className="hidden md:table-cell">Created</TableHead>
-                      <TableHead className="hidden lg:table-cell">Expires</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="hidden lg:table-cell">Visibility</TableHead>
-                      <TableHead className="w-[30rem] text-right">Actions</TableHead>
+                      <TableHead>Form</TableHead>
+                      <TableHead className="w-40 text-center">Status</TableHead>
+                      <TableHead className="w-48 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                   {isLoadingForms ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                      <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
                         Loading forms...
                       </TableCell>
                     </TableRow>
                   ) : forms.length ? (
                     forms.map((form) => {
                       const formStatus = getFormStatus(form);
-                      const isPublished = form.status === "published";
 
                       return (
                         <TableRow key={form.id} className="transition-colors hover:bg-[#edf1ec]/65">
                           <TableCell>
                             <div className="grid gap-1">
-                              {isPublished ? (
-                                <Button
-                                  variant="link"
-                                  className="h-auto justify-start p-0 text-left text-foreground"
-                                  asChild
-                                >
-                                  <Link href={`/form/${form.id}`}>{form.title}</Link>
-                                </Button>
-                              ) : (
-                                <span className="font-medium">{form.title}</span>
-                              )}
+                              <Link
+                                href={`/dashboard/forms/${form.id}`}
+                                className="font-medium text-[#061b0e] transition hover:text-[#4d6453]"
+                              >
+                                {form.title}
+                              </Link>
                               {form.description ? (
                                 <p className="max-w-[28rem] truncate text-sm text-muted-foreground">
                                   {form.description}
@@ -347,18 +255,13 @@ export default function Page() {
                               ) : null}
                             </div>
                           </TableCell>
-                          <TableCell className="hidden text-muted-foreground md:table-cell">
-                            {formatDate(form.createdAt)}
-                          </TableCell>
-                          <TableCell className="hidden text-muted-foreground lg:table-cell">
-                            {formatDate(form.expiresAt)}
-                          </TableCell>
-                          <TableCell>
+                          <TableCell className="text-center">
                             <Badge
+                              className="min-w-24 justify-center"
                               variant={
                                 formStatus === "Published"
                                   ? "default"
-                                  : formStatus === "Expired"
+                                  : formStatus === "Unpublished"
                                     ? "secondary"
                                     : "outline"
                               }
@@ -366,32 +269,8 @@ export default function Page() {
                               {formStatus}
                             </Badge>
                           </TableCell>
-                          <TableCell className="hidden lg:table-cell">
-                            <Badge variant="outline" className="gap-1 capitalize">
-                              {form.visibility === "public" ? (
-                                <GlobeIcon className="size-3" />
-                              ) : (
-                                <EyeOffIcon className="size-3" />
-                              )}
-                              {form.visibility}
-                            </Badge>
-                          </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
-                              {isPublished ? (
-                                <Button size="sm" variant="outline" asChild>
-                                  <Link href={`/form/${form.id}`}>
-                                    <ExternalLinkIcon />
-                                    View
-                                  </Link>
-                                </Button>
-                              ) : (
-                                <Button size="sm" variant="outline" disabled>
-                                  <ExternalLinkIcon />
-                                  View
-                                </Button>
-                              )}
-                              <FormLifecycleActions form={form} />
                               <Button size="sm" variant="outline" asChild>
                                 <Link href={`/dashboard/forms/${form.id}`}>
                                   <PencilIcon />
@@ -402,7 +281,7 @@ export default function Page() {
                                 <AlertDialogTrigger asChild>
                                   <Button size="sm" variant="destructive" disabled={isDeleting}>
                                     <Trash2Icon />
-                                    Delete
+                                    Remove
                                   </Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
@@ -423,7 +302,7 @@ export default function Page() {
                                       disabled={deletingFormId === form.id}
                                       onClick={() => void onDeleteForm(form.id)}
                                     >
-                                      {deletingFormId === form.id ? "Deleting..." : "Delete form"}
+                                      {deletingFormId === form.id ? "Removing..." : "Remove form"}
                                     </AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
@@ -435,7 +314,7 @@ export default function Page() {
                     })
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-32 text-center">
+                      <TableCell colSpan={3} className="h-32 text-center">
                         <div className="mx-auto flex max-w-md flex-col items-center gap-2">
                           <h3 className="text-base font-medium">No forms yet</h3>
                           <p className="text-sm text-muted-foreground">
@@ -454,245 +333,4 @@ export default function Page() {
             ) : null}
           </div>
   );
-}
-
-function FormLifecycleActions({ form }: { form: FormRow }) {
-  const [settingsOpen, setSettingsOpen] = React.useState(false);
-  const {
-    publishFormAsync,
-    error: publishError,
-    status: publishStatus,
-  } = usePublishForm();
-  const {
-    unpublishFormAsync,
-    error: unpublishError,
-    status: unpublishStatus,
-  } = useUnpublishForm();
-  const {
-    updateFormSettingsAsync,
-    error: settingsError,
-    status: settingsStatus,
-  } = useUpdateFormSettings();
-  const settingsForm = useForm<SettingsFormValues>({
-    defaultValues: getSettingsDefaults(form),
-  });
-
-  const isPublishing = publishStatus === "pending";
-  const isUnpublishing = unpublishStatus === "pending";
-  const isSavingSettings = settingsStatus === "pending";
-  const isPublished = form.status === "published";
-
-  React.useEffect(() => {
-    if (!settingsOpen) {
-      return;
-    }
-
-    settingsForm.reset(getSettingsDefaults(form));
-  }, [form, settingsForm, settingsOpen]);
-
-  const onSaveSettings = async (values: SettingsFormValues) => {
-    const themeConfig = {
-      name: values.themeName.trim() || undefined,
-      backgroundColor: values.backgroundColor.trim() || undefined,
-      accentColor: values.accentColor.trim() || undefined,
-      textColor: values.textColor.trim() || undefined,
-      fontFamily: values.fontFamily.trim() || undefined,
-    };
-    const hasThemeConfig = Object.values(themeConfig).some(Boolean);
-
-    await updateFormSettingsAsync({
-      formId: form.id,
-      title: values.title,
-      description: values.description.trim() || null,
-      visibility: values.visibility,
-      expiresAt: values.expiresAt ? new Date(values.expiresAt).toISOString() : null,
-      themeConfig: hasThemeConfig ? themeConfig : null,
-    });
-
-    setSettingsOpen(false);
-  };
-
-  return (
-    <>
-      {isPublished ? (
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={isUnpublishing}
-          onClick={() => void unpublishFormAsync({ formId: form.id })}
-        >
-          <EyeOffIcon />
-          {isUnpublishing ? "Unpublishing..." : "Unpublish"}
-        </Button>
-      ) : (
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={isPublishing}
-          onClick={() => void publishFormAsync({ formId: form.id })}
-        >
-          <RocketIcon />
-          {isPublishing ? "Publishing..." : "Publish"}
-        </Button>
-      )}
-
-      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogTrigger asChild>
-          <Button size="sm" variant="outline">
-            <SettingsIcon />
-            Settings
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Form settings</DialogTitle>
-            <DialogDescription>
-              Control visibility, expiry, and the public form theme.
-            </DialogDescription>
-          </DialogHeader>
-          <form className="grid gap-5" onSubmit={settingsForm.handleSubmit(onSaveSettings)}>
-            <FieldGroup className="gap-4">
-              <Field>
-                <FieldLabel htmlFor={`settings-title-${form.id}`}>Title</FieldLabel>
-                <Input
-                  id={`settings-title-${form.id}`}
-                  aria-invalid={Boolean(settingsForm.formState.errors.title)}
-                  {...settingsForm.register("title", {
-                    required: "Title is required",
-                    maxLength: {
-                      value: 55,
-                      message: "Title must be 55 characters or less",
-                    },
-                  })}
-                />
-                <FieldError errors={[settingsForm.formState.errors.title]} />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor={`settings-description-${form.id}`}>Description</FieldLabel>
-                <Textarea
-                  id={`settings-description-${form.id}`}
-                  className="min-h-20"
-                  {...settingsForm.register("description", {
-                    maxLength: {
-                      value: 500,
-                      message: "Description must be 500 characters or less",
-                    },
-                  })}
-                />
-                <FieldError errors={[settingsForm.formState.errors.description]} />
-              </Field>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field>
-                  <FieldLabel htmlFor={`settings-visibility-${form.id}`}>Visibility</FieldLabel>
-                  <Select
-                    value={settingsForm.watch("visibility")}
-                    onValueChange={(value) =>
-                      settingsForm.setValue("visibility", value as SettingsFormValues["visibility"])
-                    }
-                  >
-                    <SelectTrigger id={`settings-visibility-${form.id}`} className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="public">Public</SelectItem>
-                      <SelectItem value="unlisted">Unlisted</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor={`settings-expires-${form.id}`}>Expires at</FieldLabel>
-                  <Input
-                    id={`settings-expires-${form.id}`}
-                    type="datetime-local"
-                    {...settingsForm.register("expiresAt")}
-                  />
-                </Field>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field>
-                  <FieldLabel htmlFor={`settings-theme-${form.id}`}>Theme name</FieldLabel>
-                  <Input
-                    id={`settings-theme-${form.id}`}
-                    placeholder="Studio night"
-                    {...settingsForm.register("themeName")}
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor={`settings-font-${form.id}`}>Font family</FieldLabel>
-                  <Input
-                    id={`settings-font-${form.id}`}
-                    placeholder="Inter"
-                    {...settingsForm.register("fontFamily")}
-                  />
-                </Field>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-3">
-                <Field>
-                  <FieldLabel htmlFor={`settings-bg-${form.id}`}>Background</FieldLabel>
-                  <Input
-                    id={`settings-bg-${form.id}`}
-                    placeholder="#ffffff"
-                    {...settingsForm.register("backgroundColor")}
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor={`settings-accent-${form.id}`}>Accent</FieldLabel>
-                  <Input
-                    id={`settings-accent-${form.id}`}
-                    placeholder="#2563eb"
-                    {...settingsForm.register("accentColor")}
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor={`settings-text-${form.id}`}>Text</FieldLabel>
-                  <Input
-                    id={`settings-text-${form.id}`}
-                    placeholder="#111827"
-                    {...settingsForm.register("textColor")}
-                  />
-                </Field>
-              </div>
-
-              {settingsError ? <FieldError>{settingsError.message}</FieldError> : null}
-              {publishError ? <FieldError>{publishError.message}</FieldError> : null}
-              {unpublishError ? <FieldError>{unpublishError.message}</FieldError> : null}
-            </FieldGroup>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isSavingSettings}
-                onClick={() => setSettingsOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSavingSettings}>
-                {isSavingSettings ? "Saving..." : "Save settings"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-}
-
-function getSettingsDefaults(form: FormRow): SettingsFormValues {
-  return {
-    title: form.title,
-    description: form.description ?? "",
-    visibility: form.visibility,
-    expiresAt: toDateTimeLocalValue(form.expiresAt),
-    themeName: form.themeConfig?.name ?? "",
-    backgroundColor: form.themeConfig?.backgroundColor ?? "",
-    accentColor: form.themeConfig?.accentColor ?? "",
-    textColor: form.themeConfig?.textColor ?? "",
-    fontFamily: form.themeConfig?.fontFamily ?? "",
-  };
 }
