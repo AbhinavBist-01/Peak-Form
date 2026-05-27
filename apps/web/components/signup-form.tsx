@@ -8,6 +8,7 @@ import { Input } from "~/components/ui/input";
 import { trpc } from "~/trpc/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { GoogleAuthButton } from "~/components/google-auth-button";
 
 function getSafeNextPath() {
   if (typeof window === "undefined") {
@@ -63,6 +64,14 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <div className="mb-6 space-y-4">
+          <GoogleAuthButton />
+          <div className="flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-[#7a857c]">
+            <div className="h-px flex-1 bg-[#d9ddd7]" />
+            <span>or</span>
+            <div className="h-px flex-1 bg-[#d9ddd7]" />
+          </div>
+        </div>
         <form onSubmit={handleSubmit(onSubmit)}>
           <FieldGroup>
             <Field>

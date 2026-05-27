@@ -4,12 +4,15 @@ import {
   createUserWithEmailAndPasswordInput,
   type SignInWithEmailAndPasswordInputType,
   signInWithEmailAndPasswordInput,
+  type SignInWithGoogleInputType,
+  signInWithGoogleInput,
 } from "./model";
 import * as JWT from "jsonwebtoken";
 import { db, eq } from "@repo/database";
 import { generateUserToken, type GenerateUserTokenType } from "./model";
 import { usersTable } from "@repo/database/models/user";
 import { env } from "../env";
+import { googleOAuth2Client } from "../clients/google-oauth";
 
 class UserService {
   private async getUserByEmail(email: string) {
@@ -98,6 +101,93 @@ class UserService {
       id: existingUser.id,
       token,
     };
+  }
+
+  public getGoogleAuthUrl(state: string) {
+    if (
+      !env.GOOGLE_OAUTH_CLIENT_ID ||
+      !env.GOOGLE_OAUTH_CLIENT_SECRET ||
+      !env.GOOGLE_OAUTH_REDIRECT_URI
+    ) {
+      throw new Error("Google OAuth is not configured");
+    }
+
+    return googleOAuth2Client.generateAuthUrl({
+      access_type: "offline",
+      prompt: "select_account",
+      scope: ["openid", "email", "profile"],
+      state,
+    });
+  }
+
+  public async signInWithGoogleCode(code: string) {
+    if (
+      !env.GOOGLE_OAUTH_CLIENT_ID ||
+      !env.GOOGLE_OAUTH_CLIENT_SECRET ||
+      !env.GOOGLE_OAUTH_REDIRECT_URI
+    ) {
+      throw new Error("Google OAuth is not configured");
+    }
+
+    const { tokens } = await googleOAuth2Client.getToken(code);
+    if (!tokens.id_token) throw new Error("Google did not return an ID token");
+
+    return this.signInWithGoogle({ idToken: tokens.id_token });
+  }
+
+  public async signInWithGoogle(payload: SignInWithGoogleInputType) {
+    const { idToken } = await signInWithGoogleInput.parseAsync(payload);
+
+    if (!env.GOOGLE_OAUTH_CLIENT_ID) {
+      throw new Error("Google OAuth client ID is not configured");
+    }
+
+    const ticket = await googleOAuth2Client.verifyIdToken({
+      idToken,
+      audience: env.GOOGLE_OAUTH_CLIENT_ID,
+    });
+    const profile = ticket.getPayload();
+
+    if (!profile?.email) throw new Error("Google account did not return an email address");
+    if (!profile.email_verified) throw new Error("Google account email is not verified");
+
+    const existingUser = await this.getUserByEmail(profile.email);
+    const fullName = profile.name || profile.email.split("@")[0] || "Google User";
+
+    if (existingUser) {
+      await db
+        .update(usersTable)
+        .set({
+          fullName: existingUser.fullName || fullName,
+          emailVerified: true,
+          profileImageUrl: profile.picture ?? existingUser.profileImageUrl,
+        })
+        .where(eq(usersTable.id, existingUser.id));
+
+      const { token } = await this.generateUserToken({ id: existingUser.id });
+      return { id: existingUser.id, token };
+    }
+
+    const userInputResult = await db
+      .insert(usersTable)
+      .values({
+        fullName,
+        email: profile.email,
+        emailVerified: true,
+        profileImageUrl: profile.picture,
+      })
+      .returning({
+        id: usersTable.id,
+      });
+
+    if (!userInputResult || userInputResult.length === 0 || !userInputResult[0]?.id) {
+      throw new Error("Failed to create Google user");
+    }
+
+    const userId = userInputResult[0].id;
+    const { token } = await this.generateUserToken({ id: userId });
+
+    return { id: userId, token };
   }
 
   public async verifyAndDecodeUserToken(token: string) {

@@ -22,3 +22,9 @@ export const signInWithEmailAndPasswordInput = z.object({
 });
 
 export type SignInWithEmailAndPasswordInputType = z.infer<typeof signInWithEmailAndPasswordInput>;
+
+export const signInWithGoogleInput = z.object({
+  idToken: z.string().min(1).describe("The Google ID token returned from OAuth"),
+});
+
+export type SignInWithGoogleInputType = z.infer<typeof signInWithGoogleInput>;

@@ -9,6 +9,7 @@ import { type FieldErrors, useForm } from "react-hook-form";
 import { useSignin } from "~/hooks/api/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { GoogleAuthButton } from "~/components/google-auth-button";
 
 function getSafeNextPath() {
   if (typeof window === "undefined") {
@@ -57,6 +58,14 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-6 space-y-4">
+            <GoogleAuthButton />
+            <div className="flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-[#7a857c]">
+              <div className="h-px flex-1 bg-[#d9ddd7]" />
+              <span>or</span>
+              <div className="h-px flex-1 bg-[#d9ddd7]" />
+            </div>
+          </div>
           <form onSubmit={handleSubmit(onSubmit, onError)}>
             <FieldGroup>
               <Field>
