@@ -39,7 +39,11 @@ export const useListForms = () => {
     isLoading,
     isSuccess,
     status,
-  } = trpc.form.listForms.useQuery();
+  } = trpc.form.listForms.useQuery(undefined, {
+    retry: 1,
+    refetchOnWindowFocus: false,
+    staleTime: 30 * 1000,
+  });
 
   return {
     forms,

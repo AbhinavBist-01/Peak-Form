@@ -67,7 +67,11 @@ export const useUser = () => {
     isLoading,
     isSuccess,
     status,
-  } = trpc.auth.getLoggedInUserInfo.useQuery();
+  } = trpc.auth.getLoggedInUserInfo.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
+  });
 
   return {
     user,
