@@ -4,11 +4,13 @@
   "globalEnv": [
     "BASE_URL",
     "DATABASE_URL",
+    "FRONTEND_URL",
     "GOOGLE_OAUTH_CLIENT_ID",
     "GOOGLE_OAUTH_CLIENT_SECRET",
     "GOOGLE_OAUTH_REDIRECT_URI",
     "JWT_SECRET",
     "LOGGER_LEVEL",
+    "NEXT_PUBLIC_API_DOCS_URL",
     "NEXT_PUBLIC_API_URL",
     "NODE_ENV",
     "PORT",
@@ -24,7 +26,7 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]

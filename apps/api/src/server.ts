@@ -12,15 +12,30 @@ import { env } from "./env";
 import cookieParser from "cookie-parser";
 
 export const app = express();
+app.set("trust proxy", 1);
+app.disable("x-powered-by");
+
+function normalizeOrigin(value: string) {
+  return new URL(value).origin;
+}
+
+const baseUrl = normalizeOrigin(env.BASE_URL);
 const openApiDocument = generateOpenApiDocument(serverRouter, {
   title: "PeakForm OpenAPI",
   version: "1.0.0",
-  baseUrl: env.BASE_URL.concat("/api"),
+  baseUrl: `${baseUrl}/api`,
 });
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  env.FRONTEND_URL,
+]
+  .filter((origin): origin is string => Boolean(origin))
+  .map(normalizeOrigin);
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+    origin: allowedOrigins,
     credentials: true,
   }),
 );

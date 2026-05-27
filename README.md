@@ -52,7 +52,9 @@ Create a root `.env` file:
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/dev
 JWT_SECRET=replace-with-a-long-secret
 BASE_URL=http://localhost:8000
+FRONTEND_URL=http://localhost:3000
 NEXT_PUBLIC_API_URL=http://localhost:8000/trpc
+NEXT_PUBLIC_API_DOCS_URL=http://localhost:8000/docs
 PORT=8000
 ```
 
@@ -111,6 +113,36 @@ Default local URLs:
 - OpenAPI JSON: `http://localhost:8000/openapi.json`
 - tRPC endpoint: `http://localhost:8000/trpc`
 - OpenAPI/REST endpoint base: `http://localhost:8000/api`
+
+## Production Settings
+
+Use these values when deploying the API and web as separate services:
+
+API service:
+
+```env
+DATABASE_URL=your-production-postgres-url
+JWT_SECRET=generate-a-long-random-secret
+NODE_ENV=production
+BASE_URL=https://your-api-domain
+FRONTEND_URL=https://your-web-domain
+PORT=railway-provides-this
+```
+
+Web service:
+
+```env
+NEXT_PUBLIC_API_URL=https://your-api-domain/trpc
+NEXT_PUBLIC_API_DOCS_URL=https://your-api-domain/docs
+```
+
+Production notes:
+
+- `BASE_URL` must be the deployed API origin, without `/trpc` or `/api`.
+- `FRONTEND_URL` must be the deployed web origin. It is used by API CORS.
+- Auth cookies automatically use `Secure` and `SameSite=None` when `NODE_ENV=production` or `NODE_ENV=prod`.
+- The API trusts proxy headers in production hosting, so rate limiting can use the real forwarded IP.
+- The web start script binds to `0.0.0.0` and uses the platform `PORT`.
 
 ## Useful Scripts
 

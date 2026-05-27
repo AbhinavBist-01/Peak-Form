@@ -5,11 +5,24 @@ import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
+import { env } from "~/env";
+
+function getApiDocsUrl() {
+  if (env.NEXT_PUBLIC_API_DOCS_URL) {
+    return env.NEXT_PUBLIC_API_DOCS_URL;
+  }
+
+  if (env.NEXT_PUBLIC_API_URL) {
+    return env.NEXT_PUBLIC_API_URL.replace(/\/trpc\/?$/, "/docs");
+  }
+
+  return "http://localhost:8000/docs";
+}
 
 const navLinks = [
   { label: "Explore", href: "/explore" },
   { label: "Pricing", href: "/pricing" },
-  { label: "API docs", href: "http://localhost:8000/docs" },
+  { label: "API docs", href: getApiDocsUrl() },
 ];
 
 export function MarketingNavbar() {
