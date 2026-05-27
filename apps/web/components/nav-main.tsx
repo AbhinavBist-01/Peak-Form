@@ -39,8 +39,8 @@ export function NavMain({
                   isActive={isActive}
                   asChild
                   className={cn(
-                    "peak-lift h-10 rounded-lg text-[#59645b] transition-colors hover:bg-[#d0e9d4]/70 hover:text-[#061b0e]",
-                    isActive && "bg-[#d0e9d4] font-semibold text-[#061b0e] shadow-sm"
+                    "peak-lift h-10 rounded-lg text-[#59645b] transition-colors hover:bg-[#d0e9d4]/70 hover:text-[#2f5d3b]",
+                    isActive && "bg-[#d0e9d4] font-semibold text-[#2f5d3b] shadow-sm"
                   )}
                 >
                   <a href={item.url} className="group/nav">

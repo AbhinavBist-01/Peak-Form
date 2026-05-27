@@ -1,5 +1,6 @@
 import { formSubmissionService } from "../../services";
 import { authenticatedProcedure, publicProcedure, router } from "../../trpc";
+import { rateLimitMiddleware } from "../../utils/rate-limit";
 import {
   createFormSubmissionInputModel,
   createFormSubmissionOutputModel,
@@ -15,10 +16,14 @@ import {
   getFormSubmissionsByFormIdOutputModel,
 } from "./model";
 
+const rateLimitedPublicProcedure = publicProcedure.use(
+  rateLimitMiddleware({ max: 10, windowMs: 60_000 }),
+);
+
 const TAGS = ["Form submission"];
 
 export const formSubmissionRouter = router({
-  createFormSubmission: publicProcedure
+  createFormSubmission: rateLimitedPublicProcedure
     .meta({
       openapi: {
         method: "POST",
@@ -47,9 +52,12 @@ export const formSubmissionRouter = router({
     .input(getFormSubmissionsByFormIdInputModel)
     .output(getFormSubmissionsByFormIdOutputModel)
     .query(async ({ input, ctx }) => {
-      return formSubmissionService.getFormSubmissionsByFormIdForUser({
+      return formSubmissionService.getPaginatedFormSubmissionsByFormIdForUser({
         formId: input.formId,
         userId: ctx.user.id,
+        page: input.page,
+        pageSize: input.pageSize,
+        search: input.search,
       });
     }),
 

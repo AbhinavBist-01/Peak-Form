@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const createFormSubmissionInput = z.object({
-  formId: z.uuid().describe("The id of the form being submitted"),
+  formId: z.string().min(1).max(100).describe("The id or slug of the form being submitted"),
+  password: z.string().optional().describe("Optional password for protected forms"),
   values: z
     .array(
       z.object({
@@ -35,6 +36,17 @@ export type GetFormSubmissionsByFormIdForUserInputType = z.infer<
   typeof getFormSubmissionsByFormIdForUserInput
 >;
 
+export const getPaginatedFormSubmissionsByFormIdForUserInput =
+  getFormSubmissionsByFormIdForUserInput.extend({
+    page: z.number().int().min(1).default(1),
+    pageSize: z.number().int().min(5).max(50).default(10),
+    search: z.string().max(100).optional(),
+  });
+
+export type GetPaginatedFormSubmissionsByFormIdForUserInputType = z.infer<
+  typeof getPaginatedFormSubmissionsByFormIdForUserInput
+>;
+
 export const getFormSubmissionsByFormIdOutput = z.array(
   z.object({
     id: z.uuid().describe("The id of the form submission"),
@@ -52,6 +64,18 @@ export const getFormSubmissionsByFormIdOutput = z.array(
 );
 
 export type GetFormSubmissionsByFormIdOutputType = z.infer<typeof getFormSubmissionsByFormIdOutput>;
+
+export const getPaginatedFormSubmissionsByFormIdOutput = z.object({
+  submissions: getFormSubmissionsByFormIdOutput,
+  total: z.number().int().nonnegative(),
+  page: z.number().int().min(1),
+  pageSize: z.number().int().min(1),
+  totalPages: z.number().int().min(1),
+});
+
+export type GetPaginatedFormSubmissionsByFormIdOutputType = z.infer<
+  typeof getPaginatedFormSubmissionsByFormIdOutput
+>;
 
 export const getFormSubmissionAnalyticsForUserInput = z.object({
   formId: z.uuid().describe("The id of the form to analyze"),

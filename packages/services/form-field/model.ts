@@ -18,6 +18,13 @@ export const fieldOptionsInput = z.array(z.string().min(1).max(100)).max(50);
 export const fieldValidationRulesInput = z
   .object({
     customErrorMessage: z.string().min(1).max(200).optional(),
+    conditionalLogic: z
+      .object({
+        fieldId: z.uuid(),
+        operator: z.enum(["equals", "not_equals", "contains", "not_empty"]),
+        value: z.string().max(200).optional(),
+      })
+      .optional(),
   })
   .strict();
 

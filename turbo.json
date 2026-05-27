@@ -12,6 +12,12 @@
     "NEXT_PUBLIC_API_URL",
     "NODE_ENV",
     "PORT",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_PASS",
+    "SMTP_FROM",
+    "SMTP_SECURE",
     "SKIP_ENV_VALIDATION"
   ],
   "tasks": {
@@ -34,6 +40,9 @@
       "cache": false
     },
     "db:migrate": {
+      "cache": false
+    },
+    "db:seed": {
       "cache": false
     }
   }

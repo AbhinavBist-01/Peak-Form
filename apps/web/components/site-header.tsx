@@ -37,7 +37,7 @@ export function SiteHeader({ title }: SiteHeaderProps) {
           orientation="vertical"
           className="mx-2 bg-[#c3c8c1] data-[orientation=vertical]:h-4"
         />
-        <h1 className="peak-serif text-lg font-semibold tracking-normal text-[#061b0e]">
+        <h1 className="peak-serif text-lg font-semibold tracking-normal text-[#2f5d3b]">
           {resolvedTitle}
         </h1>
         <div className="ml-auto flex items-center gap-2">

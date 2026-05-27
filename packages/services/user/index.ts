@@ -10,9 +10,7 @@ import { db, eq } from "@repo/database";
 import { generateUserToken, type GenerateUserTokenType } from "./model";
 import { usersTable } from "@repo/database/models/user";
 import { env } from "../env";
-import { create } from "node:domain";
-import { id } from "zod/v4/locales";
-import { profile } from "node:console";
+
 class UserService {
   private async getUserByEmail(email: string) {
     const result = await db.select().from(usersTable).where(eq(usersTable.email, email));
@@ -41,6 +39,7 @@ class UserService {
         id: usersTable.id,
         fullName: usersTable.fullName,
         email: usersTable.email,
+        role: usersTable.role,
       })
       .from(usersTable)
       .where(eq(usersTable.id, id));

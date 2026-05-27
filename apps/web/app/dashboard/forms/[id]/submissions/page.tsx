@@ -26,6 +26,7 @@ import {
 } from "~/components/ui/alert-dialog";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import { Skeleton } from "~/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -113,6 +115,9 @@ export default function Page() {
   const formId = getFormId(params);
   const [selectedSubmissionId, setSelectedSubmissionId] = React.useState<string | null>(null);
   const [isExporting, setIsExporting] = React.useState(false);
+  const [page, setPage] = React.useState(1);
+  const [search, setSearch] = React.useState("");
+  const debouncedSearch = React.useDeferredValue(search);
 
   const {
     fields = [],
@@ -122,10 +127,15 @@ export default function Page() {
   } = useGetFields(formId);
   const {
     submissions = [],
+    submissionPage,
     error: submissionsError,
     isLoading: isLoadingSubmissions,
     isFetching: isFetchingSubmissions,
-  } = useGetFormSubmissionsByFormId(formId);
+  } = useGetFormSubmissionsByFormId(formId, {
+    page,
+    pageSize: 10,
+    search: debouncedSearch || undefined,
+  });
   const {
     analytics,
     error: analyticsError,
@@ -149,6 +159,10 @@ export default function Page() {
   const distributionSummaries =
     analytics?.fieldSummaries.filter((summary) => summary.distribution.length > 0) ?? [];
 
+  React.useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
   const onExportCsv = async () => {
     if (!formId) {
       return;
@@ -170,7 +184,10 @@ export default function Page() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
                 <h2 className="text-2xl font-semibold tracking-normal">Submissions</h2>
-                <p className="text-sm text-muted-foreground">Form ID: {formId}</p>
+                <p className="text-sm text-muted-foreground">
+                  Form ID: {formId}
+                  {submissionPage ? ` · ${submissionPage.total} matching responses` : ""}
+                </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Button
@@ -204,10 +221,44 @@ export default function Page() {
                 icon={<BarChart3Icon className="size-4" />}
                 label="Responses"
                 value={analytics?.responseCount ?? submissions.length}
+                isLoading={isLoading}
               />
-              <Metric label="Fields" value={fields.length} />
-              <Metric label="Trend days" value={analytics?.completionTrend.length ?? 0} />
-              <Metric label="Rating fields" value={ratingSummaries.length} />
+              <Metric label="Fields" value={fields.length} isLoading={isLoading} />
+              <Metric
+                label="Trend days"
+                value={analytics?.completionTrend.length ?? 0}
+                isLoading={isLoading}
+              />
+              <Metric label="Rating fields" value={ratingSummaries.length} isLoading={isLoading} />
+            </section>
+
+            <section className="peak-glass grid gap-3 rounded-xl p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+              <Input
+                value={search}
+                placeholder="Filter by answer, submission ID, or date"
+                onChange={(event) => setSearch(event.target.value)}
+              />
+              <div className="flex items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!submissionPage || submissionPage.page <= 1}
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                >
+                  Previous
+                </Button>
+                <Badge variant="outline">
+                  Page {submissionPage?.page ?? page} of {submissionPage?.totalPages ?? 1}
+                </Badge>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!submissionPage || submissionPage.page >= submissionPage.totalPages}
+                  onClick={() => setPage((current) => current + 1)}
+                >
+                  Next
+                </Button>
+              </div>
             </section>
 
             <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
@@ -221,7 +272,17 @@ export default function Page() {
                     <Badge variant="outline">{analytics?.completionTrend.length ?? 0} days</Badge>
                   </div>
                   <div className="grid gap-2">
-                    {analytics?.completionTrend.length ? (
+                    {isLoading ? (
+                      Array.from({ length: 4 }).map((_, index) => (
+                        <div key={`trend-skeleton-${index}`} className="grid gap-2">
+                          <div className="flex items-center justify-between gap-4">
+                            <Skeleton className="h-4 w-28 bg-[#edf1ec]" />
+                            <Skeleton className="h-4 w-8 bg-[#edf1ec]" />
+                          </div>
+                          <Skeleton className="h-2 w-full rounded-full bg-[#edf1ec]" />
+                        </div>
+                      ))
+                    ) : analytics?.completionTrend.length ? (
                       analytics.completionTrend.map((entry) => (
                         <div key={entry.date} className="grid gap-1">
                           <div className="flex items-center justify-between text-sm">
@@ -257,29 +318,48 @@ export default function Page() {
                     <TableHeader className="bg-muted">
                       <TableRow>
                         <TableHead className="min-w-48">Submitted</TableHead>
-                        {fields.slice(0, 4).map((field) => (
-                          <TableHead key={field.id} className="min-w-48">
-                            <div className="grid gap-1">
-                              <span>{field.label}</span>
-                              <span className="font-mono text-xs font-normal text-muted-foreground">
-                                {field.labelKey}
-                              </span>
-                            </div>
-                          </TableHead>
-                        ))}
+                        {isLoading
+                          ? Array.from({ length: 4 }).map((_, index) => (
+                              <TableHead key={`field-head-skeleton-${index}`} className="min-w-48">
+                                <Skeleton className="h-4 w-24 bg-[#d0e9d4]/70" />
+                              </TableHead>
+                            ))
+                          : fields.slice(0, 4).map((field) => (
+                              <TableHead key={field.id} className="min-w-48">
+                                <div className="grid gap-1">
+                                  <span>{field.label}</span>
+                                  <span className="font-mono text-xs font-normal text-muted-foreground">
+                                    {field.labelKey}
+                                  </span>
+                                </div>
+                              </TableHead>
+                            ))}
                         <TableHead className="w-32 text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {isLoading ? (
-                        <TableRow>
-                          <TableCell
-                            colSpan={Math.max(Math.min(fields.length, 4) + 2, 1)}
-                            className="h-24 text-center text-muted-foreground"
-                          >
-                            Loading submissions...
-                          </TableCell>
-                        </TableRow>
+                        Array.from({ length: 5 }).map((_, index) => (
+                          <TableRow key={`submission-skeleton-${index}`}>
+                            <TableCell>
+                              <Skeleton className="h-4 w-36 bg-[#edf1ec]" />
+                            </TableCell>
+                            {Array.from({ length: 4 }).map((__, cellIndex) => (
+                              <TableCell key={`submission-cell-skeleton-${cellIndex}`}>
+                                <div className="grid gap-2">
+                                  <Skeleton className="h-4 w-full bg-[#edf1ec]" />
+                                  <Skeleton className="h-3 w-2/3 bg-[#edf1ec]" />
+                                </div>
+                              </TableCell>
+                            ))}
+                            <TableCell>
+                              <div className="flex justify-end gap-2">
+                                <Skeleton className="size-9 bg-[#edf1ec]" />
+                                <Skeleton className="size-9 bg-[#edf1ec]" />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
                       ) : !fields.length ? (
                         <TableRow>
                           <TableCell className="h-32 text-center text-muted-foreground">
@@ -363,7 +443,17 @@ export default function Page() {
                 <div className="peak-lift rounded-lg border p-4">
                   <h3 className="mb-3 text-base font-semibold tracking-normal">Rating averages</h3>
                   <div className="grid gap-3">
-                    {ratingSummaries.length ? (
+                    {isLoading ? (
+                      Array.from({ length: 3 }).map((_, index) => (
+                        <div key={`rating-skeleton-${index}`} className="flex items-center justify-between gap-3">
+                          <div className="grid flex-1 gap-2">
+                            <Skeleton className="h-4 w-36 bg-[#edf1ec]" />
+                            <Skeleton className="h-3 w-20 bg-[#edf1ec]" />
+                          </div>
+                          <Skeleton className="h-6 w-16 rounded-full bg-[#edf1ec]" />
+                        </div>
+                      ))
+                    ) : ratingSummaries.length ? (
                       ratingSummaries.map((summary) => (
                         <div key={summary.fieldId} className="flex items-center justify-between gap-3">
                           <div>
@@ -387,7 +477,20 @@ export default function Page() {
                 <div className="rounded-lg border p-4">
                   <h3 className="mb-3 text-base font-semibold tracking-normal">Field summaries</h3>
                   <div className="grid gap-4">
-                    {analytics?.fieldSummaries.length ? (
+                    {isLoading ? (
+                      Array.from({ length: 4 }).map((_, index) => (
+                        <div key={`summary-skeleton-${index}`} className="grid gap-2">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="grid flex-1 gap-2">
+                              <Skeleton className="h-4 w-36 bg-[#edf1ec]" />
+                              <Skeleton className="h-3 w-44 bg-[#edf1ec]" />
+                            </div>
+                            <Skeleton className="h-6 w-16 rounded-full bg-[#edf1ec]" />
+                          </div>
+                          <Skeleton className="h-2 w-full rounded-full bg-[#edf1ec]" />
+                        </div>
+                      ))
+                    ) : analytics?.fieldSummaries.length ? (
                       analytics.fieldSummaries.map((summary) => (
                         <div key={summary.fieldId} className="grid gap-2">
                           <div className="flex items-center justify-between gap-3">
@@ -478,7 +581,17 @@ export default function Page() {
               </DialogDescription>
             </DialogHeader>
             {isLoadingSelectedSubmission ? (
-              <p className="text-sm text-muted-foreground">Loading response...</p>
+              <div className="grid gap-3">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={`response-detail-skeleton-${index}`} className="rounded-lg border p-3">
+                    <div className="mb-3 flex items-center justify-between gap-2">
+                      <Skeleton className="h-4 w-36 bg-[#edf1ec]" />
+                      <Skeleton className="h-6 w-16 rounded-full bg-[#edf1ec]" />
+                    </div>
+                    <Skeleton className="h-4 w-3/4 bg-[#edf1ec]" />
+                  </div>
+                ))}
+              </div>
             ) : selectedSubmission ? (
               <div className="grid gap-3">
                 {fields.map((field) => (
@@ -504,10 +617,12 @@ export default function Page() {
 
 function Metric({
   icon,
+  isLoading,
   label,
   value,
 }: {
   icon?: React.ReactNode;
+  isLoading?: boolean;
   label: string;
   value: number;
 }) {
@@ -517,7 +632,11 @@ function Metric({
         <span className="text-sm">{label}</span>
         {icon}
       </div>
-      <p className="text-2xl font-semibold tracking-normal">{value}</p>
+      {isLoading ? (
+        <Skeleton className="h-8 w-14 bg-[#edf1ec]" />
+      ) : (
+        <p className="text-2xl font-semibold tracking-normal">{value}</p>
+      )}
     </div>
   );
 }

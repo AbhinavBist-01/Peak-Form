@@ -30,6 +30,7 @@ import {
 } from "~/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
+import { Skeleton } from "~/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -57,7 +58,7 @@ function getFormStatus(form: FormRow) {
   }
 
   if (form.status === "archived") {
-    return "Unpublished";
+    return "Archived";
   }
 
   return "Draft";
@@ -119,7 +120,7 @@ export default function Page() {
     <div className="@container/main peak-topography peak-topography-motion flex flex-1 flex-col gap-6 p-4 md:p-6">
             <div className="peak-glass peak-reveal peak-shine grid gap-5 rounded-xl p-5 md:grid-cols-[1fr_auto] md:items-center md:p-6">
               <div className="space-y-1">
-                <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#061b0e]">
+                <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#2f5d3b]">
                   Forms
                 </h2>
                 <p className="max-w-2xl text-sm leading-6 text-[#59645b]">
@@ -129,7 +130,7 @@ export default function Page() {
 
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                  <Button className="peak-button-motion bg-[#061b0e] text-white hover:bg-[#1b3022]">
+                  <Button className="peak-button-motion bg-[#2f5d3b] text-white hover:bg-[#3f744b]">
                     <PlusIcon />
                     New form
                   </Button>
@@ -229,11 +230,25 @@ export default function Page() {
                   </TableHeader>
                   <TableBody>
                   {isLoadingForms ? (
-                    <TableRow>
-                      <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
-                        Loading forms...
-                      </TableCell>
-                    </TableRow>
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <TableRow key={`form-skeleton-${index}`}>
+                        <TableCell>
+                          <div className="grid gap-2">
+                            <Skeleton className="h-4 w-48 bg-[#d0e9d4]/70" />
+                            <Skeleton className="h-3 w-72 max-w-full bg-[#edf1ec]" />
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Skeleton className="mx-auto h-7 w-24 rounded-full bg-[#edf1ec]" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-end gap-2">
+                            <Skeleton className="h-9 w-20 bg-[#edf1ec]" />
+                            <Skeleton className="h-9 w-24 bg-[#edf1ec]" />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
                   ) : forms.length ? (
                     forms.map((form) => {
                       const formStatus = getFormStatus(form);
@@ -244,7 +259,7 @@ export default function Page() {
                             <div className="grid gap-1">
                               <Link
                                 href={`/dashboard/forms/${form.id}`}
-                                className="font-medium text-[#061b0e] transition hover:text-[#4d6453]"
+                                className="font-medium text-[#2f5d3b] transition hover:text-[#4d6453]"
                               >
                                 {form.title}
                               </Link>
@@ -261,7 +276,7 @@ export default function Page() {
                               variant={
                                 formStatus === "Published"
                                   ? "default"
-                                  : formStatus === "Unpublished"
+                                  : formStatus === "Archived"
                                     ? "secondary"
                                     : "outline"
                               }

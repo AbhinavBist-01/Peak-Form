@@ -49,7 +49,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="peak-glass peak-shine border-[#c3c8c1]/70 bg-white/86 shadow-2xl">
         <CardHeader className="gap-3">
-          <CardTitle className="peak-serif text-3xl font-semibold tracking-normal text-[#061b0e]">
+          <CardTitle className="peak-serif text-3xl font-semibold tracking-normal text-[#2f5d3b]">
             Welcome back
           </CardTitle>
           <CardDescription className="text-[#59645b]">
@@ -76,7 +76,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 <Input id="password" type="password" required {...register("password")} />
               </Field>
               <Field>
-                <Button type="submit" className="peak-button-motion bg-[#061b0e] text-white hover:bg-[#1b3022]">
+                <Button type="submit" className="peak-button-motion bg-[#2f5d3b] text-white hover:bg-[#3f744b]">
                   Login
                 </Button>
                 <FieldDescription className="text-center">

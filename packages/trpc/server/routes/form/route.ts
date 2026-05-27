@@ -5,6 +5,10 @@ import {
   createFieldOutputModel,
   createFormInputModel,
   createFormOutputModel,
+  archiveFormInputModel,
+  archiveFormOutputModel,
+  cloneFormInputModel,
+  cloneFormOutputModel,
   deleteFormInputModel,
   deleteFormOutputModel,
   deleteFieldInputModel,
@@ -15,6 +19,8 @@ import {
   getFormForEditorOutputModel,
   getFieldsInputModel,
   getFieldsOutputModel,
+  getAdminOverviewInputModel,
+  getAdminOverviewOutputModel,
   listFormsInputModel,
   listFormsOutputModel,
   listPublicFormsInputModel,
@@ -52,6 +58,7 @@ export const formRouter = router({
       const { id } = await formService.createForm({
         title,
         description,
+        slug: input.slug,
         creatorId: ctx.user.id,
         expiresAt: expiresAt ? new Date(expiresAt) : undefined,
       });
@@ -131,6 +138,7 @@ export const formRouter = router({
         userId: ctx.user.id,
         title: input.title,
         description: input.description,
+        slug: input.slug,
         visibility: input.visibility,
         expiresAt:
           input.expiresAt === undefined
@@ -139,6 +147,8 @@ export const formRouter = router({
               ? null
               : new Date(input.expiresAt),
         themeConfig: input.themeConfig,
+        pageSize: input.pageSize,
+        password: input.password,
       });
 
       return { id };
@@ -177,6 +187,44 @@ export const formRouter = router({
     .output(unpublishFormOutputModel)
     .mutation(async ({ input, ctx }) => {
       return formService.unpublishForm({
+        formId: input.formId,
+        userId: ctx.user.id,
+      });
+    }),
+
+  archiveForm: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/archiveForm",
+        tags: TAGS,
+        summary: "Archive a form",
+        protect: true,
+      },
+    })
+    .input(archiveFormInputModel)
+    .output(archiveFormOutputModel)
+    .mutation(async ({ input, ctx }) => {
+      return formService.archiveForm({
+        formId: input.formId,
+        userId: ctx.user.id,
+      });
+    }),
+
+  cloneForm: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/cloneForm",
+        tags: TAGS,
+        summary: "Clone a form with all fields",
+        protect: true,
+      },
+    })
+    .input(cloneFormInputModel)
+    .output(cloneFormOutputModel)
+    .mutation(async ({ input, ctx }) => {
+      return formService.cloneForm({
         formId: input.formId,
         userId: ctx.user.id,
       });
@@ -285,5 +333,21 @@ export const formRouter = router({
     .mutation(async ({ input }) => {
       const { id } = await formFieldService.deleteField(input);
       return { id };
+    }),
+
+  getAdminOverview: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/getAdminOverview",
+        tags: ["Admin"],
+        summary: "Get admin platform overview",
+        protect: true,
+      },
+    })
+    .input(getAdminOverviewInputModel)
+    .output(getAdminOverviewOutputModel)
+    .query(async ({ ctx }) => {
+      return formService.getAdminOverview({ userId: ctx.user.id });
     }),
 });

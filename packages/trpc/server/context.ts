@@ -9,6 +9,7 @@ export interface TRPCContext {
   createCookie: ReturnType<typeof createCookieFactory>;
   getCookie: ReturnType<typeof getCookieFactory>;
   deleteCookie: ReturnType<typeof deleteCookieFactory>;
+  ip: string;
 
   user?: tRPCCtsUser;
 }
@@ -21,6 +22,7 @@ export async function createContext({
     createCookie: createCookieFactory(res),
     getCookie: getCookieFactory(req),
     deleteCookie: deleteCookieFactory(res),
+    ip: req.ip ?? req.socket.remoteAddress ?? "unknown",
     user: undefined,
   };
   return ctx;

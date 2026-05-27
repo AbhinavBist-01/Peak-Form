@@ -28,7 +28,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
   if (isLoading || isFetching || isError || !user) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-[#f5f8f2] text-[#061b0e]">
+      <div className="flex min-h-svh items-center justify-center bg-[#f5f8f2] text-[#2f5d3b]">
         <div className="flex items-center gap-3 rounded-full border border-[#c3c8c1]/70 bg-white/80 px-5 py-3 text-sm font-medium shadow-sm backdrop-blur">
           <Spinner className="size-4 text-[#4d6453]" />
           Securing your workspace...

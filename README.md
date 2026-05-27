@@ -8,8 +8,11 @@ The current product flow covers:
 - Authenticated dashboard access.
 - Form creation and listing.
 - Form field CRUD for building forms.
+- Custom form slugs, password-protected public links, QR sharing, clone/archive actions, and multi-page public form filling.
+- Conditional logic for showing fields based on earlier answers.
 - Public form rendering and submission.
-- Submission viewing for form owners.
+- Submission viewing, filtering, pagination, analytics, CSV export, and deletion for form owners.
+- Admin overview dashboard for seeded admin users.
 - API documentation through OpenAPI and Scalar.
 
 ## Tech Stack
@@ -53,6 +56,17 @@ NEXT_PUBLIC_API_URL=http://localhost:8000/trpc
 PORT=8000
 ```
 
+Optional email notification variables for Nodemailer:
+
+```env
+SMTP_HOST=
+SMTP_PORT=
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM=
+SMTP_SECURE=false
+```
+
 Optional OAuth variables are already supported by `packages/services/env.ts`, but the current auth flow is email/password:
 
 ```env
@@ -79,6 +93,16 @@ Start the full workspace:
 pnpm dev
 ```
 
+Seed the database with demo data (creates an admin user, 3 themed forms with fields and responses):
+
+```sh
+pnpm db:seed
+```
+
+Demo credentials: `demo@peakform.com` / `demo1234`
+
+Seeded protected form password: `peakbeta`
+
 Default local URLs:
 
 - Web app: `http://localhost:3000`
@@ -100,6 +124,7 @@ pnpm lint         # Run lint tasks
 pnpm format       # Format TS/TSX/MD files
 pnpm db:generate  # Generate Drizzle migrations
 pnpm db:migrate   # Apply Drizzle migrations
+pnpm db:seed      # Seed database with demo data
 pnpm migrate      # Alias for pnpm db:migrate
 ```
 
@@ -121,6 +146,7 @@ Important routes in `apps/web/app`:
 - `/dashboard/forms` - list and create forms.
 - `/dashboard/forms/[id]` - form field editor.
 - `/dashboard/forms/[id]/submissions` - view submissions for a form.
+- `/dashboard/admin` - admin-only platform overview for demo operators.
 - `/form/[form_id]` - public form page for respondents.
 
 There are also older/alternate route files currently present under `dashboard/form/[form_id]` and `forms/[id]/submissions`; the active dashboard flow is the plural `/dashboard/forms` route family.
@@ -184,26 +210,39 @@ Signup and login set the auth cookie from the API response context. Protected ro
 | --- | --- | --- | --- | --- |
 | POST | `/api/createForm` | Yes | `form.createForm` | `{ title, description?, expiresAt? }` |
 | GET | `/api/listForms` | Yes | `form.listForms` | No input |
-| GET | `/api/getFormById` | No | `form.getFormById` | `{ formId }` |
-| POST | `/api/createField` | Yes | `form.createField` | `{ formId, label, description?, placeholder?, isRequired?, type, index }` |
+| GET | `/api/listPublicForms` | No | `form.listPublicForms` | No input |
+| GET | `/api/getFormById` | No | `form.getFormById` | `{ formId, password? }` |
+| PATCH | `/api/updateFormSettings` | Yes | `form.updateFormSettings` | `{ formId, title?, slug?, visibility?, expiresAt?, pageSize?, password?, themeConfig? }` |
+| POST | `/api/publishForm` | Yes | `form.publishForm` | `{ formId }` |
+| POST | `/api/unpublishForm` | Yes | `form.unpublishForm` | `{ formId }` |
+| POST | `/api/archiveForm` | Yes | `form.archiveForm` | `{ formId }` |
+| POST | `/api/cloneForm` | Yes | `form.cloneForm` | `{ formId }` |
+| POST | `/api/createField` | Yes | `form.createField` | `{ formId, label, description?, placeholder?, options?, validationRules?, isRequired?, type, index }` |
 | GET | `/api/getFields` | Yes | `form.getFields` | `{ formId }` |
-| PATCH | `/api/updateField` | Yes | `form.updateField` | `{ id, label?, description?, placeholder?, isRequired?, type?, index? }` |
+| PATCH | `/api/updateField` | Yes | `form.updateField` | `{ id, label?, description?, placeholder?, options?, validationRules?, isRequired?, type?, index? }` |
 | DELETE | `/api/deleteField` | Yes | `form.deleteField` | `{ id }` |
+| GET | `/api/getAdminOverview` | Admin | `form.getAdminOverview` | No input |
 
-Supported field types:
+Supported field types (11 total):
 
 ```txt
-TEXT, TEXTAREA, SELECT, RADIO, CHECKBOX, PASSWORD, EMAIL, YES_NO, DATE, NUMBER
+TEXT, TEXTAREA, SELECT, RADIO, CHECKBOX, PASSWORD, EMAIL, YES_NO, DATE, NUMBER, RATING
 ```
 
 #### Form Submissions
 
 | Method | Path | Auth | tRPC procedure | Body/query |
 | --- | --- | --- | --- | --- |
-| POST | `/api/createFormSubmission` | No | `formSubmission.createFormSubmission` | `{ formId, values: [{ formFieldId, value }] }` |
-| GET | `/api/getFormSubmissionsByFormId` | Yes | `formSubmission.getFormSubmissionsByFormId` | `{ formId }` |
+| POST | `/api/createFormSubmission` | No | `formSubmission.createFormSubmission` | `{ formId, password?, values: [{ formFieldId, value }] }` |
+| GET | `/api/getFormSubmissionsByFormId` | Yes | `formSubmission.getFormSubmissionsByFormId` | `{ formId, page?, pageSize?, search? }` |
+| GET | `/api/getFormSubmissionAnalytics` | Yes | `formSubmission.getFormSubmissionAnalytics` | `{ formId }` |
+| GET | `/api/getFormSubmissionById` | Yes | `formSubmission.getFormSubmissionById` | `{ submissionId }` |
+| DELETE | `/api/deleteFormSubmission` | Yes | `formSubmission.deleteFormSubmission` | `{ submissionId }` |
+| GET | `/api/exportFormSubmissionsCsv` | Yes | `formSubmission.exportFormSubmissionsCsv` | `{ formId }` |
 
 The public submission endpoint validates the form, checks required fields, and stores submitted values. The owner-only listing endpoint joins submissions back to forms so users can only read submissions for their own forms.
+
+The public submission endpoint also includes **rate limiting**: max 10 requests per IP per 60-second window, enforced by an in-memory rate limiter middleware (`packages/trpc/server/utils/rate-limit.ts`).
 
 ## Database
 

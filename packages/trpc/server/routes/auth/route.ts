@@ -1,22 +1,17 @@
-import {
-  createUserWithEmailAndPasswordInput,
-  signInWithEmailAndPasswordInput,
-} from "@repo/services/user/model";
 import { authenticatedProcedure, publicProcedure, router } from "../../trpc";
-import { generatePath } from "../../utils/path-generator";
 import {
   createUserWithEmailAndPasswordInputModel,
   createUserWithEmailAndPasswordOuputModel,
   getLoggedInUserInfoInputModel,
   getLoggedInUserInfoOutputModel,
+  logoutInputModel,
+  logoutOutputModel,
   signInUserWithEmailAndPasswordInputModel,
   signInUserWithEmailAndPasswordOuputModel,
 } from "./model";
 import { userService } from "../../services/index";
-import { createAuthCookie, getAuthCookie } from "../../utils/cookie";
-import UserService from "@repo/services/user";
+import { createAuthCookie, deleteAuthCookie } from "../../utils/cookie";
 const TAGS = ["Authentication"];
-const getPath = generatePath("/authentication");
 
 export const authRouter = router({
   createUserWithEmailAndPassword: publicProcedure
@@ -81,7 +76,23 @@ export const authRouter = router({
       if (!user) {
         throw new Error("User not found");
       }
-      const { id, fullName, email } = user;
-      return { id, fullName, email };
+      const { id, fullName, email, role } = user;
+      return { id, fullName, email, role };
+    }),
+
+  logout: publicProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/logout",
+        tags: TAGS,
+        summary: "Clear the current auth cookie",
+      },
+    })
+    .input(logoutInputModel)
+    .output(logoutOutputModel)
+    .mutation(async ({ ctx }) => {
+      deleteAuthCookie(ctx);
+      return { success: true };
     }),
 });

@@ -149,11 +149,11 @@ export default function PricingPage() {
                 key={plan.name}
                 className={cn(
                   "peak-lift peak-shine relative min-h-[520px] overflow-hidden rounded-lg border-[#c3c8c1]/65 bg-white/92 py-0 shadow-xl shadow-[#4c616c]/12 backdrop-blur",
-                  plan.highlighted && "border-[#061b0e] ring-2 ring-[#b4cdb8]"
+                  plan.highlighted && "border-[#2f5d3b] ring-2 ring-[#b4cdb8]"
                 )}
               >
                 {plan.highlighted ? (
-                  <div className="bg-[#d0e9d4] px-4 py-2 text-center text-xs font-bold uppercase tracking-[0.12em] text-[#061b0e]">
+                  <div className="bg-[#d0e9d4] px-4 py-2 text-center text-xs font-bold uppercase tracking-[0.12em] text-[#2f5d3b]">
                     Best for teams
                   </div>
                 ) : null}
@@ -205,7 +205,7 @@ export default function PricingPage() {
                     variant={plan.highlighted ? "default" : "outline"}
                     className={cn(
                       "w-full",
-                      plan.highlighted && "bg-[#061b0e] text-white hover:bg-[#1b3022]"
+                      plan.highlighted && "bg-[#2f5d3b] text-white hover:bg-[#3f744b]"
                     )}
                   >
                     <Link href={plan.href}>
@@ -238,7 +238,7 @@ export default function PricingPage() {
                 index === 0 && "border-b border-[#c3c8c1]/60 md:border-b-0 md:border-r"
               )}
             >
-              <div className="mx-auto grid size-12 place-items-center rounded-lg bg-[#061b0e] text-white">
+              <div className="mx-auto grid size-12 place-items-center rounded-lg bg-[#2f5d3b] text-white">
                 {index === 0 ? <FileText className="size-5" /> : <ShieldCheck className="size-5" />}
               </div>
               <div className="grid gap-2">
@@ -257,7 +257,7 @@ export default function PricingPage() {
           ))}
         </div>
 
-        <div className="peak-shine grid gap-4 rounded-xl border border-[#c3c8c1]/55 bg-[#061b0e] p-6 text-white shadow-xl md:grid-cols-[1fr_auto] md:items-center">
+        <div className="peak-shine grid gap-4 rounded-xl border border-[#c3c8c1]/55 bg-[#2f5d3b] p-6 text-white shadow-xl md:grid-cols-[1fr_auto] md:items-center">
           <div className="grid gap-2">
             <Badge className="w-fit bg-white text-slate-950">
               <Sparkles className="size-3" />
@@ -268,7 +268,7 @@ export default function PricingPage() {
               Build a form, publish the share link, and start collecting responses without waiting for a full workspace setup.
             </p>
           </div>
-          <Button asChild className="peak-button-motion bg-[#d0e9d4] text-[#061b0e] hover:bg-white">
+          <Button asChild className="peak-button-motion bg-[#d0e9d4] text-[#2f5d3b] hover:bg-white">
             <Link href="/dashboard/forms">
               Open forms
               <CircleDollarSign className="size-4" />

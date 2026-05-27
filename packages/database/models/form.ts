@@ -5,6 +5,7 @@ import {
   timestamp,
   pgEnum,
   jsonb,
+  text,
 } from "drizzle-orm/pg-core";
 import { usersTable } from "./user";
 
@@ -25,6 +26,7 @@ export const forms = pgTable("forms", {
 
   title: varchar("title", { length: 55 }).notNull(),
   description: varchar("description", { length: 500 }),
+  slug: varchar("slug", { length: 100 }).unique(),
 
   creatorId: uuid("creator_id")
     .notNull()
@@ -36,6 +38,9 @@ export const forms = pgTable("forms", {
   themeConfig: jsonb("theme_config").$type<FormThemeConfig>(),
 
   expiresAt: timestamp("expires_at"),
+  pageSize: varchar("page_size", { length: 10 }).notNull().default("all"),
+  passwordHash: text("password_hash"),
+  passwordSalt: text("password_salt"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").$onUpdate(() => new Date()),
 });

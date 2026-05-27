@@ -14,7 +14,7 @@ const navLinks = [
 
 export function MarketingNavbar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0b1f12]/96 text-white shadow-lg shadow-[#061b0e]/16 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-white/14 bg-[#3f744b]/94 text-white shadow-lg shadow-[#2f5d3b]/10 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-5 md:px-8">
         <Link href="/" className="flex min-w-0 items-center gap-3">
           <Image
@@ -22,7 +22,7 @@ export function MarketingNavbar() {
             alt="PeakForm"
             width={34}
             height={34}
-            className="size-8 shrink-0 invert"
+            className="size-8 shrink-0 opacity-90"
             priority
           />
           <span className="peak-serif truncate text-xl font-semibold tracking-normal">PeakForm</span>
@@ -44,7 +44,7 @@ export function MarketingNavbar() {
           >
             <Link href="/login">Sign in</Link>
           </Button>
-          <Button asChild className="peak-button-motion bg-[#d0e9d4] text-[#061b0e] hover:bg-white">
+          <Button asChild className="peak-button-motion bg-[#d0e9d4] text-[#2f5d3b] hover:bg-white">
             <Link href="/signup">
               Sign up
               <ArrowRightIcon className="size-4" />
@@ -58,7 +58,7 @@ export function MarketingNavbar() {
 
 export function MarketingFooter() {
   return (
-    <footer className="border-t border-[#c3c8c1]/45 bg-[#0b1f12] text-white">
+    <footer className="border-t border-[#c3c8c1]/45 bg-[#3f744b] text-white">
       <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 py-10 md:grid-cols-[1.3fr_1fr] md:px-8">
         <div className="grid gap-3">
           <Link href="/" className="flex w-fit items-center gap-3">
@@ -67,7 +67,7 @@ export function MarketingFooter() {
               alt="PeakForm"
               width={32}
               height={32}
-              className="size-8 invert"
+              className="size-8 opacity-90"
             />
             <span className="peak-serif text-xl font-semibold tracking-normal">PeakForm</span>
           </Link>
@@ -91,7 +91,7 @@ export function MarketingFooter() {
               Signup
             </Link>
           </div>
-          <p className="text-xs text-white/45">© 2026 PeakForm. Built for cleaner collection.</p>
+          <p className="text-xs text-white/45">2026 PeakForm. Built for cleaner collection.</p>
         </div>
       </div>
     </footer>

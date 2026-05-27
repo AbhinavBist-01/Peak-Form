@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const createFormSubmissionInputModel = z.object({
-  formId: z.string().uuid().describe("id of the submitted form"),
+  formId: z.string().min(1).max(100).describe("id or slug of the submitted form"),
+  password: z.string().optional().describe("optional password for protected forms"),
   values: z
     .array(
       z.object({
@@ -18,9 +19,34 @@ export const createFormSubmissionOutputModel = z.object({
 
 export const getFormSubmissionsByFormIdInputModel = z.object({
   formId: z.string().uuid().describe("id of the form to list submissions for"),
+  page: z.number().int().min(1).default(1).describe("result page"),
+  pageSize: z.number().int().min(5).max(50).default(10).describe("submissions per page"),
+  search: z.string().max(100).optional().describe("search text"),
 });
 
-export const getFormSubmissionsByFormIdOutputModel = z.array(
+export const formSubmissionRowModel = z.object({
+  id: z.string().uuid().describe("id of the form submission"),
+  formId: z.string().uuid().describe("id of the submitted form"),
+  values: z
+    .array(
+      z.object({
+        formFieldId: z.string().uuid().describe("id of the submitted form field"),
+        value: z.string().describe("submitted field value"),
+      }),
+    )
+    .describe("submitted field values"),
+  createdAt: z.date().nullable().describe("created date of the form submission"),
+});
+
+export const getFormSubmissionsByFormIdOutputModel = z.object({
+  submissions: z.array(formSubmissionRowModel),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().min(1),
+  pageSize: z.number().int().min(1),
+  totalPages: z.number().int().min(1),
+});
+
+export const legacyFormSubmissionsArrayModel = z.array(
   z.object({
     id: z.string().uuid().describe("id of the form submission"),
     formId: z.string().uuid().describe("id of the submitted form"),

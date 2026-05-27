@@ -106,6 +106,64 @@ export const useDeleteForm = () => {
   };
 };
 
+export const useArchiveForm = () => {
+  const utils = trpc.useUtils();
+  const {
+    mutateAsync: archiveFormAsync,
+    mutate: archiveForm,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isSuccess,
+    status,
+  } = trpc.form.archiveForm.useMutation({
+    onSuccess: () => {
+      utils.form.invalidate();
+    },
+  });
+
+  return {
+    archiveFormAsync,
+    archiveForm,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isSuccess,
+    status,
+  };
+};
+
+export const useCloneForm = () => {
+  const utils = trpc.useUtils();
+  const {
+    mutateAsync: cloneFormAsync,
+    mutate: cloneForm,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isSuccess,
+    status,
+  } = trpc.form.cloneForm.useMutation({
+    onSuccess: () => {
+      utils.form.invalidate();
+    },
+  });
+
+  return {
+    cloneFormAsync,
+    cloneForm,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isSuccess,
+    status,
+  };
+};
+
 export const useUpdateFormSettings = () => {
   const utils = trpc.useUtils();
   const {
@@ -193,7 +251,7 @@ export const useUnpublishForm = () => {
   };
 };
 
-export const useGetFormById = (formId: string) => {
+export const useGetFormById = (formId: string, password?: string) => {
   const {
     data: form,
     error,
@@ -203,7 +261,7 @@ export const useGetFormById = (formId: string) => {
     isLoading,
     isSuccess,
     status,
-  } = trpc.form.getFormById.useQuery({ formId }, { enabled: Boolean(formId) });
+  } = trpc.form.getFormById.useQuery({ formId, password }, { enabled: Boolean(formId) });
 
   return {
     form,
@@ -267,7 +325,10 @@ export const useCreateFormSubmission = () => {
   };
 };
 
-export const useGetFormSubmissionsByFormId = (formId: string) => {
+export const useGetFormSubmissionsByFormId = (
+  formId: string,
+  options?: { page?: number; pageSize?: number; search?: string },
+) => {
   const {
     data: submissions,
     error,
@@ -278,12 +339,13 @@ export const useGetFormSubmissionsByFormId = (formId: string) => {
     isSuccess,
     status,
   } = trpc.formSubmission.getFormSubmissionsByFormId.useQuery(
-    { formId },
+    { formId, page: options?.page ?? 1, pageSize: options?.pageSize ?? 10, search: options?.search },
     { enabled: Boolean(formId) },
   );
 
   return {
-    submissions,
+    submissions: submissions?.submissions,
+    submissionPage: submissions,
     error,
     failureCount,
     isError,
@@ -383,6 +445,30 @@ export const useExportFormSubmissionsCsv = () => {
   return {
     exportFormSubmissionsCsvAsync: (formId: string) =>
       utils.formSubmission.exportFormSubmissionsCsv.fetch({ formId }),
+  };
+};
+
+export const useGetAdminOverview = () => {
+  const {
+    data: overview,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
+  } = trpc.form.getAdminOverview.useQuery();
+
+  return {
+    overview,
+    error,
+    failureCount,
+    isError,
+    isFetching,
+    isLoading,
+    isSuccess,
+    status,
   };
 };
 

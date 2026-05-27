@@ -29,6 +29,11 @@ export const fieldTypesEnum = pgEnum("field_types", [
 
 export interface FieldValidationRules {
   customErrorMessage?: string;
+  conditionalLogic?: {
+    fieldId: string;
+    operator: "equals" | "not_equals" | "contains" | "not_empty";
+    value?: string;
+  };
 }
 
 export const formFields = pgTable(

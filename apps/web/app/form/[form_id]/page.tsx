@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Separator } from "~/components/ui/separator";
+import { Skeleton } from "~/components/ui/skeleton";
 import { Textarea } from "~/components/ui/textarea";
 import { useCreateFormSubmission, useGetFormById } from "~/hooks/api/form";
 
@@ -79,15 +80,40 @@ function getRatingOptions(field: PublicField) {
   return Array.from({ length: safeMax - safeMin + 1 }, (_, index) => String(safeMin + index));
 }
 
-function getSubmittedValue(formData: FormData, field: PublicField) {
-  if (field.type === "CHECKBOX" && field.options?.length) {
-    return formData.getAll(field.id).map(String).join(",");
+function isFieldVisible(field: PublicField, answers: Record<string, string>) {
+  const condition = field.validationRules?.conditionalLogic;
+
+  if (!condition) {
+    return true;
   }
 
-  return String(formData.get(field.id) ?? "");
+  const value = answers[condition.fieldId]?.trim() ?? "";
+  const expected = condition.value?.trim() ?? "";
+
+  if (condition.operator === "not_empty") {
+    return Boolean(value);
+  }
+
+  if (condition.operator === "contains") {
+    return Boolean(expected) && value.split(",").map((entry) => entry.trim()).includes(expected);
+  }
+
+  if (condition.operator === "not_equals") {
+    return value !== expected;
+  }
+
+  return value === expected;
 }
 
-function PublicFormField({ field }: { field: PublicField }) {
+function PublicFormField({
+  field,
+  value,
+  onValueChange,
+}: {
+  field: PublicField;
+  value: string;
+  onValueChange: (value: string) => void;
+}) {
   const fieldId = `field-${field.id}`;
 
   if (field.type === "TEXTAREA") {
@@ -101,11 +127,13 @@ function PublicFormField({ field }: { field: PublicField }) {
         <Textarea
           id={fieldId}
           name={field.id}
+          value={value}
           placeholder={field.placeholder ?? undefined}
           required={Boolean(field.isRequired)}
           minLength={field.min ?? undefined}
           maxLength={field.max ?? undefined}
           className="min-h-28 resize-y"
+          onChange={(event) => onValueChange(event.target.value)}
         />
       </Field>
     );
@@ -119,7 +147,7 @@ function PublicFormField({ field }: { field: PublicField }) {
           {field.isRequired ? <span className="text-destructive">*</span> : null}
         </FieldLabel>
         <FieldHelp field={field} />
-        <RadioGroup name={field.id} required={Boolean(field.isRequired)}>
+        <RadioGroup name={field.id} value={value} required={Boolean(field.isRequired)} onValueChange={onValueChange}>
           <div className="flex items-center gap-2">
             <RadioGroupItem id={`${fieldId}-yes`} value="yes" />
             <Label htmlFor={`${fieldId}-yes`}>Yes</Label>
@@ -145,7 +173,19 @@ function PublicFormField({ field }: { field: PublicField }) {
           <div className="grid gap-3">
             {field.options.map((option) => (
               <Field key={option} orientation="horizontal" className="items-start rounded-lg border border-[#c3c8c1]/60 bg-white/60 p-4">
-                <Checkbox id={`${fieldId}-${option}`} name={field.id} value={option} />
+                <Checkbox
+                  id={`${fieldId}-${option}`}
+                  name={field.id}
+                  value={option}
+                  checked={value.split(",").filter(Boolean).includes(option)}
+                  onCheckedChange={(checked) => {
+                    const current = value.split(",").filter(Boolean);
+                    const next = checked
+                      ? Array.from(new Set([...current, option]))
+                      : current.filter((entry) => entry !== option);
+                    onValueChange(next.join(","));
+                  }}
+                />
                 <FieldLabel htmlFor={`${fieldId}-${option}`}>{option}</FieldLabel>
               </Field>
             ))}
@@ -156,7 +196,13 @@ function PublicFormField({ field }: { field: PublicField }) {
 
     return (
       <Field orientation="horizontal" className="peak-lift items-start rounded-xl border border-[#c3c8c1]/60 bg-white/70 p-4 backdrop-blur">
-        <Checkbox id={fieldId} name={field.id} required={Boolean(field.isRequired)} />
+        <Checkbox
+          id={fieldId}
+          name={field.id}
+          required={Boolean(field.isRequired)}
+          checked={value === "on"}
+          onCheckedChange={(checked) => onValueChange(checked ? "on" : "")}
+        />
         <div className="grid gap-1.5">
           <FieldLabel htmlFor={fieldId}>
             {field.label}
@@ -176,7 +222,7 @@ function PublicFormField({ field }: { field: PublicField }) {
           {field.isRequired ? <span className="text-destructive">*</span> : null}
         </FieldLabel>
         <FieldHelp field={field} />
-        <Select name={field.id} required={Boolean(field.isRequired)}>
+        <Select name={field.id} value={value} required={Boolean(field.isRequired)} onValueChange={onValueChange}>
           <SelectTrigger id={fieldId} className="w-full">
             <SelectValue placeholder={field.placeholder ?? "Select an option"} />
           </SelectTrigger>
@@ -200,7 +246,7 @@ function PublicFormField({ field }: { field: PublicField }) {
           {field.isRequired ? <span className="text-destructive">*</span> : null}
         </FieldLabel>
         <FieldHelp field={field} />
-        <RadioGroup name={field.id} required={Boolean(field.isRequired)}>
+        <RadioGroup name={field.id} value={value} required={Boolean(field.isRequired)} onValueChange={onValueChange}>
           {getFieldOptions(field).map((option) => (
             <div key={option} className="flex items-center gap-2 rounded-lg border border-[#c3c8c1]/55 bg-white/60 px-3 py-2">
               <RadioGroupItem id={`${fieldId}-${option}`} value={option} />
@@ -220,7 +266,13 @@ function PublicFormField({ field }: { field: PublicField }) {
           {field.isRequired ? <span className="text-destructive">*</span> : null}
         </FieldLabel>
         <FieldHelp field={field} />
-        <RadioGroup name={field.id} required={Boolean(field.isRequired)} className="flex flex-wrap gap-2">
+        <RadioGroup
+          name={field.id}
+          value={value}
+          required={Boolean(field.isRequired)}
+          className="flex flex-wrap gap-2"
+          onValueChange={onValueChange}
+        >
           {getRatingOptions(field).map((rating) => (
             <div key={rating} className="flex items-center gap-2 rounded-lg border border-[#c3c8c1]/60 bg-white/65 px-3 py-2">
               <RadioGroupItem id={`${fieldId}-${rating}`} value={rating} />
@@ -243,6 +295,7 @@ function PublicFormField({ field }: { field: PublicField }) {
         id={fieldId}
         name={field.id}
         type={getInputType(field.type)}
+        value={value}
         placeholder={field.placeholder ?? undefined}
         required={Boolean(field.isRequired)}
         min={field.type === "NUMBER" ? field.min ?? undefined : undefined}
@@ -250,6 +303,7 @@ function PublicFormField({ field }: { field: PublicField }) {
         minLength={field.type !== "NUMBER" ? field.min ?? undefined : undefined}
         maxLength={field.type !== "NUMBER" ? field.max ?? undefined : undefined}
         pattern={field.pattern ?? undefined}
+        onChange={(event) => onValueChange(event.target.value)}
       />
     </Field>
   );
@@ -258,38 +312,75 @@ function PublicFormField({ field }: { field: PublicField }) {
 export default function Page() {
   const params = useParams();
   const formId = getFormId(params);
-  const { form, fields = [], error, isLoading, isFetching } = useGetFormById(formId);
+  const [passwordInput, setPasswordInput] = React.useState("");
+  const [submittedPassword, setSubmittedPassword] = React.useState<string | undefined>();
+  const { form, fields = [], error, isLoading, isFetching } = useGetFormById(formId, submittedPassword);
   const {
     createFormSubmissionAsync,
     error: submissionError,
     status: createSubmissionStatus,
   } = useCreateFormSubmission();
   const [submissionId, setSubmissionId] = React.useState<string | null>(null);
+  const [answers, setAnswers] = React.useState<Record<string, string>>({});
+  const [page, setPage] = React.useState(0);
+  const [pageError, setPageError] = React.useState<string | null>(null);
 
   const isSubmitting = createSubmissionStatus === "pending";
   const theme = form?.themeConfig;
+  const visibleFields = React.useMemo(
+    () => fields.filter((field) => isFieldVisible(field, answers)),
+    [answers, fields],
+  );
+  const pageSize = form?.pageSize && form.pageSize !== "all" ? Number(form.pageSize) : visibleFields.length || 1;
+  const totalPages = Math.max(1, Math.ceil(visibleFields.length / pageSize));
+  const currentFields = visibleFields.slice(page * pageSize, page * pageSize + pageSize);
+
+  React.useEffect(() => {
+    setPage((currentPage) => Math.min(currentPage, totalPages - 1));
+  }, [totalPages]);
+
+  const setAnswer = (fieldId: string, value: string) => {
+    setAnswers((current) => ({
+      ...current,
+      [fieldId]: value,
+    }));
+  };
+
+  const validatePage = (pageFields: PublicField[]) => {
+    const missingField = pageFields.find((field) => field.isRequired && !answers[field.id]?.trim());
+
+    if (missingField) {
+      setPageError(`${missingField.label} is required`);
+      return false;
+    }
+
+    setPageError(null);
+    return true;
+  };
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!formId || !fields.length) {
+    if (!formId || !visibleFields.length || !validatePage(currentFields)) {
       return;
     }
 
     const formElement = event.currentTarget;
-    const formData = new FormData(formElement);
     setSubmissionId(null);
 
     try {
       const result = await createFormSubmissionAsync({
         formId,
-        values: fields.map((field) => ({
+        password: submittedPassword,
+        values: visibleFields.map((field) => ({
           formFieldId: field.id,
-          value: getSubmittedValue(formData, field),
+          value: answers[field.id] ?? "",
         })),
       });
 
       setSubmissionId(result.id);
+      setAnswers({});
+      setPage(0);
       formElement.reset();
     } catch {
       // The mutation exposes its error through submissionError.
@@ -307,17 +398,17 @@ export default function Page() {
     >
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
         <header className="peak-reveal flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-3 font-semibold text-[#061b0e]">
+          <Link href="/" className="flex items-center gap-3 font-semibold text-[#2f5d3b]">
             <Image
               src="/peakform-logo.svg"
               alt="PeakForm"
               width={34}
               height={34}
-              className="size-8 invert"
+              className="size-8 opacity-90 drop-shadow-[0_1px_4px_rgba(47,93,59,0.35)]"
             />
             <span className="peak-serif text-xl tracking-normal">PeakForm</span>
           </Link>
-          <Badge className="gap-2 bg-[#061b0e] text-white">
+          <Badge className="gap-2 bg-[#2f5d3b] text-white">
             <MountainIcon className="size-3.5" />
             Public form
           </Badge>
@@ -325,12 +416,20 @@ export default function Page() {
 
         {isLoading ? (
           <div className="peak-glass rounded-xl p-6">
-            <div className="h-7 w-2/3 animate-pulse rounded bg-muted" />
-            <div className="mt-3 h-4 w-full animate-pulse rounded bg-muted" />
+            <div className="grid gap-3">
+              <Skeleton className="h-6 w-28 rounded-full bg-[#d0e9d4]/70" />
+              <Skeleton className="h-10 w-2/3 bg-[#d0e9d4]/70" />
+              <Skeleton className="h-4 w-full bg-[#edf1ec]" />
+              <Skeleton className="h-4 w-3/4 bg-[#edf1ec]" />
+            </div>
             <div className="mt-8 grid gap-5">
-              <div className="h-16 animate-pulse rounded bg-muted" />
-              <div className="h-16 animate-pulse rounded bg-muted" />
-              <div className="h-28 animate-pulse rounded bg-muted" />
+              {[1, 2, 3].map((item) => (
+                <div key={item} className="rounded-xl border border-[#c3c8c1]/60 bg-white/70 p-4">
+                  <Skeleton className="mb-3 h-4 w-40 bg-[#d0e9d4]/70" />
+                  <Skeleton className="h-10 w-full bg-[#edf1ec]" />
+                </div>
+              ))}
+              <Skeleton className="ml-auto h-10 w-28 bg-[#d0e9d4]/70" />
             </div>
           </div>
         ) : error ? (
@@ -348,10 +447,10 @@ export default function Page() {
             onSubmit={onSubmit}
           >
             <div className="peak-stagger grid gap-3">
-              <Badge variant="secondary" className="w-fit bg-[#d0e9d4] text-[#061b0e]">
+              <Badge variant="secondary" className="w-fit bg-[#d0e9d4] text-[#2f5d3b]">
                 {theme?.name ?? "PeakForm"}
               </Badge>
-              <h1 className="peak-serif text-3xl font-semibold tracking-normal text-[#061b0e] md:text-5xl">
+              <h1 className="peak-serif text-3xl font-semibold tracking-normal text-[#2f5d3b] md:text-5xl">
                 {form.title}
               </h1>
               {form.description ? (
@@ -376,10 +475,42 @@ export default function Page() {
               </Alert>
             ) : null}
 
-            {fields.length ? (
+            {pageError ? (
+              <Alert variant="destructive" className="mb-6">
+                <AlertTitle>Before you continue</AlertTitle>
+                <AlertDescription>{pageError}</AlertDescription>
+              </Alert>
+            ) : null}
+
+            {form.requiresPassword ? (
+              <div className="grid gap-4 rounded-xl border border-[#c3c8c1]/60 bg-white/70 p-4">
+                <Field>
+                  <FieldLabel htmlFor="form-password">Password</FieldLabel>
+                  <Input
+                    id="form-password"
+                    type="password"
+                    value={passwordInput}
+                    placeholder="Enter form password"
+                    onChange={(event) => setPasswordInput(event.target.value)}
+                  />
+                </Field>
+                <Button
+                  type="button"
+                  className="w-fit"
+                  onClick={() => setSubmittedPassword(passwordInput)}
+                >
+                  Unlock form
+                </Button>
+              </div>
+            ) : fields.length ? (
               <FieldGroup className="gap-5">
-                {fields.map((field) => (
-                  <PublicFormField key={field.id} field={field} />
+                {currentFields.map((field) => (
+                  <PublicFormField
+                    key={field.id}
+                    field={field}
+                    value={answers[field.id] ?? ""}
+                    onValueChange={(value) => setAnswer(field.id, value)}
+                  />
                 ))}
               </FieldGroup>
             ) : (
@@ -392,17 +523,49 @@ export default function Page() {
               ) : (
                 <span />
               )}
-              <Button
-                type="submit"
-                disabled={!fields.length || isSubmitting}
-                className="peak-button-motion"
-                style={{
-                  backgroundColor: theme?.accentColor ?? "#061b0e",
-                  color: "#ffffff",
-                }}
-              >
-                {isSubmitting ? "Submitting..." : "Submit"}
-              </Button>
+              {form.requiresPassword ? null : (
+                <div className="ml-auto flex items-center gap-2">
+                  {totalPages > 1 ? (
+                    <Badge variant="outline">
+                      Page {page + 1} of {totalPages}
+                    </Badge>
+                  ) : null}
+                  {page > 0 ? (
+                    <Button type="button" variant="outline" onClick={() => setPage(page - 1)}>
+                      Back
+                    </Button>
+                  ) : null}
+                  {page < totalPages - 1 ? (
+                    <Button
+                      type="button"
+                      className="peak-button-motion"
+                      style={{
+                        backgroundColor: theme?.accentColor ?? "#2f5d3b",
+                        color: "#ffffff",
+                      }}
+                      onClick={() => {
+                        if (validatePage(currentFields)) {
+                          setPage(page + 1);
+                        }
+                      }}
+                    >
+                      Next
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      disabled={!fields.length || isSubmitting}
+                      className="peak-button-motion"
+                      style={{
+                        backgroundColor: theme?.accentColor ?? "#2f5d3b",
+                        color: "#ffffff",
+                      }}
+                    >
+                      {isSubmitting ? "Submitting..." : "Submit"}
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           </form>
         ) : null}

@@ -2,9 +2,11 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
+  ArchiveIcon,
   ArrowLeftIcon,
+  CopyIcon,
   ExternalLinkIcon,
   EyeOffIcon,
   GlobeIcon,
@@ -41,6 +43,7 @@ import {
 } from "~/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
+import { Skeleton } from "~/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -60,6 +63,8 @@ import {
 import { Textarea } from "~/components/ui/textarea";
 import {
   useCreateField,
+  useArchiveForm,
+  useCloneForm,
   useDeleteField,
   useGetFormForEditor,
   usePublishForm,
@@ -93,14 +98,21 @@ type FieldValues = {
   isRequired: boolean;
   type: FieldType;
   index: string;
+  conditionalFieldId: string;
+  conditionalOperator: "equals" | "not_equals" | "contains" | "not_empty";
+  conditionalValue: string;
 };
 type FormField = NonNullable<ReturnType<typeof useGetFormForEditor>["fields"]>[number];
 type EditorForm = NonNullable<ReturnType<typeof useGetFormForEditor>["form"]>;
 type FormSettingsValues = {
   title: string;
   description: string;
+  slug: string;
   visibility: "public" | "unlisted";
   expiresAt: string;
+  pageSize: "all" | "1" | "2" | "3" | "5";
+  password: string;
+  clearPassword: boolean;
   themeName: string;
   backgroundColor: string;
   accentColor: string;
@@ -118,13 +130,20 @@ const defaultFieldValues: FieldValues = {
   isRequired: false,
   type: "TEXT",
   index: "1.00",
+  conditionalFieldId: "none",
+  conditionalOperator: "equals",
+  conditionalValue: "",
 };
 
 const defaultSettingsValues: FormSettingsValues = {
   title: "",
   description: "",
+  slug: "",
   visibility: "unlisted",
   expiresAt: "",
+  pageSize: "all",
+  password: "",
+  clearPassword: false,
   themeName: "",
   backgroundColor: "",
   accentColor: "",
@@ -189,8 +208,12 @@ function getSettingsDefaults(form: EditorForm | undefined): FormSettingsValues {
   return {
     title: form.title,
     description: form.description ?? "",
+    slug: form.slug ?? "",
     visibility: form.visibility,
     expiresAt: toDateTimeLocalValue(form.expiresAt),
+    pageSize: form.pageSize,
+    password: "",
+    clearPassword: false,
     themeName: form.themeConfig?.name ?? "",
     backgroundColor: form.themeConfig?.backgroundColor ?? "",
     accentColor: form.themeConfig?.accentColor ?? "",
@@ -260,12 +283,23 @@ function formatOptions(options: string[] | null | undefined) {
   return options?.join("\n") ?? "";
 }
 
+function getConditionalDefaults(field: FormField) {
+  const condition = field.validationRules?.conditionalLogic;
+
+  return {
+    conditionalFieldId: condition?.fieldId ?? "none",
+    conditionalOperator: condition?.operator ?? "equals",
+    conditionalValue: condition?.value ?? "",
+  };
+}
+
 function supportsOptions(type: FieldType) {
   return type === "SELECT" || type === "RADIO" || type === "CHECKBOX";
 }
 
 export default function Page() {
   const params = useParams();
+  const router = useRouter();
   const formId = getFormId(params);
   const [createOpen, setCreateOpen] = React.useState(false);
   const [editingField, setEditingField] = React.useState<FormField | null>(null);
@@ -280,6 +314,8 @@ export default function Page() {
   const { createFieldAsync, error: createFieldError, status: createFieldStatus } = useCreateField();
   const { updateFieldAsync, error: updateFieldError, status: updateFieldStatus } = useUpdateField();
   const { deleteFieldAsync, error: deleteFieldError, status: deleteFieldStatus } = useDeleteField();
+  const { cloneFormAsync, error: cloneFormError, status: cloneFormStatus } = useCloneForm();
+  const { archiveFormAsync, error: archiveFormError, status: archiveFormStatus } = useArchiveForm();
   const {
     updateFormSettingsAsync,
     error: updateFormSettingsError,
@@ -295,6 +331,8 @@ export default function Page() {
   const isCreating = createFieldStatus === "pending";
   const isUpdating = updateFieldStatus === "pending";
   const isDeleting = deleteFieldStatus === "pending";
+  const isCloning = cloneFormStatus === "pending";
+  const isArchiving = archiveFormStatus === "pending";
   const isSavingSettings = updateFormSettingsStatus === "pending";
   const isPublishing = publishFormStatus === "pending";
   const isUnpublishing = unpublishFormStatus === "pending";
@@ -338,6 +376,7 @@ export default function Page() {
       isRequired: Boolean(editingField.isRequired),
       type: editingField.type,
       index: editingField.index,
+      ...getConditionalDefaults(editingField),
     });
   }, [editForm, editingField]);
 
@@ -368,10 +407,30 @@ export default function Page() {
       formId,
       title: values.title,
       description: toNullableText(values.description),
+      slug: toNullableText(values.slug),
       visibility: values.visibility,
       expiresAt: values.expiresAt ? new Date(values.expiresAt).toISOString() : null,
+      pageSize: values.pageSize,
+      password: values.clearPassword ? null : toOptionalText(values.password),
       themeConfig: hasThemeConfig ? themeConfig : null,
     });
+  };
+
+  const getValidationRules = (values: FieldValues) => {
+    if (values.conditionalFieldId === "none") {
+      return undefined;
+    }
+
+    return {
+      conditionalLogic: {
+        fieldId: values.conditionalFieldId,
+        operator: values.conditionalOperator,
+        value:
+          values.conditionalOperator === "not_empty"
+            ? undefined
+            : values.conditionalValue.trim(),
+      },
+    };
   };
 
   const onCreateField = async (values: FieldValues) => {
@@ -385,6 +444,7 @@ export default function Page() {
       description: toOptionalText(values.description),
       placeholder: toOptionalText(values.placeholder),
       options: supportsOptions(values.type) ? parseOptions(values.optionsText) : undefined,
+      validationRules: getValidationRules(values),
       min: toOptionalNumber(values.min),
       max: toOptionalNumber(values.max),
       isRequired: values.isRequired,
@@ -410,6 +470,7 @@ export default function Page() {
       description: toNullableText(values.description),
       placeholder: toNullableText(values.placeholder),
       options: supportsOptions(values.type) ? parseNullableOptions(values.optionsText) : null,
+      validationRules: getValidationRules(values) ?? null,
       min: toNullableNumber(values.min),
       max: toNullableNumber(values.max),
       isRequired: values.isRequired,
@@ -420,18 +481,44 @@ export default function Page() {
     setEditingField(null);
   };
 
+  const onCloneForm = async () => {
+    if (!formId) {
+      return;
+    }
+
+    const result = await cloneFormAsync({ formId });
+    router.push(`/dashboard/forms/${result.id}`);
+  };
+
+  const onArchiveForm = async () => {
+    if (!formId) {
+      return;
+    }
+
+    await archiveFormAsync({ formId });
+  };
+
   return (
     <>
       <div className="@container/main peak-topography peak-topography-motion flex flex-1 flex-col gap-6 p-4 md:p-6">
             <div className="peak-glass peak-reveal peak-shine grid gap-5 rounded-xl p-5 xl:grid-cols-[1fr_auto] xl:items-center">
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#061b0e]">
-                    {editorFormData?.title ?? "Edit form"}
-                  </h2>
-                  <Badge variant={isPublished ? "default" : "outline"}>
-                    {getFormStatusLabel(editorFormData)}
-                  </Badge>
+                  {isLoadingForm ? (
+                    <>
+                      <Skeleton className="h-10 w-56 bg-[#d0e9d4]/70" />
+                      <Skeleton className="h-6 w-20 rounded-full bg-[#edf1ec]" />
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#2f5d3b]">
+                        {editorFormData?.title ?? "Edit form"}
+                      </h2>
+                      <Badge variant={isPublished ? "default" : "outline"}>
+                        {getFormStatusLabel(editorFormData)}
+                      </Badge>
+                    </>
+                  )}
                   {editorFormData ? (
                     <Badge variant="outline" className="gap-1 capitalize">
                       {editorFormData.visibility === "public" ? (
@@ -460,12 +547,24 @@ export default function Page() {
                 </Button>
                 {isPublished ? (
                   <Button variant="outline" asChild>
-                    <Link href={`/form/${formId}`}>
+                    <Link href={`/form/${editorFormData?.slug ?? formId}`}>
                       <ExternalLinkIcon />
                       View
                     </Link>
                   </Button>
                 ) : null}
+                <Button variant="outline" disabled={isCloning} onClick={() => void onCloneForm()}>
+                  <CopyIcon />
+                  {isCloning ? "Cloning..." : "Clone"}
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={isArchiving || editorFormData?.status === "archived"}
+                  onClick={() => void onArchiveForm()}
+                >
+                  <ArchiveIcon />
+                  {isArchiving ? "Archiving..." : "Archive"}
+                </Button>
                 {isPublished ? (
                   <Button
                     variant="outline"
@@ -487,26 +586,32 @@ export default function Page() {
                 )}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                   <DialogTrigger asChild>
-                    <Button className="bg-[#061b0e] text-white hover:bg-[#1b3022]">
+                    <Button className="bg-[#2f5d3b] text-white hover:bg-[#3f744b]">
                       <PlusIcon />
                       Add field
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
+                  <DialogContent className="max-h-[88svh] gap-0 overflow-hidden p-0 sm:max-w-2xl">
+                    <DialogHeader className="px-6 pb-4 pt-6 pr-12">
                       <DialogTitle>Add field</DialogTitle>
                       <DialogDescription>
                         Field keys are generated from the first label and stay stable.
                       </DialogDescription>
                     </DialogHeader>
-                    <form className="grid gap-5" onSubmit={createForm.handleSubmit(onCreateField)}>
-                      <FieldEditor
-                        errorMessage={createFieldError?.message}
-                        form={createForm}
-                        isRequired={createIsRequired}
-                        type={createType}
-                      />
-                      <DialogFooter>
+                    <form
+                      className="flex min-h-0 flex-col"
+                      onSubmit={createForm.handleSubmit(onCreateField)}
+                    >
+                      <div className="max-h-[calc(88svh-11rem)] overflow-y-auto px-6 py-4">
+                        <FieldEditor
+                          errorMessage={createFieldError?.message}
+                          form={createForm}
+                          fields={fields}
+                          isRequired={createIsRequired}
+                          type={createType}
+                        />
+                      </div>
+                      <DialogFooter className="border-t bg-background px-6 py-4">
                         <Button
                           type="button"
                           variant="outline"
@@ -560,6 +665,20 @@ export default function Page() {
               </Alert>
             ) : null}
 
+            {cloneFormError ? (
+              <Alert variant="destructive">
+                <AlertTitle>Could not clone form</AlertTitle>
+                <AlertDescription>{cloneFormError.message}</AlertDescription>
+              </Alert>
+            ) : null}
+
+            {archiveFormError ? (
+              <Alert variant="destructive">
+                <AlertTitle>Could not archive form</AlertTitle>
+                <AlertDescription>{archiveFormError.message}</AlertDescription>
+              </Alert>
+            ) : null}
+
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
               <div className="grid gap-6">
                 <div className="peak-reveal overflow-hidden rounded-xl border border-[#c3c8c1]/65 bg-white/78 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
@@ -575,11 +694,32 @@ export default function Page() {
                     </TableHeader>
                     <TableBody>
                       {isLoadingForm ? (
-                        <TableRow>
-                          <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                            Loading fields...
-                          </TableCell>
-                        </TableRow>
+                        Array.from({ length: 4 }).map((_, index) => (
+                          <TableRow key={`field-skeleton-${index}`}>
+                            <TableCell>
+                              <div className="grid gap-2">
+                                <Skeleton className="h-4 w-44 bg-[#d0e9d4]/70" />
+                                <Skeleton className="h-3 w-72 max-w-full bg-[#edf1ec]" />
+                                <Skeleton className="h-5 w-20 rounded-full bg-[#edf1ec]" />
+                              </div>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              <Skeleton className="h-4 w-32 bg-[#edf1ec]" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-6 w-20 rounded-full bg-[#edf1ec]" />
+                            </TableCell>
+                            <TableCell className="hidden lg:table-cell">
+                              <Skeleton className="h-4 w-12 bg-[#edf1ec]" />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex justify-end gap-2">
+                                <Skeleton className="size-9 bg-[#edf1ec]" />
+                                <Skeleton className="size-9 bg-[#edf1ec]" />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
                       ) : fields.length ? (
                         fields.map((field) => (
                           <TableRow key={field.id}>
@@ -681,6 +821,7 @@ export default function Page() {
                   isSaving={isSavingSettings}
                   onSave={onSaveSettings}
                 />
+                <SharePanel form={editorFormData} />
                 <FormPreview form={editorFormData} fields={fields} />
               </aside>
             </div>
@@ -690,22 +831,25 @@ export default function Page() {
           open={Boolean(editingField)}
           onOpenChange={(open) => !open && setEditingField(null)}
         >
-          <DialogContent>
-            <DialogHeader>
+          <DialogContent className="max-h-[88svh] gap-0 overflow-hidden p-0 sm:max-w-2xl">
+            <DialogHeader className="px-6 pb-4 pt-6 pr-12">
               <DialogTitle>Edit field</DialogTitle>
               <DialogDescription>
                 Label key stays unchanged:{" "}
                 <span className="font-mono">{editingField?.labelKey ?? ""}</span>
               </DialogDescription>
             </DialogHeader>
-            <form className="grid gap-5" onSubmit={editForm.handleSubmit(onUpdateField)}>
-              <FieldEditor
-                errorMessage={updateFieldError?.message}
-                form={editForm}
-                isRequired={editIsRequired}
-                type={editType}
-              />
-              <DialogFooter>
+            <form className="flex min-h-0 flex-col" onSubmit={editForm.handleSubmit(onUpdateField)}>
+              <div className="max-h-[calc(88svh-11rem)] overflow-y-auto px-6 py-4">
+                <FieldEditor
+                  errorMessage={updateFieldError?.message}
+                  form={editForm}
+                  fields={fields.filter((field) => field.id !== editingField?.id)}
+                  isRequired={editIsRequired}
+                  type={editType}
+                />
+              </div>
+              <DialogFooter className="border-t bg-background px-6 py-4">
                 <Button
                   type="button"
                   variant="outline"
@@ -744,11 +888,13 @@ function FormSettingsPanel({
     watch,
   } = formState;
   const visibility = watch("visibility");
+  const pageSize = watch("pageSize");
+  const clearPassword = watch("clearPassword");
 
   return (
     <section className="peak-glass peak-lift grid gap-4 rounded-xl p-4">
       <div className="space-y-1">
-        <h3 className="peak-serif text-lg font-semibold tracking-normal text-[#061b0e]">Settings</h3>
+        <h3 className="peak-serif text-lg font-semibold tracking-normal text-[#2f5d3b]">Settings</h3>
         <p className="text-sm text-[#59645b]">
           {form?.status === "published"
             ? "Published forms can be shared or listed publicly."
@@ -788,6 +934,28 @@ function FormSettingsPanel({
           <FieldError errors={[errors.description]} />
         </Field>
 
+        <Field>
+          <FieldLabel htmlFor="settings-slug">Custom slug</FieldLabel>
+          <Input
+            id="settings-slug"
+            placeholder="startup-feedback"
+            {...register("slug", {
+              minLength: {
+                value: 3,
+                message: "Slug must be at least 3 characters",
+              },
+              maxLength: {
+                value: 100,
+                message: "Slug must be 100 characters or less",
+              },
+            })}
+          />
+          <FieldDescription className="text-xs">
+            Public link: /form/{watch("slug") || form?.id || "..."}
+          </FieldDescription>
+          <FieldError errors={[errors.slug]} />
+        </Field>
+
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
           <Field>
             <FieldLabel htmlFor="settings-visibility">Visibility</FieldLabel>
@@ -810,6 +978,63 @@ function FormSettingsPanel({
             <Input id="settings-expires" type="datetime-local" {...register("expiresAt")} />
           </Field>
         </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+          <Field>
+            <FieldLabel htmlFor="settings-pages">Public pages</FieldLabel>
+            <Select
+              value={pageSize}
+              onValueChange={(value) => setValue("pageSize", value as FormSettingsValues["pageSize"])}
+            >
+              <SelectTrigger id="settings-pages" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Single page</SelectItem>
+                <SelectItem value="1">1 question per page</SelectItem>
+                <SelectItem value="2">2 questions per page</SelectItem>
+                <SelectItem value="3">3 questions per page</SelectItem>
+                <SelectItem value="5">5 questions per page</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="settings-password">Form password</FieldLabel>
+            <Input
+              id="settings-password"
+              type="password"
+              placeholder={form?.isPasswordProtected ? "Protected" : "Optional"}
+              disabled={clearPassword}
+              {...register("password", {
+                minLength: {
+                  value: 4,
+                  message: "Password must be at least 4 characters",
+                },
+              })}
+            />
+            <FieldDescription className="text-xs">
+              Leave blank to keep the current password.
+            </FieldDescription>
+            <FieldError errors={[errors.password]} />
+          </Field>
+        </div>
+
+        {form?.isPasswordProtected ? (
+          <Field orientation="horizontal" className="justify-between rounded-lg border p-3">
+            <div className="space-y-1">
+              <FieldLabel htmlFor="settings-clear-password">Remove password</FieldLabel>
+              <FieldDescription className="text-xs">
+                Make the published link accessible without a password.
+              </FieldDescription>
+            </div>
+            <Switch
+              id="settings-clear-password"
+              checked={clearPassword}
+              onCheckedChange={(checked) => setValue("clearPassword", checked)}
+            />
+          </Field>
+        ) : null}
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
           <Field>
@@ -845,13 +1070,74 @@ function FormSettingsPanel({
   );
 }
 
+function SharePanel({ form }: { form?: EditorForm }) {
+  const [origin, setOrigin] = React.useState("");
+  const publicPath = form ? `/form/${form.slug ?? form.id}` : "";
+  const shareUrl = origin && publicPath ? `${origin}${publicPath}` : publicPath;
+  const qrUrl = shareUrl
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=12&data=${encodeURIComponent(shareUrl)}`
+    : "";
+
+  React.useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
+  const copyLink = async () => {
+    if (!shareUrl) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(shareUrl);
+  };
+
+  return (
+    <section className="peak-glass peak-lift grid gap-4 rounded-xl p-4">
+      <div className="space-y-1">
+        <h3 className="peak-serif text-lg font-semibold tracking-normal text-[#2f5d3b]">Share</h3>
+        <p className="text-sm text-[#59645b]">
+          Custom slug links and QR sharing stay tied to this form.
+        </p>
+      </div>
+
+      <div className="grid gap-3">
+        <Input readOnly value={shareUrl} className="bg-white/75" />
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" disabled={!shareUrl} onClick={() => void copyLink()}>
+            <CopyIcon />
+            Copy link
+          </Button>
+          {form?.status === "published" ? (
+            <Button type="button" variant="outline" asChild>
+              <Link href={publicPath}>
+                <ExternalLinkIcon />
+                Open
+              </Link>
+            </Button>
+          ) : null}
+        </div>
+      </div>
+
+      {qrUrl ? (
+        <div className="grid place-items-center rounded-xl border border-[#c3c8c1]/60 bg-white/80 p-4">
+          <div
+            aria-label="Form QR code"
+            className="size-40 rounded-md bg-contain bg-center bg-no-repeat"
+            role="img"
+            style={{ backgroundImage: `url(${qrUrl})` }}
+          />
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function FormPreview({ form, fields }: { form?: EditorForm; fields: FormField[] }) {
   const theme = form?.themeConfig;
 
   return (
     <section className="peak-glass peak-lift grid gap-4 rounded-xl p-4">
       <div className="space-y-1">
-        <h3 className="peak-serif text-lg font-semibold tracking-normal text-[#061b0e]">Preview</h3>
+        <h3 className="peak-serif text-lg font-semibold tracking-normal text-[#2f5d3b]">Preview</h3>
         <p className="text-sm text-[#59645b]">Approximate public form layout.</p>
       </div>
 
@@ -916,11 +1202,13 @@ function FormPreview({ form, fields }: { form?: EditorForm; fields: FormField[] 
 function FieldEditor({
   errorMessage,
   form,
+  fields,
   isRequired,
   type,
 }: {
   errorMessage?: string;
   form: ReturnType<typeof useForm<FieldValues>>;
+  fields: FormField[];
   isRequired: boolean;
   type: FieldType;
 }) {
@@ -928,10 +1216,13 @@ function FieldEditor({
     formState: { errors },
     register,
     setValue,
+    watch,
   } = form;
+  const conditionalFieldId = watch("conditionalFieldId");
+  const conditionalOperator = watch("conditionalOperator");
 
   return (
-    <FieldGroup className="gap-4">
+    <FieldGroup className="gap-3">
       <Field>
         <FieldLabel htmlFor="label">Label</FieldLabel>
         <Input
@@ -949,7 +1240,7 @@ function FieldEditor({
         <FieldError errors={[errors.label]} />
       </Field>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-2">
         <Field>
           <FieldLabel htmlFor="type">Type</FieldLabel>
           <Select value={type} onValueChange={(value) => setValue("type", value as FieldType)}>
@@ -976,7 +1267,7 @@ function FieldEditor({
               required: "Index is required",
             })}
           />
-          <FieldDescription>Fractional sort value.</FieldDescription>
+          <FieldDescription className="text-xs">Fractional sort value.</FieldDescription>
           <FieldError errors={[errors.index]} />
         </Field>
       </div>
@@ -991,7 +1282,7 @@ function FieldEditor({
         <Textarea
           id="description"
           placeholder="Shown near the field."
-          className="min-h-20"
+          className="min-h-16"
           {...register("description")}
         />
       </Field>
@@ -1002,14 +1293,16 @@ function FieldEditor({
           <Textarea
             id="optionsText"
             placeholder={"One option per line\nStarter\nPro\nEnterprise"}
-            className="min-h-24"
+            className="min-h-20"
             {...register("optionsText")}
           />
-          <FieldDescription>Used by select, radio, and multi-checkbox fields.</FieldDescription>
+          <FieldDescription className="text-xs">
+            Used by select, radio, and multi-checkbox fields.
+          </FieldDescription>
         </Field>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-2">
         <Field>
           <FieldLabel htmlFor="min">Minimum</FieldLabel>
           <Input
@@ -1021,7 +1314,7 @@ function FieldEditor({
                 !value.trim() || Number.isFinite(Number(value)) || "Minimum must be a number",
             })}
           />
-          <FieldDescription>
+          <FieldDescription className="text-xs">
             Text length, number lower bound, or rating minimum.
           </FieldDescription>
           <FieldError errors={[errors.min]} />
@@ -1038,7 +1331,7 @@ function FieldEditor({
                 !value.trim() || Number.isFinite(Number(value)) || "Maximum must be a number",
             })}
           />
-          <FieldDescription>
+          <FieldDescription className="text-xs">
             Text length, number upper bound, or rating maximum.
           </FieldDescription>
           <FieldError errors={[errors.max]} />
@@ -1048,7 +1341,7 @@ function FieldEditor({
       <Field orientation="horizontal" className="justify-between rounded-lg border p-3">
         <div className="space-y-1">
           <FieldLabel htmlFor="isRequired">Required</FieldLabel>
-          <FieldDescription>Respondents must answer this field.</FieldDescription>
+          <FieldDescription className="text-xs">Respondents must answer this field.</FieldDescription>
         </div>
         <Switch
           id="isRequired"
@@ -1056,6 +1349,69 @@ function FieldEditor({
           onCheckedChange={(checked) => setValue("isRequired", checked)}
         />
       </Field>
+
+      <div className="grid gap-3 rounded-lg border p-3">
+        <div className="space-y-1">
+          <FieldLabel>Conditional logic</FieldLabel>
+          <FieldDescription className="text-xs">
+            Show this field only when another answer matches.
+          </FieldDescription>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <Field>
+            <FieldLabel htmlFor="conditionalFieldId">Show when field</FieldLabel>
+            <Select
+              value={conditionalFieldId}
+              onValueChange={(value) => setValue("conditionalFieldId", value)}
+            >
+              <SelectTrigger id="conditionalFieldId" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Always show</SelectItem>
+                {fields.map((field) => (
+                  <SelectItem key={field.id} value={field.id}>
+                    {field.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="conditionalOperator">Condition</FieldLabel>
+            <Select
+              value={conditionalOperator}
+              onValueChange={(value) =>
+                setValue("conditionalOperator", value as FieldValues["conditionalOperator"])
+              }
+              disabled={conditionalFieldId === "none"}
+            >
+              <SelectTrigger id="conditionalOperator" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="equals">Equals</SelectItem>
+                <SelectItem value="not_equals">Does not equal</SelectItem>
+                <SelectItem value="contains">Contains option</SelectItem>
+                <SelectItem value="not_empty">Is answered</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+        </div>
+
+        {conditionalFieldId !== "none" && conditionalOperator !== "not_empty" ? (
+          <Field>
+            <FieldLabel htmlFor="conditionalValue">Value</FieldLabel>
+            <Input
+              id="conditionalValue"
+              placeholder="Exact value or option"
+              {...register("conditionalValue")}
+            />
+          </Field>
+        ) : null}
+      </div>
 
       {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
     </FieldGroup>

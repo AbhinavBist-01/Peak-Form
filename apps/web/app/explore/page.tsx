@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   ArrowRightIcon,
   EyeOffIcon,
-  Loader2Icon,
   MountainIcon,
   SearchIcon,
 } from "lucide-react";
@@ -14,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { Skeleton } from "~/components/ui/skeleton";
 import { MarketingFooter, MarketingNavbar } from "~/components/marketing-chrome";
 import { useListPublicForms } from "~/hooks/api/form";
 
@@ -62,12 +62,12 @@ export default function ExplorePage() {
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-5 py-10 md:px-8 md:py-12">
           <div className="peak-glass peak-reveal grid gap-6 rounded-xl p-6 md:grid-cols-[1fr_22rem] md:items-end md:p-8">
             <div className="peak-stagger grid gap-4">
-              <Badge className="w-fit gap-2 bg-[#061b0e] text-white">
+              <Badge className="w-fit gap-2 bg-[#2f5d3b] text-white">
                 <MountainIcon className="peak-icon-breathe size-3.5" />
                 Public forms
               </Badge>
               <div className="grid gap-3">
-                <h1 className="peak-serif text-4xl font-semibold tracking-normal text-[#061b0e] md:text-5xl">
+                <h1 className="peak-serif text-4xl font-semibold tracking-normal text-[#2f5d3b] md:text-5xl">
                   Explore published PeakForms
                 </h1>
                 <p className="max-w-2xl text-sm leading-6 text-[#59645b] md:text-base md:leading-7">
@@ -98,9 +98,23 @@ export default function ExplorePage() {
         ) : null}
 
         {isLoading ? (
-          <div className="peak-glass flex min-h-64 items-center justify-center rounded-xl text-sm text-[#59645b]">
-            <Loader2Icon className="mr-2 size-4 animate-spin" />
-            Loading public forms...
+          <div className="peak-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <article key={`public-form-skeleton-${index}`} className="peak-glass grid min-h-64 content-between gap-5 rounded-xl p-5">
+                <div className="grid gap-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <Skeleton className="h-6 w-24 rounded-full bg-[#d0e9d4]/70" />
+                    <Skeleton className="h-6 w-28 rounded-full bg-[#edf1ec]" />
+                  </div>
+                  <div className="grid gap-3">
+                    <Skeleton className="h-7 w-3/4 bg-[#d0e9d4]/70" />
+                    <Skeleton className="h-4 w-full bg-[#edf1ec]" />
+                    <Skeleton className="h-4 w-2/3 bg-[#edf1ec]" />
+                  </div>
+                </div>
+                <Skeleton className="h-10 w-full bg-[#d0e9d4]/70" />
+              </article>
+            ))}
           </div>
         ) : filteredForms.length ? (
           <div className="peak-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -112,7 +126,7 @@ export default function ExplorePage() {
           <div className="peak-glass grid min-h-64 place-items-center rounded-xl border border-dashed border-[#c3c8c1] p-8 text-center">
             <div className="grid max-w-sm gap-2">
               <EyeOffIcon className="mx-auto size-8 text-[#59645b]" />
-              <h2 className="peak-serif text-xl font-semibold tracking-normal text-[#061b0e]">No public forms found</h2>
+              <h2 className="peak-serif text-xl font-semibold tracking-normal text-[#2f5d3b]">No public forms found</h2>
               <p className="text-sm text-[#59645b]">
                 Public forms appear here after creators publish them with public visibility.
               </p>
@@ -143,7 +157,7 @@ function PublicFormCard({ form }: { form: PublicForm }) {
     >
       <div className="grid gap-4">
         <div className="flex items-start justify-between gap-3">
-          <Badge className="bg-[#d0e9d4] text-[#061b0e]">{theme?.name ?? "PeakForm"}</Badge>
+          <Badge className="bg-[#d0e9d4] text-[#2f5d3b]">{theme?.name ?? "PeakForm"}</Badge>
           <Badge variant="outline">{formatDate(form.publishedAt)}</Badge>
         </div>
         <div className="grid gap-2">
@@ -162,11 +176,11 @@ function PublicFormCard({ form }: { form: PublicForm }) {
         asChild
         className="peak-button-motion"
         style={{
-          backgroundColor: theme?.accentColor ?? "#061b0e",
+          backgroundColor: theme?.accentColor ?? "#2f5d3b",
           color: "#ffffff",
         }}
       >
-        <Link href={`/form/${form.id}`}>
+        <Link href={`/form/${form.slug ?? form.id}`}>
           Open form
           <ArrowRightIcon />
         </Link>

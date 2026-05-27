@@ -15,6 +15,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Skeleton } from "~/components/ui/skeleton";
 import { useListForms } from "~/hooks/api/form";
 
 type FormRow = NonNullable<ReturnType<typeof useListForms>["forms"]>[number];
@@ -43,7 +44,7 @@ function getStatusLabel(form: FormRow) {
   }
 
   if (form.status === "archived") {
-    return "Unpublished";
+    return "Archived";
   }
 
   return "Draft";
@@ -54,7 +55,7 @@ function getStatusVariant(status: string) {
     return "default";
   }
 
-  if (status === "Unpublished") {
+  if (status === "Archived") {
     return "secondary";
   }
 
@@ -81,13 +82,13 @@ export default function Page() {
       label: "Total forms",
       value: forms.length,
       icon: FileTextIcon,
-      tone: "bg-[#061b0e] text-white",
+      tone: "bg-[#2f5d3b] text-white",
     },
     {
       label: "Published",
       value: publishedForms.length,
       icon: Globe2Icon,
-      tone: "bg-[#d0e9d4] text-[#061b0e]",
+      tone: "bg-[#d0e9d4] text-[#2f5d3b]",
     },
     {
       label: "Drafts",
@@ -109,11 +110,11 @@ export default function Page() {
         <div className="rounded-xl border border-[#c3c8c1]/65 bg-white/82 p-5 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl md:p-6">
           <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div className="grid gap-2">
-              <Badge className="w-fit bg-[#d0e9d4] text-[#061b0e]">
+              <Badge className="w-fit bg-[#d0e9d4] text-[#2f5d3b]">
                 Workspace overview
               </Badge>
               <div className="grid gap-2">
-                <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#061b0e] md:text-4xl">
+                <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#2f5d3b] md:text-4xl">
                   Dashboard
                 </h2>
                 <p className="max-w-2xl text-sm leading-6 text-[#59645b]">
@@ -123,7 +124,7 @@ export default function Page() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button asChild className="bg-[#061b0e] text-white hover:bg-[#1b3022]">
+              <Button asChild className="bg-[#2f5d3b] text-white hover:bg-[#3f744b]">
                 <Link href="/dashboard/forms">
                   <CirclePlusIcon />
                   New form
@@ -139,14 +140,14 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="grid content-between gap-4 rounded-xl border border-[#c3c8c1]/65 bg-[#061b0e] p-5 text-white shadow-xl shadow-[#061b0e]/15">
+        <div className="grid content-between gap-4 rounded-xl border border-[#c3c8c1]/65 bg-[#2f5d3b] p-5 text-white shadow-xl shadow-[#2f5d3b]/15">
           <div className="grid gap-2">
             <p className="text-sm text-white/68">Current focus</p>
             <h3 className="peak-serif text-2xl font-semibold tracking-normal">
               Build clean forms. Review clean answers.
             </h3>
           </div>
-          <Button asChild className="bg-white text-[#061b0e] hover:bg-[#d0e9d4]">
+          <Button asChild className="bg-white text-[#2f5d3b] hover:bg-[#d0e9d4]">
             <Link href="/dashboard/forms">
               Open builder
               <Layers3Icon />
@@ -176,9 +177,13 @@ export default function Page() {
                   <Icon className="size-4" />
                 </span>
               </div>
-              <p className="text-3xl font-semibold tracking-normal text-[#061b0e]">
-                {isLoading ? "..." : metric.value}
-              </p>
+              {isLoading ? (
+                <Skeleton className="h-9 w-16 bg-[#d0e9d4]/70" />
+              ) : (
+                <p className="text-3xl font-semibold tracking-normal text-[#2f5d3b]">
+                  {metric.value}
+                </p>
+              )}
             </div>
           );
         })}
@@ -188,7 +193,7 @@ export default function Page() {
         <div className="rounded-xl border border-[#c3c8c1]/65 bg-white/82 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
           <div className="flex flex-col gap-3 border-b border-[#c3c8c1]/55 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-base font-semibold text-[#061b0e]">Recent forms</h3>
+              <h3 className="text-base font-semibold text-[#2f5d3b]">Recent forms</h3>
               <p className="text-sm text-[#59645b]">The latest forms in your workspace.</p>
             </div>
             {isFetching && !isLoading ? (
@@ -199,7 +204,15 @@ export default function Page() {
           {isLoading ? (
             <div className="grid gap-3 p-5">
               {[1, 2, 3].map((item) => (
-                <div key={item} className="h-16 animate-pulse rounded-lg bg-[#edf1ec]" />
+                <div key={item} className="grid gap-3 rounded-lg border border-[#c3c8c1]/45 bg-white/70 p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="grid flex-1 gap-2">
+                      <Skeleton className="h-4 w-1/3 bg-[#d0e9d4]/70" />
+                      <Skeleton className="h-3 w-2/3 bg-[#edf1ec]" />
+                    </div>
+                    <Skeleton className="h-6 w-20 rounded-full bg-[#edf1ec]" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : recentForms.length ? (
@@ -214,7 +227,7 @@ export default function Page() {
                   >
                     <div className="min-w-0">
                       <div className="mb-1 flex flex-wrap items-center gap-2">
-                        <h4 className="truncate font-medium text-[#061b0e]">{form.title}</h4>
+                        <h4 className="truncate font-medium text-[#2f5d3b]">{form.title}</h4>
                         <Badge variant={getStatusVariant(status)}>{status}</Badge>
                       </div>
                       <p className="truncate text-sm text-[#59645b]">
@@ -236,16 +249,16 @@ export default function Page() {
           ) : (
             <div className="grid min-h-56 place-items-center p-8 text-center">
               <div className="grid max-w-sm gap-3">
-                <div className="mx-auto grid size-12 place-items-center rounded-lg bg-[#d0e9d4] text-[#061b0e]">
+                <div className="mx-auto grid size-12 place-items-center rounded-lg bg-[#d0e9d4] text-[#2f5d3b]">
                   <FileTextIcon className="size-5" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-[#061b0e]">No forms yet</h4>
+                  <h4 className="font-semibold text-[#2f5d3b]">No forms yet</h4>
                   <p className="mt-1 text-sm leading-6 text-[#59645b]">
                     Create your first form, then configure publishing, visibility, fields, and analytics inside the editor.
                   </p>
                 </div>
-                <Button asChild className="bg-[#061b0e] text-white hover:bg-[#1b3022]">
+                <Button asChild className="bg-[#2f5d3b] text-white hover:bg-[#3f744b]">
                   <Link href="/dashboard/forms">Create form</Link>
                 </Button>
               </div>
@@ -255,7 +268,7 @@ export default function Page() {
 
         <aside className="grid gap-4">
           <div className="rounded-xl border border-[#c3c8c1]/65 bg-white/82 p-5 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
-            <h3 className="text-base font-semibold text-[#061b0e]">Main workflow</h3>
+            <h3 className="text-base font-semibold text-[#2f5d3b]">Main workflow</h3>
             <div className="mt-4 grid gap-3">
               {["Create the form", "Add fields", "Set visibility", "Review responses"].map(
                 (step, index) => (
@@ -271,7 +284,7 @@ export default function Page() {
           </div>
 
           <div className="rounded-xl border border-[#c3c8c1]/65 bg-white/82 p-5 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
-            <h3 className="text-base font-semibold text-[#061b0e]">Quick links</h3>
+            <h3 className="text-base font-semibold text-[#2f5d3b]">Quick links</h3>
             <div className="mt-4 grid gap-2">
               <Button asChild variant="outline" className="justify-between">
                 <Link href="/dashboard/forms">

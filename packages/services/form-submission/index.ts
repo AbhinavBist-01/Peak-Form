@@ -1,4 +1,5 @@
-import { and, db, desc, eq } from "@repo/database";
+import { createHmac } from "node:crypto";
+import { and, db, desc, eq, or } from "@repo/database";
 import { formFields } from "@repo/database/models/form-field";
 import { formSubmissionsTable } from "@repo/database/models/form-submission";
 import { forms } from "@repo/database/models/form";
@@ -12,6 +13,8 @@ import {
   exportFormSubmissionsCsvForUserInput,
   exportFormSubmissionsCsvOutput,
   formSubmissionAnalyticsOutput,
+  getPaginatedFormSubmissionsByFormIdForUserInput,
+  getPaginatedFormSubmissionsByFormIdOutput,
   getFormSubmissionAnalyticsForUserInput,
   getFormSubmissionByIdForUserInput,
   getFormSubmissionByIdOutput,
@@ -25,6 +28,8 @@ import {
   type ExportFormSubmissionsCsvForUserInputType,
   type ExportFormSubmissionsCsvOutputType,
   type FormSubmissionAnalyticsOutputType,
+  type GetPaginatedFormSubmissionsByFormIdForUserInputType,
+  type GetPaginatedFormSubmissionsByFormIdOutputType,
   type GetFormSubmissionAnalyticsForUserInputType,
   type GetFormSubmissionByIdForUserInputType,
   type GetFormSubmissionByIdOutputType,
@@ -32,6 +37,8 @@ import {
   type GetFormSubmissionsByFormIdForUserInputType,
   type GetFormSubmissionsByFormIdOutputType,
 } from "./model";
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 type ValidationField = {
   id: string;
@@ -53,6 +60,11 @@ type ValidationField = {
   options: string[] | null;
   validationRules: {
     customErrorMessage?: string;
+    conditionalLogic?: {
+      fieldId: string;
+      operator: "equals" | "not_equals" | "contains" | "not_empty";
+      value?: string;
+    };
   } | null;
   min: number | null;
   max: number | null;
@@ -67,6 +79,36 @@ type FormMetadata = {
   creatorEmail: string;
   creatorName: string;
 };
+
+function formIdentifierWhere(identifier: string) {
+  return UUID_PATTERN.test(identifier)
+    ? or(eq(forms.id, identifier), eq(forms.slug, identifier))
+    : eq(forms.slug, identifier);
+}
+
+function hashPassword(password: string, salt: string) {
+  return createHmac("sha256", salt).update(password).digest("hex");
+}
+
+function verifyFormPassword({
+  password,
+  passwordHash,
+  passwordSalt,
+}: {
+  password?: string;
+  passwordHash: string | null;
+  passwordSalt: string | null;
+}) {
+  if (!passwordHash || !passwordSalt) {
+    return true;
+  }
+
+  if (!password) {
+    return false;
+  }
+
+  return hashPassword(password, passwordSalt) === passwordHash;
+}
 
 function getValidationMessage(field: ValidationField, fallback: string) {
   return field.validationRules?.customErrorMessage || fallback;
@@ -151,6 +193,35 @@ function findRespondentEmail(fields: ValidationField[], values: CreateFormSubmis
   const value = values.find((entry) => entry.formFieldId === emailField.id)?.value.trim();
 
   return value || undefined;
+}
+
+function getValueByFieldId(values: CreateFormSubmissionInputType["values"], fieldId: string) {
+  return values.find((entry) => entry.formFieldId === fieldId)?.value.trim() ?? "";
+}
+
+function isFieldVisible(field: ValidationField, values: CreateFormSubmissionInputType["values"]) {
+  const condition = field.validationRules?.conditionalLogic;
+
+  if (!condition) {
+    return true;
+  }
+
+  const value = getValueByFieldId(values, condition.fieldId);
+  const expected = condition.value?.trim() ?? "";
+
+  if (condition.operator === "not_empty") {
+    return Boolean(value);
+  }
+
+  if (condition.operator === "contains") {
+    return Boolean(expected) && value.split(",").map((entry) => entry.trim()).includes(expected);
+  }
+
+  if (condition.operator === "not_equals") {
+    return value !== expected;
+  }
+
+  return value === expected;
 }
 
 function validateSubmittedValue(field: ValidationField, rawValue: string) {
@@ -238,7 +309,7 @@ class FormSubmissionService {
   public async createFormSubmission(
     payload: CreateFormSubmissionInputType,
   ): Promise<CreateFormSubmissionOutputType> {
-    const { formId, values } = await createFormSubmissionInput.parseAsync(payload);
+    const { formId, password, values } = await createFormSubmissionInput.parseAsync(payload);
 
     const [form] = await db
       .select({
@@ -246,12 +317,14 @@ class FormSubmissionService {
         title: forms.title,
         status: forms.status,
         expiresAt: forms.expiresAt,
+        passwordHash: forms.passwordHash,
+        passwordSalt: forms.passwordSalt,
         creatorEmail: usersTable.email,
         creatorName: usersTable.fullName,
       })
       .from(forms)
       .innerJoin(usersTable, eq(usersTable.id, forms.creatorId))
-      .where(eq(forms.id, formId))
+      .where(formIdentifierWhere(formId))
       .limit(1);
 
     if (!form) {
@@ -264,6 +337,16 @@ class FormSubmissionService {
 
     if (form.expiresAt && form.expiresAt.getTime() < Date.now()) {
       throw new Error("This form is no longer accepting submissions");
+    }
+
+    if (
+      !verifyFormPassword({
+        password,
+        passwordHash: form.passwordHash,
+        passwordSalt: form.passwordSalt,
+      })
+    ) {
+      throw new Error("A valid form password is required");
     }
 
     const fields = await db
@@ -280,7 +363,7 @@ class FormSubmissionService {
         pattern: formFields.pattern,
       })
       .from(formFields)
-      .where(eq(formFields.formId, formId));
+      .where(eq(formFields.formId, form.id));
 
     const fieldsById = new Map(fields.map((field) => [field.id, field]));
     const submittedFieldIds = new Set<string>();
@@ -297,7 +380,11 @@ class FormSubmissionService {
       }
     }
 
-    for (const field of fields) {
+    const visibleFields = fields.filter((field) => isFieldVisible(field, values));
+    const visibleFieldIds = new Set(visibleFields.map((field) => field.id));
+    const storedValues = values.filter((value) => visibleFieldIds.has(value.formFieldId));
+
+    for (const field of visibleFields) {
       const submittedValue = values.find((value) => value.formFieldId === field.id);
       validateSubmittedValue(field, submittedValue?.value ?? "");
     }
@@ -305,8 +392,8 @@ class FormSubmissionService {
     const result = await db
       .insert(formSubmissionsTable)
       .values({
-        formId,
-        values,
+        formId: form.id,
+        values: storedValues,
       })
       .returning({
         id: formSubmissionsTable.id,
@@ -318,8 +405,8 @@ class FormSubmissionService {
 
     await this.sendSubmissionEmails({
       form,
-      fields,
-      values,
+      fields: visibleFields,
+      values: storedValues,
       submissionId: result[0].id,
     });
 
@@ -365,6 +452,39 @@ class FormSubmissionService {
       .orderBy(desc(formSubmissionsTable.createdAt));
 
     return getFormSubmissionsByFormIdOutput.parse(result);
+  }
+
+  public async getPaginatedFormSubmissionsByFormIdForUser(
+    payload: GetPaginatedFormSubmissionsByFormIdForUserInputType,
+  ): Promise<GetPaginatedFormSubmissionsByFormIdOutputType> {
+    const { formId, userId, page, pageSize, search } =
+      await getPaginatedFormSubmissionsByFormIdForUserInput.parseAsync(payload);
+    const submissions = await this.getFormSubmissionsByFormIdForUser({ formId, userId });
+    const normalizedSearch = search?.trim().toLowerCase();
+    const filtered = normalizedSearch
+      ? submissions.filter((submission) =>
+          [
+            submission.id,
+            submission.createdAt instanceof Date ? submission.createdAt.toISOString() : "",
+            ...submission.values.map((value) => value.value),
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(normalizedSearch),
+        )
+      : submissions;
+    const total = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const safePage = Math.min(page, totalPages);
+    const start = (safePage - 1) * pageSize;
+
+    return getPaginatedFormSubmissionsByFormIdOutput.parse({
+      submissions: filtered.slice(start, start + pageSize),
+      total,
+      page: safePage,
+      pageSize,
+      totalPages,
+    });
   }
 
   public async getFormSubmissionAnalyticsForUser(
