@@ -3,7 +3,7 @@
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "~/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { type FieldErrors, useForm } from "react-hook-form";
 import { useSignin } from "~/hooks/api/auth";
@@ -32,8 +32,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   };
 
   const router = useRouter();
-  const { register, handleSubmit } = useForm<FormValues>();
-  const { signInWithEmailAndPasswordAsync } = useSignin();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>();
+  const { signInWithEmailAndPasswordAsync, error, status } = useSignin();
+  const isSubmitting = status === "pending";
 
   async function onSubmit(values: FormValues) {
     await signInWithEmailAndPasswordAsync({
@@ -75,19 +80,45 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                   type="email"
                   placeholder="m@example.com"
                   required
-                  {...register("email")}
+                  aria-invalid={!!errors.email}
+                  {...register("email", {
+                    required: "Enter your email.",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Enter a valid email address.",
+                    },
+                  })}
                 />
+                <FieldError errors={[errors.email]} />
               </Field>
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
                 </div>
-                <Input id="password" type="password" required {...register("password")} />
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  aria-invalid={!!errors.password}
+                  {...register("password", {
+                    required: "Enter your password.",
+                    minLength: {
+                      value: 8,
+                      message: "Password must be at least 8 characters.",
+                    },
+                  })}
+                />
+                <FieldError errors={[errors.password]} />
               </Field>
               <Field>
-                <Button type="submit" className="peak-button-motion bg-[#2f5d3b] text-white hover:bg-[#3f744b]">
-                  Login
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="peak-button-motion bg-[#2f5d3b] text-white hover:bg-[#3f744b]"
+                >
+                  {isSubmitting ? "Signing in..." : "Login"}
                 </Button>
+                <FieldError>{error?.message}</FieldError>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account?{" "}
                   <Link href="/signup" className="font-medium text-[#4d6453] underline-offset-4 hover:underline">
