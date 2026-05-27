@@ -9,16 +9,16 @@ export default function Page() {
       <section className="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-md flex-col justify-center">
         <Link
           href="/"
-          className="peak-reveal mb-8 flex w-fit items-center gap-3 text-[#2f5d3b]"
+          className="peak-reveal mb-8 flex w-fit items-center gap-4 text-black"
         >
           <Image
             src="/peakform-logo.svg"
             alt="PeakForm"
-            width={32}
-            height={32}
-            className="size-8 opacity-90 drop-shadow-[0_1px_4px_rgba(47,93,59,0.35)]"
+            width={44}
+            height={44}
+            className="size-11 brightness-0"
           />
-          <span className="peak-serif text-xl font-semibold">PeakForm</span>
+          <span className="peak-serif text-3xl font-semibold tracking-normal">PeakForm</span>
         </Link>
 
         <div className="peak-reveal w-full max-w-md">
