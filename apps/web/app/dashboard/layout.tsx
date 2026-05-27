@@ -1,21 +1,11 @@
 import type { CSSProperties, ReactNode } from "react";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 import { AppSidebar } from "~/components/app-sidebar";
 import { AuthGuard } from "~/components/auth-guard";
 import { SiteHeader } from "~/components/site-header";
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 
-const AUTH_COOKIE = "authentication-token";
-
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const cookieStore = await cookies();
-
-  if (!cookieStore.has(AUTH_COOKIE)) {
-    redirect("/login?next=/dashboard");
-  }
-
   return (
     <AuthGuard>
       <SidebarProvider

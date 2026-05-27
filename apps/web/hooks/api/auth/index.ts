@@ -11,8 +11,8 @@ export const useSignup = () => {
     isSuccess,
     status,
   } = trpc.auth.createUserWithEmailAndPassword.useMutation({
-    onSuccess: async () => {
-      await utils.auth.getLoggedInUserInfo.invalidate();
+    onSuccess: () => {
+      void utils.auth.getLoggedInUserInfo.invalidate();
     },
   });
 
@@ -40,8 +40,8 @@ export const useSignin = () => {
     isSuccess,
     status,
   } = trpc.auth.signInUserWithEmailAndPassword.useMutation({
-    onSuccess: async () => {
-      await utils.auth.getLoggedInUserInfo.invalidate();
+    onSuccess: () => {
+      void utils.auth.getLoggedInUserInfo.invalidate();
     },
   });
 
@@ -93,8 +93,8 @@ export const useLogout = () => {
     error,
     status,
   } = trpc.auth.logout.useMutation({
-    onSuccess: async () => {
-      await utils.auth.getLoggedInUserInfo.invalidate();
+    onSuccess: () => {
+      void utils.auth.getLoggedInUserInfo.invalidate();
     },
   });
 
