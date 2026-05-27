@@ -1,10 +1,10 @@
 import express from "express";
+import type { RequestHandler } from "express";
 import { logger } from "@repo/logger";
 import cors from "cors";
 
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { generateOpenApiDocument, createOpenApiExpressMiddleware } from "trpc-to-openapi";
-import { apiReference } from "@scalar/express-api-reference";
 
 import { serverRouter, createContext } from "@repo/trpc/server";
 
@@ -17,6 +17,23 @@ app.disable("x-powered-by");
 
 function normalizeOrigin(value: string) {
   return new URL(value).origin;
+}
+
+type ScalarApiReferenceModule = typeof import("@scalar/express-api-reference");
+
+const importEsm = new Function("specifier", "return import(specifier)") as (
+  specifier: string,
+) => Promise<ScalarApiReferenceModule>;
+
+let scalarDocsMiddleware: RequestHandler | undefined;
+
+async function getScalarDocsMiddleware() {
+  if (!scalarDocsMiddleware) {
+    const { apiReference } = await importEsm("@scalar/express-api-reference");
+    scalarDocsMiddleware = apiReference({ url: "/openapi.json" });
+  }
+
+  return scalarDocsMiddleware;
 }
 
 const baseUrl = normalizeOrigin(env.BASE_URL);
@@ -58,7 +75,14 @@ app.get("/openapi.json", (req, res) => {
 });
 
 logger.debug(`docs: ${env.BASE_URL}/docs`);
-app.use("/docs", apiReference({ url: "/openapi.json" }));
+app.use("/docs", async (req, res, next) => {
+  try {
+    const middleware = await getScalarDocsMiddleware();
+    return middleware(req, res, next);
+  } catch (error) {
+    return next(error);
+  }
+});
 
 app.use(
   "/api",
