@@ -61,34 +61,37 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   };
 
   return (
-    <Card className="peak-glass peak-shine border-[#c3c8c1]/70 bg-white/86 shadow-2xl" {...props}>
-      <CardHeader className="gap-3">
-        <CardTitle className="peak-serif text-3xl font-semibold tracking-normal text-[#2f5d3b]">
-          Create your PeakForm account
+    <Card className="claude-card rounded-2xl border-[#E5DFD5] bg-[#FFFDF9] p-2 shadow-xs" {...props}>
+      <CardHeader className="gap-2">
+        <CardTitle className="peak-serif text-3xl font-medium tracking-tight text-[#2D2926]">
+          Create PeakForms account
         </CardTitle>
-        <CardDescription className="text-[#59645b]">
-          Start building polished public forms and response dashboards.
+        <CardDescription className="text-xs text-[#78726A]">
+          Start building clean interactive forms and response dashboards.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="mb-6 space-y-4">
           <GoogleAuthButton />
-          <div className="flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-[#7a857c]">
-            <div className="h-px flex-1 bg-[#d9ddd7]" />
-            <span>or</span>
-            <div className="h-px flex-1 bg-[#d9ddd7]" />
+          <div className="flex items-center gap-3 text-[11px] font-mono text-[#9E978F]">
+            <div className="h-px flex-1 bg-[#E5DFD5]" />
+            <span>OR</span>
+            <div className="h-px flex-1 bg-[#E5DFD5]" />
           </div>
         </div>
         <form onSubmit={handleSubmit(onSubmit)}>
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor="name">Full Name</FieldLabel>
+              <FieldLabel htmlFor="name" className="text-xs font-medium text-[#2D2926]">
+                Full Name
+              </FieldLabel>
               <Input
                 id="name"
                 type="text"
-                placeholder="John Doe"
+                placeholder="Jane Doe"
                 required
                 aria-invalid={!!errors.name}
+                className="h-11 rounded-xl border-[#E5DFD5] bg-[#FFFDF9] text-xs text-[#2D2926] placeholder:text-[#9E978F] focus:border-[#DA7756] focus:ring-0"
                 {...register("name", {
                   required: "Enter your full name.",
                   minLength: {
@@ -100,13 +103,16 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
               <FieldError errors={[errors.name]} />
             </Field>
             <Field>
-              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <FieldLabel htmlFor="email" className="text-xs font-medium text-[#2D2926]">
+                Email Address
+              </FieldLabel>
               <Input
                 id="email"
                 type="email"
-                placeholder="m@example.com"
+                placeholder="name@example.com"
                 required
                 aria-invalid={!!errors.email}
+                className="h-11 rounded-xl border-[#E5DFD5] bg-[#FFFDF9] text-xs text-[#2D2926] placeholder:text-[#9E978F] focus:border-[#DA7756] focus:ring-0"
                 {...register("email", {
                   required: "Enter your email.",
                   pattern: {
@@ -116,17 +122,17 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 })}
               />
               <FieldError errors={[errors.email]} />
-              <FieldDescription>
-                Used for creator notifications and account access.
-              </FieldDescription>
             </Field>
             <Field>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <FieldLabel htmlFor="password" className="text-xs font-medium text-[#2D2926]">
+                Password
+              </FieldLabel>
               <Input
                 id="password"
                 type="password"
                 required
                 aria-invalid={!!errors.password}
+                className="h-11 rounded-xl border-[#E5DFD5] bg-[#FFFDF9] text-xs text-[#2D2926] focus:border-[#DA7756] focus:ring-0"
                 {...register("password", {
                   required: "Enter a password.",
                   minLength: {
@@ -136,36 +142,37 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 })}
               />
               <FieldError errors={[errors.password]} />
-              <FieldDescription>Must be at least 8 characters long.</FieldDescription>
             </Field>
             <Field>
-              <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
+              <FieldLabel htmlFor="confirm-password" className="text-xs font-medium text-[#2D2926]">
+                Confirm Password
+              </FieldLabel>
               <Input
                 id="confirm-password"
                 type="password"
                 required
                 aria-invalid={!!errors.confirmPassword}
+                className="h-11 rounded-xl border-[#E5DFD5] bg-[#FFFDF9] text-xs text-[#2D2926] focus:border-[#DA7756] focus:ring-0"
                 {...register("confirmPassword", {
                   required: "Confirm your password.",
                   validate: (value) => value === getValues("password") || "Passwords do not match.",
                 })}
               />
               <FieldError errors={[errors.confirmPassword]} />
-              <FieldDescription>Please confirm your password.</FieldDescription>
             </Field>
-            <FieldGroup>
+            <FieldGroup className="pt-2">
               <Field>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="peak-button-motion bg-[#2f5d3b] text-white hover:bg-[#3f744b]"
+                  className="claude-button h-11 w-full rounded-xl bg-[#DA7756] text-xs font-medium text-white hover:bg-[#C66545]"
                 >
-                  {isSubmitting ? "Creating account..." : "Create Account"}
+                  {isSubmitting ? "Creating account..." : "Create free account"}
                 </Button>
                 <FieldError>{error?.message}</FieldError>
-                <FieldDescription className="px-6 text-center">
+                <FieldDescription className="pt-2 text-center text-xs text-[#78726A]">
                   Already have an account?{" "}
-                  <Link href="/login" className="font-medium text-[#4d6453] underline-offset-4 hover:underline">
+                  <Link href="/login" className="font-medium text-[#DA7756] underline-offset-4 hover:underline">
                     Sign in
                   </Link>
                 </FieldDescription>

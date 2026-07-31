@@ -53,34 +53,37 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   }
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="peak-glass peak-shine border-[#c3c8c1]/70 bg-white/86 shadow-2xl">
-        <CardHeader className="gap-3">
-          <CardTitle className="peak-serif text-3xl font-semibold tracking-normal text-[#2f5d3b]">
+      <Card className="claude-card rounded-2xl border-[#E5DFD5] bg-[#FFFDF9] p-2 shadow-xs">
+        <CardHeader className="gap-2">
+          <CardTitle className="peak-serif text-3xl font-medium tracking-tight text-[#2D2926]">
             Welcome back
           </CardTitle>
-          <CardDescription className="text-[#59645b]">
+          <CardDescription className="text-xs text-[#78726A]">
             Sign in to manage your forms, responses, and public links.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-6 space-y-4">
             <GoogleAuthButton />
-            <div className="flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-[#7a857c]">
-              <div className="h-px flex-1 bg-[#d9ddd7]" />
-              <span>or</span>
-              <div className="h-px flex-1 bg-[#d9ddd7]" />
+            <div className="flex items-center gap-3 text-[11px] font-mono text-[#9E978F]">
+              <div className="h-px flex-1 bg-[#E5DFD5]" />
+              <span>OR</span>
+              <div className="h-px flex-1 bg-[#E5DFD5]" />
             </div>
           </div>
           <form onSubmit={handleSubmit(onSubmit, onError)}>
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="email" className="text-xs font-medium text-[#2D2926]">
+                  Email Address
+                </FieldLabel>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="name@example.com"
                   required
                   aria-invalid={!!errors.email}
+                  className="h-11 rounded-xl border-[#E5DFD5] bg-[#FFFDF9] text-xs text-[#2D2926] placeholder:text-[#9E978F] focus:border-[#DA7756] focus:ring-0"
                   {...register("email", {
                     required: "Enter your email.",
                     pattern: {
@@ -92,14 +95,17 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 <FieldError errors={[errors.email]} />
               </Field>
               <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                <div className="flex items-center justify-between">
+                  <FieldLabel htmlFor="password" className="text-xs font-medium text-[#2D2926]">
+                    Password
+                  </FieldLabel>
                 </div>
                 <Input
                   id="password"
                   type="password"
                   required
                   aria-invalid={!!errors.password}
+                  className="h-11 rounded-xl border-[#E5DFD5] bg-[#FFFDF9] text-xs text-[#2D2926] focus:border-[#DA7756] focus:ring-0"
                   {...register("password", {
                     required: "Enter your password.",
                     minLength: {
@@ -110,19 +116,19 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 />
                 <FieldError errors={[errors.password]} />
               </Field>
-              <Field>
+              <Field className="pt-2">
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="peak-button-motion bg-[#2f5d3b] text-white hover:bg-[#3f744b]"
+                  className="claude-button h-11 w-full rounded-xl bg-[#DA7756] text-xs font-medium text-white hover:bg-[#C66545]"
                 >
-                  {isSubmitting ? "Signing in..." : "Login"}
+                  {isSubmitting ? "Signing in..." : "Sign in to PeakForms"}
                 </Button>
                 <FieldError>{error?.message}</FieldError>
-                <FieldDescription className="text-center">
+                <FieldDescription className="pt-2 text-center text-xs text-[#78726A]">
                   Don&apos;t have an account?{" "}
-                  <Link href="/signup" className="font-medium text-[#4d6453] underline-offset-4 hover:underline">
-                    Sign up
+                  <Link href="/signup" className="font-medium text-[#DA7756] underline-offset-4 hover:underline">
+                    Create account
                   </Link>
                 </FieldDescription>
               </Field>
@@ -133,4 +139,3 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     </div>
   );
 }
-

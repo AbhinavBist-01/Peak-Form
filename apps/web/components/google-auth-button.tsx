@@ -14,10 +14,10 @@ export function GoogleAuthButton() {
     <Button
       type="button"
       variant="outline"
-      className="w-full border-[#c3c8c1]/80 bg-white/88 text-[#191c1b] hover:bg-white"
+      className="claude-button w-full border-[#E5DFD5] bg-white text-[#2D2926] hover:bg-[#F2ECE1] rounded-xl text-xs font-medium h-11"
       onClick={continueWithGoogle}
     >
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4">
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="mr-2 size-4">
         <path
           fill="#4285F4"
           d="M21.8 12.2c0-.8-.1-1.5-.2-2.2H12v4.2h5.5a4.7 4.7 0 0 1-2 3.1v2.6h3.2c1.9-1.7 3.1-4.3 3.1-7.7Z"
@@ -35,7 +35,7 @@ export function GoogleAuthButton() {
           d="M12 6.1c1.5 0 2.8.5 3.8 1.5l2.9-2.9A9.7 9.7 0 0 0 12 2a10 10 0 0 0-8.9 5.5l3.3 2.7c.8-2.3 3-4.1 5.6-4.1Z"
         />
       </svg>
-      Login with Google
+      Continue with Google
     </Button>
   );
 }
