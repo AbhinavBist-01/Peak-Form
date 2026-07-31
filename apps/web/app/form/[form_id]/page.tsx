@@ -401,9 +401,6 @@ export default function PublicFormPage() {
             onSubmit={onSubmit}
           >
             <div className="space-y-2">
-              <span className="inline-block rounded-md bg-[#F7EBE1] px-2.5 py-0.5 text-xs font-mono text-[#DA7756]">
-                {theme?.name ?? "PeakForms"}
-              </span>
               <h1 className="peak-serif text-3xl font-medium tracking-tight text-[#2D2926] md:text-4xl">
                 {form.title}
               </h1>

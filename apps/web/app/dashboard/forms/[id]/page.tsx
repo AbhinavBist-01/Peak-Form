@@ -903,22 +903,23 @@ function FormSettingsPanel({
   const clearPassword = watch("clearPassword");
 
   return (
-    <section className="peak-glass peak-lift grid gap-4 rounded-xl p-4">
-      <div className="space-y-1">
-        <h3 className="peak-serif text-lg font-semibold tracking-normal text-[#2f5d3b]">Settings</h3>
-        <p className="text-sm text-[#59645b]">
+    <section className="claude-card rounded-2xl bg-[#FFFDF9] border border-[#E5DFD5] p-6 shadow-xs space-y-4">
+      <div className="space-y-1 border-b border-[#E5DFD5] pb-3">
+        <h3 className="peak-serif text-xl font-medium text-[#2D2926]">Form Settings</h3>
+        <p className="text-xs text-[#78726A]">
           {form?.status === "published"
             ? "Published forms can be shared or listed publicly."
             : "Draft forms stay private until published."}
         </p>
       </div>
 
-      <form className="grid gap-4" onSubmit={handleSubmit(onSave)}>
+      <form className="space-y-4" onSubmit={handleSubmit(onSave)}>
         <Field>
-          <FieldLabel htmlFor="settings-title">Title</FieldLabel>
+          <FieldLabel htmlFor="settings-title" className="text-xs font-medium text-[#2D2926]">Title</FieldLabel>
           <Input
             id="settings-title"
             aria-invalid={Boolean(errors.title)}
+            className="h-10 rounded-xl border-[#E5DFD5] bg-white text-xs text-[#2D2926] focus:border-[#DA7756]"
             {...register("title", {
               required: "Title is required",
               maxLength: {
@@ -931,10 +932,10 @@ function FormSettingsPanel({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="settings-description">Description</FieldLabel>
+          <FieldLabel htmlFor="settings-description" className="text-xs font-medium text-[#2D2926]">Description</FieldLabel>
           <Textarea
             id="settings-description"
-            className="min-h-20"
+            className="min-h-20 rounded-xl border-[#E5DFD5] bg-white text-xs text-[#2D2926] focus:border-[#DA7756]"
             {...register("description", {
               maxLength: {
                 value: 500,
@@ -946,10 +947,11 @@ function FormSettingsPanel({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="settings-slug">Custom slug</FieldLabel>
+          <FieldLabel htmlFor="settings-slug" className="text-xs font-medium text-[#2D2926]">Custom Slug</FieldLabel>
           <Input
             id="settings-slug"
             placeholder="startup-feedback"
+            className="h-10 rounded-xl border-[#E5DFD5] bg-white text-xs text-[#2D2926] focus:border-[#DA7756]"
             {...register("slug", {
               minLength: {
                 value: 3,
@@ -961,7 +963,7 @@ function FormSettingsPanel({
               },
             })}
           />
-          <FieldDescription className="text-xs">
+          <FieldDescription className="text-[11px] font-mono text-[#9E978F]">
             Public link: /form/{watch("slug") || form?.id || "..."}
           </FieldDescription>
           <FieldError errors={[errors.slug]} />
@@ -969,15 +971,15 @@ function FormSettingsPanel({
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
           <Field>
-            <FieldLabel htmlFor="settings-visibility">Visibility</FieldLabel>
+            <FieldLabel htmlFor="settings-visibility" className="text-xs font-medium text-[#2D2926]">Visibility</FieldLabel>
             <Select
               value={visibility}
               onValueChange={(value) => setValue("visibility", value as FormSettingsValues["visibility"])}
             >
-              <SelectTrigger id="settings-visibility" className="w-full">
+              <SelectTrigger id="settings-visibility" className="h-10 rounded-xl border-[#E5DFD5] bg-white text-xs text-[#2D2926]">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl border-[#E5DFD5] bg-[#FFFDF9] text-xs">
                 <SelectItem value="public">Public</SelectItem>
                 <SelectItem value="unlisted">Unlisted</SelectItem>
               </SelectContent>
@@ -985,22 +987,22 @@ function FormSettingsPanel({
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="settings-expires">Expires at</FieldLabel>
-            <Input id="settings-expires" type="datetime-local" {...register("expiresAt")} />
+            <FieldLabel htmlFor="settings-expires" className="text-xs font-medium text-[#2D2926]">Expires At</FieldLabel>
+            <Input id="settings-expires" type="datetime-local" className="h-10 rounded-xl border-[#E5DFD5] bg-white text-xs text-[#2D2926]" {...register("expiresAt")} />
           </Field>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
           <Field>
-            <FieldLabel htmlFor="settings-pages">Public pages</FieldLabel>
+            <FieldLabel htmlFor="settings-pages" className="text-xs font-medium text-[#2D2926]">Public Pages</FieldLabel>
             <Select
               value={pageSize}
               onValueChange={(value) => setValue("pageSize", value as FormSettingsValues["pageSize"])}
             >
-              <SelectTrigger id="settings-pages" className="w-full">
+              <SelectTrigger id="settings-pages" className="h-10 rounded-xl border-[#E5DFD5] bg-white text-xs text-[#2D2926]">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl border-[#E5DFD5] bg-[#FFFDF9] text-xs">
                 <SelectItem value="all">Single page</SelectItem>
                 <SelectItem value="1">1 question per page</SelectItem>
                 <SelectItem value="2">2 questions per page</SelectItem>
@@ -1011,12 +1013,13 @@ function FormSettingsPanel({
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="settings-password">Form password</FieldLabel>
+            <FieldLabel htmlFor="settings-password" className="text-xs font-medium text-[#2D2926]">Form Password</FieldLabel>
             <Input
               id="settings-password"
               type="password"
               placeholder={form?.isPasswordProtected ? "Protected" : "Optional"}
               disabled={clearPassword}
+              className="h-10 rounded-xl border-[#E5DFD5] bg-white text-xs text-[#2D2926]"
               {...register("password", {
                 minLength: {
                   value: 4,
@@ -1024,57 +1027,32 @@ function FormSettingsPanel({
                 },
               })}
             />
-            <FieldDescription className="text-xs">
-              Leave blank to keep the current password.
+            <FieldDescription className="text-[11px] text-[#78726A]">
+              Leave blank to keep current password.
             </FieldDescription>
             <FieldError errors={[errors.password]} />
           </Field>
         </div>
 
         {form?.isPasswordProtected ? (
-          <Field orientation="horizontal" className="justify-between rounded-lg border p-3">
-            <div className="space-y-1">
-              <FieldLabel htmlFor="settings-clear-password">Remove password</FieldLabel>
-              <FieldDescription className="text-xs">
-                Make the published link accessible without a password.
+          <Field orientation="horizontal" className="justify-between rounded-xl border border-[#E5DFD5] bg-[#FAF7F2] p-3">
+            <div className="space-y-0.5">
+              <FieldLabel htmlFor="settings-clear-password" className="text-xs font-medium text-[#2D2926]">Remove password</FieldLabel>
+              <FieldDescription className="text-[11px] text-[#78726A]">
+                Make public link accessible without password.
               </FieldDescription>
             </div>
             <Switch
               id="settings-clear-password"
               checked={clearPassword}
               onCheckedChange={(checked) => setValue("clearPassword", checked)}
+              className="data-[state=checked]:bg-[#DA7756]"
             />
           </Field>
         ) : null}
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-          <Field>
-            <FieldLabel htmlFor="settings-theme">Theme name</FieldLabel>
-            <Input id="settings-theme" placeholder="Studio night" {...register("themeName")} />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="settings-font">Font family</FieldLabel>
-            <Input id="settings-font" placeholder="Inter" {...register("fontFamily")} />
-          </Field>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
-          <Field>
-            <FieldLabel htmlFor="settings-bg">Background</FieldLabel>
-            <Input id="settings-bg" placeholder="#ffffff" {...register("backgroundColor")} />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="settings-accent">Accent</FieldLabel>
-            <Input id="settings-accent" placeholder="#2563eb" {...register("accentColor")} />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="settings-text">Text</FieldLabel>
-            <Input id="settings-text" placeholder="#111827" {...register("textColor")} />
-          </Field>
-        </div>
-
-        <Button type="submit" disabled={isSaving}>
-          {isSaving ? "Saving..." : "Save settings"}
+        <Button type="submit" disabled={isSaving} className="claude-button w-full rounded-xl bg-[#DA7756] text-xs font-medium text-white hover:bg-[#C66545] h-10">
+          {isSaving ? "Saving..." : "Save Settings"}
         </Button>
       </form>
     </section>

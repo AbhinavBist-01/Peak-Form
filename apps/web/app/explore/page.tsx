@@ -150,7 +150,7 @@ function PublicFormCard({ form }: { form: PublicForm }) {
     >
       <div className="space-y-4">
         <div className="flex items-center justify-between text-xs font-mono text-[#9E978F]">
-          <span className="font-medium text-[#DA7756]">{theme?.name ?? "PeakForms"}</span>
+          <span className="font-medium text-[#DA7756]">Published Form</span>
           <span>{formatDate(form.publishedAt)}</span>
         </div>
         <div className="space-y-2">
