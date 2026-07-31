@@ -25,8 +25,8 @@ export function NavMain({
 
   return (
     <SidebarGroup>
-      <SidebarGroupContent className="flex flex-col gap-2">
-        <SidebarMenu className="peak-stagger">
+      <SidebarGroupContent className="flex flex-col gap-1.5">
+        <SidebarMenu>
           {items.map((item) => {
             const isActive =
               pathname === item.url ||
@@ -39,13 +39,13 @@ export function NavMain({
                   isActive={isActive}
                   asChild
                   className={cn(
-                    "peak-lift h-10 rounded-lg text-[#59645b] transition-colors hover:bg-[#d0e9d4]/70 hover:text-[#2f5d3b]",
-                    isActive && "bg-[#d0e9d4] font-semibold text-[#2f5d3b] shadow-sm"
+                    "h-10 rounded-xl text-[#78726A] transition-colors hover:bg-[#F2ECE1] hover:text-[#2D2926]",
+                    isActive && "bg-[#F7EBE1] font-semibold text-[#DA7756] hover:bg-[#F7EBE1] hover:text-[#DA7756]"
                   )}
                 >
-                  <a href={item.url} className="group/nav">
+                  <a href={item.url} className="group/nav flex items-center gap-2 px-3">
                     {item.icon && (
-                      <item.icon className="transition-transform group-hover/nav:scale-110" />
+                      <item.icon className={cn("size-4 transition-transform group-hover/nav:scale-105", isActive ? "text-[#DA7756]" : "text-[#78726A]")} />
                     )}
                     <span>{item.title}</span>
                   </a>

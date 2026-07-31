@@ -12,6 +12,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { MarketingFooter, MarketingNavbar } from "~/components/marketing-chrome";
 import { Switch } from "~/components/ui/switch";
+import { useUser } from "~/hooks/api/auth";
 
 const plans = [
   {
@@ -20,7 +21,6 @@ const plans = [
     monthly: 0,
     annual: 0,
     cta: "Start free",
-    href: "/signup",
     highlighted: false,
     features: [
       "Unlimited published forms",
@@ -36,7 +36,6 @@ const plans = [
     monthly: 24,
     annual: 19,
     cta: "Start Pro trial",
-    href: "/signup",
     highlighted: true,
     features: [
       "Everything in Free",
@@ -53,7 +52,6 @@ const plans = [
     monthly: 59,
     annual: 49,
     cta: "Contact Team sales",
-    href: "/signup",
     highlighted: false,
     features: [
       "Everything in Pro",
@@ -79,6 +77,8 @@ const discounts = [
 
 export default function PricingPage() {
   const [annual, setAnnual] = React.useState(true);
+  const { user } = useUser();
+  const ctaHref = user ? "/dashboard/forms" : "/signup";
 
   return (
     <main className="min-h-screen bg-[#FAF7F2] text-[#2D2926]">
@@ -165,8 +165,8 @@ export default function PricingPage() {
                 }`}
                 variant={plan.highlighted ? "default" : "outline"}
               >
-                <Link href={plan.href}>
-                  {plan.cta}
+                <Link href={ctaHref}>
+                  {user ? (plan.name === "Free" ? "Current plan" : `Upgrade to ${plan.name}`) : plan.cta}
                   <ArrowRight className="ml-1 size-3.5" />
                 </Link>
               </Button>
@@ -203,7 +203,7 @@ export default function PricingPage() {
                   </p>
                 </div>
                 <Button variant="outline" asChild className="border-[#E5DFD5] bg-white text-xs text-[#DA7756] hover:bg-[#F7EBE1]">
-                  <Link href="/signup">
+                  <Link href={ctaHref}>
                     Apply for access
                     <ArrowRight className="ml-1 size-3.5" />
                   </Link>
@@ -226,8 +226,8 @@ export default function PricingPage() {
 
           <div className="pt-2 flex justify-center">
             <Button size="lg" asChild className="claude-button h-12 rounded-xl bg-[#DA7756] px-8 text-white hover:bg-[#C66545] font-medium text-sm">
-              <Link href="/signup">
-                Get started free
+              <Link href={ctaHref}>
+                {user ? "Open Dashboard" : "Get started free"}
                 <ArrowRight className="ml-1 size-4" />
               </Link>
             </Button>

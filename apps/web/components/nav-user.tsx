@@ -48,51 +48,51 @@ export function NavUser({
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="group/user rounded-xl border border-[#c3c8c1]/70 bg-white/72 shadow-sm transition hover:bg-[#d0e9d4]/80 hover:text-[#2f5d3b] data-[state=open]:bg-[#d0e9d4] data-[state=open]:text-[#2f5d3b]"
+              className="group/user rounded-xl border border-[#E5DFD5] bg-[#FFFDF9] shadow-xs transition hover:bg-[#F2ECE1] hover:text-[#2D2926] data-[state=open]:bg-[#F7EBE1] data-[state=open]:text-[#DA7756]"
             >
-              <Avatar className="h-8 w-8 rounded-lg border border-[#b4cdb8] bg-[#d0e9d4]">
-                <AvatarFallback className="rounded-lg bg-[#d0e9d4] text-[#2f5d3b]">
+              <Avatar className="h-8 w-8 rounded-lg border border-[#E5DFD5] bg-[#F7EBE1]">
+                <AvatarFallback className="rounded-lg bg-[#F7EBE1] text-[#DA7756]">
                   <IconUserCircle className="size-4" />
                 </AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium text-[#2f5d3b]">{user.name}</span>
-                <span className="truncate text-xs text-[#59645b]">{user.email}</span>
+              <div className="grid flex-1 text-left text-xs leading-tight">
+                <span className="truncate font-medium text-[#2D2926]">{user.name}</span>
+                <span className="truncate text-[11px] text-[#78726A]">{user.email}</span>
               </div>
-              <IconChevronUp className="ml-auto size-4 text-[#59645b] transition-transform group-data-[state=open]/user:rotate-180" />
+              <IconChevronUp className="ml-auto size-4 text-[#78726A] transition-transform group-data-[state=open]/user:rotate-180" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             side="top"
             align="end"
             sideOffset={10}
-            className="w-64 rounded-xl border-[#c3c8c1]/70 bg-white/96 p-2 shadow-xl shadow-[#4c616c]/15 backdrop-blur-xl"
+            className="w-64 rounded-xl border-[#E5DFD5] bg-[#FFFDF9] p-2 shadow-md text-xs"
           >
             <DropdownMenuLabel className="px-3 py-2">
-              <div className="grid gap-1">
-                <span className="truncate text-sm font-semibold text-[#2f5d3b]">{user.name}</span>
-                <span className="truncate text-xs font-normal text-[#59645b]">{user.email}</span>
+              <div className="grid gap-0.5">
+                <span className="truncate text-xs font-medium text-[#2D2926]">{user.name}</span>
+                <span className="truncate text-[11px] font-normal text-[#78726A]">{user.email}</span>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-[#c3c8c1]/60" />
+            <DropdownMenuSeparator className="bg-[#E5DFD5]" />
             <DropdownMenuItem
               asChild
-              className="cursor-pointer rounded-lg px-3 py-2 text-[#3b463d] focus:bg-[#d0e9d4]/75 focus:text-[#2f5d3b]"
+              className="cursor-pointer rounded-lg px-3 py-2 text-[#2D2926] focus:bg-[#F7EBE1] focus:text-[#DA7756]"
             >
               <Link href="/dashboard/settings">
-                <IconSettings className="size-4" />
-                User settings
+                <IconSettings className="mr-2 size-4 text-[#78726A]" />
+                User Settings
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={isLoggingOut}
-              className="cursor-pointer rounded-lg px-3 py-2 text-[#3b463d] focus:bg-[#d0e9d4]/75 focus:text-[#2f5d3b]"
+              className="cursor-pointer rounded-lg px-3 py-2 text-[#2D2926] focus:bg-[#F7EBE1] focus:text-[#DA7756]"
               onSelect={(event) => {
                 event.preventDefault()
                 onLogout()
               }}
             >
-              <IconLogout className="size-4" />
+              <IconLogout className="mr-2 size-4 text-[#78726A]" />
               {isLoggingOut ? "Logging out..." : "Logout"}
             </DropdownMenuItem>
           </DropdownMenuContent>

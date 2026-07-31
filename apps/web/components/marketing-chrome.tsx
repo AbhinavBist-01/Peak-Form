@@ -3,10 +3,11 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRightIcon, MenuIcon, XIcon } from "lucide-react";
+import { ArrowRightIcon, MenuIcon, XIcon, LayoutDashboardIcon } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { env } from "~/env";
+import { useUser } from "~/hooks/api/auth";
 
 function getApiDocsUrl() {
   if (env.NEXT_PUBLIC_API_DOCS_URL) {
@@ -23,11 +24,12 @@ function getApiDocsUrl() {
 const navLinks = [
   { label: "Explore", href: "/explore" },
   { label: "Pricing", href: "/pricing" },
-  { label: "API docs", href: getApiDocsUrl() },
+  { label: "API Docs", href: getApiDocsUrl() },
 ];
 
 export function MarketingNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user } = useUser();
 
   return (
     <header className="sticky top-0 z-50 border-b border-[#E5DFD5] bg-[#FAF7F2]/90 text-[#2D2926] backdrop-blur-md transition-all">
@@ -61,22 +63,36 @@ export function MarketingNavbar() {
 
         {/* Desktop Actions */}
         <div className="hidden items-center gap-3 md:flex">
-          <Button
-            variant="ghost"
-            asChild
-            className="claude-button text-sm font-medium text-[#78726A] hover:bg-[#F2ECE1] hover:text-[#2D2926]"
-          >
-            <Link href="/login">Sign in</Link>
-          </Button>
-          <Button
-            asChild
-            className="claude-button rounded-xl bg-[#DA7756] px-4 text-sm font-medium text-white hover:bg-[#C66545] shadow-xs"
-          >
-            <Link href="/signup">
-              Try PeakForms
-              <ArrowRightIcon className="ml-1 size-4" />
-            </Link>
-          </Button>
+          {user ? (
+            <Button
+              asChild
+              className="claude-button rounded-xl bg-[#DA7756] px-4 text-sm font-medium text-white hover:bg-[#C66545] shadow-xs"
+            >
+              <Link href="/dashboard">
+                <LayoutDashboardIcon className="mr-1.5 size-4" />
+                Go to Dashboard
+              </Link>
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                asChild
+                className="claude-button text-sm font-medium text-[#78726A] hover:bg-[#F2ECE1] hover:text-[#2D2926]"
+              >
+                <Link href="/login">Sign in</Link>
+              </Button>
+              <Button
+                asChild
+                className="claude-button rounded-xl bg-[#DA7756] px-4 text-sm font-medium text-white hover:bg-[#C66545] shadow-xs"
+              >
+                <Link href="/signup">
+                  Try PeakForms
+                  <ArrowRightIcon className="ml-1 size-4" />
+                </Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile Toggle */}
@@ -110,23 +126,36 @@ export function MarketingNavbar() {
             ))}
           </nav>
           <div className="pt-2 flex flex-col gap-2.5">
-            <Button
-              variant="outline"
-              asChild
-              className="w-full border-[#E5DFD5] text-[#2D2926] hover:bg-[#F2ECE1]"
-            >
-              <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                Sign in
-              </Link>
-            </Button>
-            <Button
-              asChild
-              className="w-full bg-[#DA7756] text-white hover:bg-[#C66545]"
-            >
-              <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
-                Try PeakForms
-              </Link>
-            </Button>
+            {user ? (
+              <Button
+                asChild
+                className="w-full bg-[#DA7756] text-white hover:bg-[#C66545]"
+              >
+                <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                  Go to Dashboard
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  asChild
+                  className="w-full border-[#E5DFD5] text-[#2D2926] hover:bg-[#F2ECE1]"
+                >
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                    Sign in
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  className="w-full bg-[#DA7756] text-white hover:bg-[#C66545]"
+                >
+                  <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
+                    Try PeakForms
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}
