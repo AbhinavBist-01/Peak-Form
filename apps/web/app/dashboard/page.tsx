@@ -1,22 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
-  ArrowUpRightIcon,
+  ArrowRightIcon,
   BarChart3Icon,
-  CirclePlusIcon,
   Clock3Icon,
   EyeOffIcon,
   FileTextIcon,
   Globe2Icon,
-  Layers3Icon,
+  PlusIcon,
 } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useListForms } from "~/hooks/api/form";
+import { DashboardActivityFeed } from "~/components/dashboard-activity-feed";
+import { DashboardCreateModal } from "~/components/dashboard-create-modal";
 
 type FormRow = NonNullable<ReturnType<typeof useListForms>["forms"]>[number];
 
@@ -50,258 +51,232 @@ function getStatusLabel(form: FormRow) {
   return "Draft";
 }
 
-function getStatusVariant(status: string) {
-  if (status === "Published") {
-    return "default";
-  }
-
-  if (status === "Archived") {
-    return "secondary";
-  }
-
-  return "outline";
-}
-
 export default function Page() {
-  const {
-    forms = [],
-    error,
-    isLoading,
-    isFetching,
-  } = useListForms();
+  const { forms = [], error, isLoading, isFetching } = useListForms();
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft" | "archived">("all");
 
   const publishedForms = forms.filter((form) => form.status === "published");
   const draftForms = forms.filter((form) => form.status === "draft");
-  const publicForms = forms.filter(
-    (form) => form.status === "published" && form.visibility === "public",
-  );
-  const recentForms = forms.slice(0, 5);
+  const archivedForms = forms.filter((form) => form.status === "archived");
+
+  const filteredForms = forms.filter((form) => {
+    if (statusFilter === "published") return form.status === "published";
+    if (statusFilter === "draft") return form.status === "draft";
+    if (statusFilter === "archived") return form.status === "archived";
+    return true;
+  });
 
   const metrics = [
     {
-      label: "Total forms",
+      label: "Total Forms",
       value: forms.length,
       icon: FileTextIcon,
-      tone: "bg-[#2f5d3b] text-white",
     },
     {
       label: "Published",
       value: publishedForms.length,
       icon: Globe2Icon,
-      tone: "bg-[#d0e9d4] text-[#2f5d3b]",
     },
     {
       label: "Drafts",
       value: draftForms.length,
       icon: Clock3Icon,
-      tone: "bg-[#edf1ec] text-[#4d6453]",
     },
     {
-      label: "Public listings",
-      value: publicForms.length,
+      label: "Archived",
+      value: archivedForms.length,
       icon: BarChart3Icon,
-      tone: "bg-white text-[#4d6453]",
     },
   ];
 
   return (
-    <div className="@container/main peak-topography flex flex-1 flex-col gap-5 p-4 md:p-6">
-      <section className="peak-reveal grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
-        <div className="rounded-xl border border-[#c3c8c1]/65 bg-white/82 p-5 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl md:p-6">
-          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-            <div className="grid gap-2">
-              <Badge className="w-fit bg-[#d0e9d4] text-[#2f5d3b]">
-                Workspace overview
-              </Badge>
-              <div className="grid gap-2">
-                <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#2f5d3b] md:text-4xl">
-                  Dashboard
-                </h2>
-                <p className="max-w-2xl text-sm leading-6 text-[#59645b]">
-                  Monitor your forms, jump back into active work, and keep publishing decisions inside each form editor.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Button asChild className="bg-[#2f5d3b] text-white hover:bg-[#3f744b]">
-                <Link href="/dashboard/forms">
-                  <CirclePlusIcon />
-                  New form
-                </Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/explore">
-                  Public gallery
-                  <ArrowUpRightIcon />
-                </Link>
-              </Button>
-            </div>
+    <div className="flex flex-1 flex-col gap-6 p-5 md:p-8 bg-[#FAF7F2] text-[#2D2926]">
+      {/* Overview Banner */}
+      <section className="claude-card rounded-2xl bg-[#FFFDF9] border border-[#E5DFD5] p-6 md:p-8 shadow-xs">
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2 max-w-xl">
+            <h2 className="peak-serif text-3xl font-medium tracking-tight text-[#2D2926] md:text-4xl">
+              Workspace Overview
+            </h2>
+            <p className="text-xs leading-relaxed text-[#78726A]">
+              Create interactive forms, publish shareable public links, and track respondent answers in real time.
+            </p>
           </div>
-        </div>
 
-        <div className="grid content-between gap-4 rounded-xl border border-[#c3c8c1]/65 bg-[#2f5d3b] p-5 text-white shadow-xl shadow-[#2f5d3b]/15">
-          <div className="grid gap-2">
-            <p className="text-sm text-white/68">Current focus</p>
-            <h3 className="peak-serif text-2xl font-semibold tracking-normal">
-              Build clean forms. Review clean answers.
-            </h3>
-          </div>
-          <Button asChild className="bg-white text-[#2f5d3b] hover:bg-[#d0e9d4]">
-            <Link href="/dashboard/forms">
-              Open builder
-              <Layers3Icon />
-            </Link>
+          <Button
+            type="button"
+            onClick={() => setCreateModalOpen(true)}
+            className="claude-button rounded-xl bg-[#DA7756] px-5 py-2.5 text-xs font-medium text-white hover:bg-[#C66545] shrink-0"
+          >
+            <PlusIcon className="mr-1.5 size-4" />
+            <span>Create New Form</span>
           </Button>
         </div>
-      </section>
 
-      {error ? (
-        <Alert variant="destructive">
-          <AlertTitle>Could not load dashboard</AlertTitle>
-          <AlertDescription>{error.message}</AlertDescription>
-        </Alert>
-      ) : null}
-
-      <section className="peak-stagger grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {metrics.map((metric) => {
-          const Icon = metric.icon;
-          return (
-            <div
-              key={metric.label}
-              className="rounded-xl border border-[#c3c8c1]/65 bg-white/82 p-4 shadow-lg shadow-[#4c616c]/8 backdrop-blur-xl"
-            >
-              <div className="mb-5 flex items-center justify-between gap-4">
-                <span className="text-sm font-medium text-[#59645b]">{metric.label}</span>
-                <span className={`grid size-9 place-items-center rounded-lg ${metric.tone}`}>
-                  <Icon className="size-4" />
-                </span>
+        {/* Metrics Grid */}
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 pt-6 border-t border-[#E5DFD5]">
+          {metrics.map((m) => {
+            const Icon = m.icon;
+            return (
+              <div
+                key={m.label}
+                className="rounded-xl border border-[#E5DFD5] bg-[#FAF7F2] p-4 flex items-center justify-between"
+              >
+                <div>
+                  <span className="text-xs text-[#78726A]">{m.label}</span>
+                  <div className="mt-1 text-3xl font-serif font-medium text-[#2D2926]">
+                    {m.value}
+                  </div>
+                </div>
+                <div className="grid size-10 place-items-center rounded-xl bg-[#F7EBE1] text-[#DA7756]">
+                  <Icon className="size-5" />
+                </div>
               </div>
-              {isLoading ? (
-                <Skeleton className="h-9 w-16 bg-[#d0e9d4]/70" />
-              ) : (
-                <p className="text-3xl font-semibold tracking-normal text-[#2f5d3b]">
-                  {metric.value}
-                </p>
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="rounded-xl border border-[#c3c8c1]/65 bg-white/82 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
-          <div className="flex flex-col gap-3 border-b border-[#c3c8c1]/55 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h3 className="text-base font-semibold text-[#2f5d3b]">Recent forms</h3>
-              <p className="text-sm text-[#59645b]">The latest forms in your workspace.</p>
+      {/* Main Content Layout: Forms List + Activity Stream */}
+      <div className="grid gap-6 lg:grid-cols-12 lg:items-start">
+        {/* Forms Table Container */}
+        <section className="lg:col-span-8 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E5DFD5] pb-3">
+            <h3 className="peak-serif text-2xl font-medium text-[#2D2926]">
+              Your Forms
+            </h3>
+
+            {/* Segmented Status Filter Tabs */}
+            <div className="flex items-center gap-1 rounded-xl border border-[#E5DFD5] bg-[#FFFDF9] p-1 text-xs font-medium">
+              {(["all", "published", "draft", "archived"] as const).map((filter) => (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => setStatusFilter(filter)}
+                  className={`rounded-lg px-3 py-1.5 capitalize transition-all ${
+                    statusFilter === filter
+                      ? "bg-[#DA7756] text-white shadow-xs"
+                      : "text-[#78726A] hover:text-[#2D2926]"
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
             </div>
-            {isFetching && !isLoading ? (
-              <Badge variant="outline">Refreshing</Badge>
-            ) : null}
           </div>
 
+          {error ? (
+            <Alert variant="destructive" className="rounded-xl border-red-200 bg-red-50 text-red-900">
+              <AlertTitle className="font-medium">Could not load forms</AlertTitle>
+              <AlertDescription className="text-xs">{error.message}</AlertDescription>
+            </Alert>
+          ) : null}
+
           {isLoading ? (
-            <div className="grid gap-3 p-5">
-              {[1, 2, 3].map((item) => (
-                <div key={item} className="grid gap-3 rounded-lg border border-[#c3c8c1]/45 bg-white/70 p-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="grid flex-1 gap-2">
-                      <Skeleton className="h-4 w-1/3 bg-[#d0e9d4]/70" />
-                      <Skeleton className="h-3 w-2/3 bg-[#edf1ec]" />
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="claude-card rounded-xl bg-[#FFFDF9] p-4 flex items-center justify-between">
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-5 w-1/3 bg-[#E5DFD5]/60" />
+                    <Skeleton className="h-3 w-1/2 bg-[#E5DFD5]/40" />
+                  </div>
+                  <Skeleton className="h-8 w-24 rounded-lg bg-[#E5DFD5]/60" />
+                </div>
+              ))}
+            </div>
+          ) : filteredForms.length ? (
+            <div className="space-y-3">
+              {filteredForms.map((form) => (
+                <div
+                  key={form.id}
+                  className="claude-card rounded-xl bg-[#FFFDF9] border border-[#E5DFD5] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-[#D6CEC1]"
+                >
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="peak-serif text-lg font-medium text-[#2D2926] truncate">
+                        {form.title}
+                      </span>
+                      <span
+                        className={`rounded-md px-2 py-0.5 text-[11px] font-mono capitalize ${
+                          form.status === "published"
+                            ? "bg-[#F7EBE1] text-[#DA7756]"
+                            : form.status === "archived"
+                            ? "bg-[#E5DFD5] text-[#78726A]"
+                            : "bg-[#FAF7F2] text-[#78726A] border border-[#E5DFD5]"
+                        }`}
+                      >
+                        {getStatusLabel(form)}
+                      </span>
                     </div>
-                    <Skeleton className="h-6 w-20 rounded-full bg-[#edf1ec]" />
+                    <p className="text-xs text-[#78726A] truncate">
+                      {form.description || "No description provided."}
+                    </p>
+                    <div className="flex items-center gap-4 text-[11px] text-[#9E978F] font-mono pt-1">
+                      <span>Updated {formatDate(form.updatedAt)}</span>
+                      <span>&bull;</span>
+                      <span>Visibility: {form.visibility}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="border-[#E5DFD5] bg-white text-xs text-[#2D2926] hover:bg-[#F2ECE1] rounded-xl"
+                    >
+                      <Link href={`/dashboard/forms/${form.id}`}>
+                        Edit
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                      size="sm"
+                      className="rounded-xl bg-[#DA7756] text-xs font-medium text-white hover:bg-[#C66545]"
+                    >
+                      <Link href={`/dashboard/forms/${form.id}/submissions`}>
+                        Submissions
+                        <ArrowRightIcon className="ml-1 size-3.5" />
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               ))}
             </div>
-          ) : recentForms.length ? (
-            <div className="divide-y divide-[#c3c8c1]/45">
-              {recentForms.map((form) => {
-                const status = getStatusLabel(form);
-                return (
-                  <Link
-                    key={form.id}
-                    href={`/dashboard/forms/${form.id}`}
-                    className="grid gap-3 p-5 transition hover:bg-[#edf1ec]/65 md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
-                  >
-                    <div className="min-w-0">
-                      <div className="mb-1 flex flex-wrap items-center gap-2">
-                        <h4 className="truncate font-medium text-[#2f5d3b]">{form.title}</h4>
-                        <Badge variant={getStatusVariant(status)}>{status}</Badge>
-                      </div>
-                      <p className="truncate text-sm text-[#59645b]">
-                        {form.description || "No description added yet."}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm text-[#59645b]">
-                      <span>{formatDate(form.updatedAt ?? form.createdAt)}</span>
-                      {form.visibility === "public" ? (
-                        <Globe2Icon className="size-4" />
-                      ) : (
-                        <EyeOffIcon className="size-4" />
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
           ) : (
-            <div className="grid min-h-56 place-items-center p-8 text-center">
-              <div className="grid max-w-sm gap-3">
-                <div className="mx-auto grid size-12 place-items-center rounded-lg bg-[#d0e9d4] text-[#2f5d3b]">
-                  <FileTextIcon className="size-5" />
+            <div className="claude-card rounded-2xl bg-[#FFFDF9] border border-[#E5DFD5] p-12 text-center">
+              <div className="mx-auto max-w-sm space-y-3">
+                <div className="mx-auto grid size-10 place-items-center rounded-full bg-[#F7EBE1] text-[#DA7756]">
+                  <EyeOffIcon className="size-5" />
                 </div>
-                <div>
-                  <h4 className="font-semibold text-[#2f5d3b]">No forms yet</h4>
-                  <p className="mt-1 text-sm leading-6 text-[#59645b]">
-                    Create your first form, then configure publishing, visibility, fields, and analytics inside the editor.
-                  </p>
-                </div>
-                <Button asChild className="bg-[#2f5d3b] text-white hover:bg-[#3f744b]">
-                  <Link href="/dashboard/forms">Create form</Link>
+                <h3 className="peak-serif text-xl font-medium text-[#2D2926]">No forms found</h3>
+                <p className="text-xs text-[#78726A]">
+                  {statusFilter !== "all"
+                    ? `No forms with status '${statusFilter}'.`
+                    : "Create your first PeakForms form to start collecting responses."}
+                </p>
+                <Button
+                  type="button"
+                  onClick={() => setCreateModalOpen(true)}
+                  className="rounded-xl bg-[#DA7756] text-xs text-white hover:bg-[#C66545] mt-2"
+                >
+                  <PlusIcon className="mr-1 size-3.5" />
+                  Create Form
                 </Button>
               </div>
             </div>
           )}
-        </div>
+        </section>
 
-        <aside className="grid gap-4">
-          <div className="rounded-xl border border-[#c3c8c1]/65 bg-white/82 p-5 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
-            <h3 className="text-base font-semibold text-[#2f5d3b]">Main workflow</h3>
-            <div className="mt-4 grid gap-3">
-              {["Create the form", "Add fields", "Set visibility", "Review responses"].map(
-                (step, index) => (
-                  <div key={step} className="flex items-center gap-3">
-                    <span className="grid size-7 place-items-center rounded-md bg-[#edf1ec] text-xs font-semibold text-[#4d6453]">
-                      {index + 1}
-                    </span>
-                    <span className="text-sm text-[#59645b]">{step}</span>
-                  </div>
-                ),
-              )}
-            </div>
-          </div>
+        {/* Activity Feed Sidebar */}
+        <section className="lg:col-span-4 space-y-4">
+          <DashboardActivityFeed />
+        </section>
+      </div>
 
-          <div className="rounded-xl border border-[#c3c8c1]/65 bg-white/82 p-5 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
-            <h3 className="text-base font-semibold text-[#2f5d3b]">Quick links</h3>
-            <div className="mt-4 grid gap-2">
-              <Button asChild variant="outline" className="justify-between">
-                <Link href="/dashboard/forms">
-                  Manage forms
-                  <ArrowUpRightIcon />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="justify-between">
-                <Link href="/explore">
-                  Explore public forms
-                  <ArrowUpRightIcon />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </aside>
-      </section>
+      {/* Quick Create Modal */}
+      <DashboardCreateModal open={createModalOpen} onOpenChange={setCreateModalOpen} />
     </div>
   );
 }

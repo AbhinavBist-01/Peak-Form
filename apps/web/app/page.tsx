@@ -17,8 +17,6 @@ import { LandingInteractivePreview } from "~/components/landing-interactive-prev
 import { LandingFeatureTabs } from "~/components/landing-feature-tabs";
 import { LandingBuilderDemo } from "~/components/landing-builder-demo";
 import { LandingPricingTeaser } from "~/components/landing-pricing-teaser";
-import { LandingTestimonials } from "~/components/landing-testimonials";
-import { LandingFaq } from "~/components/landing-faq";
 
 const productPillars = [
   {
@@ -200,24 +198,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials Component */}
-      <section className="border-t border-[#E5DFD5] bg-[#F4EFE6]/50 py-24">
-        <div className="mx-auto w-full max-w-6xl px-5 md:px-8">
-          <LandingTestimonials />
-        </div>
-      </section>
-
       {/* Pricing Component */}
-      <section className="border-t border-[#E5DFD5] py-24">
-        <div className="mx-auto w-full max-w-6xl px-5 md:px-8">
-          <LandingPricingTeaser />
-        </div>
-      </section>
-
-      {/* FAQ Component */}
       <section className="border-t border-[#E5DFD5] bg-[#F4EFE6]/40 py-24">
         <div className="mx-auto w-full max-w-6xl px-5 md:px-8">
-          <LandingFaq />
+          <LandingPricingTeaser />
         </div>
       </section>
 

@@ -17,7 +17,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
-import { Badge } from "~/components/ui/badge";
 import { Button, buttonVariants } from "~/components/ui/button";
 import {
   Dialog,
@@ -117,235 +116,250 @@ export default function Page() {
   };
 
   return (
-    <div className="@container/main peak-topography peak-topography-motion flex flex-1 flex-col gap-6 p-4 md:p-6">
-            <div className="peak-glass peak-reveal peak-shine grid gap-5 rounded-xl p-5 md:grid-cols-[1fr_auto] md:items-center md:p-6">
-              <div className="space-y-1">
-                <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#2f5d3b]">
-                  Forms
-                </h2>
-                <p className="max-w-2xl text-sm leading-6 text-[#59645b]">
-                  Keep this list simple. Open a form to manage fields, publishing, visibility, themes, and responses.
-                </p>
-              </div>
+    <div className="flex flex-1 flex-col gap-6 p-5 md:p-8 bg-[#FAF7F2] text-[#2D2926]">
+      <div className="claude-card rounded-2xl bg-[#FFFDF9] border border-[#E5DFD5] p-6 shadow-xs flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <h2 className="peak-serif text-3xl font-medium tracking-tight text-[#2D2926]">
+            All Forms
+          </h2>
+          <p className="max-w-xl text-xs text-[#78726A]">
+            Manage form questions, publishing, themes, and response analytics.
+          </p>
+        </div>
 
-              <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                  <Button className="peak-button-motion bg-[#2f5d3b] text-white hover:bg-[#3f744b]">
-                    <PlusIcon />
-                    New form
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create form</DialogTitle>
-                    <DialogDescription>
-                      Add the basic details. Publishing, visibility, and theme settings live inside the form editor.
-                    </DialogDescription>
-                  </DialogHeader>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button className="claude-button rounded-xl bg-[#DA7756] text-xs font-medium text-white hover:bg-[#C66545]">
+              <PlusIcon className="mr-1 size-3.5" />
+              New Form
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="rounded-2xl border-[#E5DFD5] bg-[#FFFDF9] p-6">
+            <DialogHeader>
+              <DialogTitle className="peak-serif text-2xl font-medium text-[#2D2926]">
+                Create Form
+              </DialogTitle>
+              <DialogDescription className="text-xs text-[#78726A]">
+                Add basic details. Publishing and themes live inside the editor.
+              </DialogDescription>
+            </DialogHeader>
 
-                  <form className="grid gap-5" onSubmit={handleSubmit(onSubmit)}>
-                    <FieldGroup className="gap-4">
-                      <Field>
-                        <FieldLabel htmlFor="title">Title</FieldLabel>
-                        <Input
-                          id="title"
-                          placeholder="Customer feedback"
-                          aria-invalid={Boolean(errors.title)}
-                          {...register("title", {
-                            required: "Title is required",
-                            maxLength: {
-                              value: 55,
-                              message: "Title must be 55 characters or less",
-                            },
-                          })}
-                        />
-                        <FieldError errors={[errors.title]} />
-                      </Field>
+            <form className="grid gap-5 pt-2" onSubmit={handleSubmit(onSubmit)}>
+              <FieldGroup className="gap-4">
+                <Field>
+                  <FieldLabel htmlFor="title" className="text-xs font-medium text-[#2D2926]">
+                    Title
+                  </FieldLabel>
+                  <Input
+                    id="title"
+                    placeholder="e.g. Customer feedback 2026"
+                    className="h-11 rounded-xl border-[#E5DFD5] bg-white text-xs text-[#2D2926] focus:border-[#DA7756]"
+                    aria-invalid={Boolean(errors.title)}
+                    {...register("title", {
+                      required: "Title is required",
+                      maxLength: {
+                        value: 55,
+                        message: "Title must be 55 characters or less",
+                      },
+                    })}
+                  />
+                  <FieldError errors={[errors.title]} />
+                </Field>
 
-                      <Field>
-                        <FieldLabel htmlFor="description">Description</FieldLabel>
-                        <Textarea
-                          id="description"
-                          placeholder="What should respondents know before they start?"
-                          className="min-h-24"
-                          {...register("description")}
-                        />
-                      </Field>
+                <Field>
+                  <FieldLabel htmlFor="description" className="text-xs font-medium text-[#2D2926]">
+                    Description (Optional)
+                  </FieldLabel>
+                  <Textarea
+                    id="description"
+                    placeholder="Context for respondents..."
+                    className="min-h-24 rounded-xl border-[#E5DFD5] bg-white text-xs text-[#2D2926] focus:border-[#DA7756]"
+                    {...register("description")}
+                  />
+                </Field>
 
-                      {error ? <FieldError>{error.message}</FieldError> : null}
-                    </FieldGroup>
+                {error ? <FieldError>{error.message}</FieldError> : null}
+              </FieldGroup>
 
-                    <DialogFooter>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={isCreating}
-                        onClick={() => setOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit" disabled={isCreating}>
-                        {isCreating ? "Creating..." : "Create form"}
-                      </Button>
-                    </DialogFooter>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </div>
+              <DialogFooter className="pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isCreating}
+                  onClick={() => setOpen(false)}
+                  className="border-[#E5DFD5] bg-white text-xs text-[#78726A] hover:bg-[#F2ECE1]"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isCreating}
+                  className="rounded-xl bg-[#DA7756] text-xs font-medium text-white hover:bg-[#C66545]"
+                >
+                  {isCreating ? "Creating..." : "Create Form"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
 
-            {createdFormId ? (
-              <Alert>
-                <AlertTitle>Form created</AlertTitle>
-                <AlertDescription className="flex flex-wrap gap-3">
-                  Publish the form when you are ready to share it.
-                  <Button variant="link" className="h-auto p-0" asChild>
-                    <Link href={`/dashboard/forms/${createdFormId}`}>Open editor</Link>
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            ) : null}
+      {createdFormId ? (
+        <Alert className="rounded-xl border-[#E5DFD5] bg-[#F7EBE1] text-[#2D2926]">
+          <AlertTitle className="text-xs font-medium">Form created successfully</AlertTitle>
+          <AlertDescription className="flex items-center gap-2 text-xs text-[#78726A] pt-1">
+            <span>Publish the form when ready.</span>
+            <Button variant="link" className="h-auto p-0 text-[#DA7756] font-medium" asChild>
+              <Link href={`/dashboard/forms/${createdFormId}`}>Open in editor &rarr;</Link>
+            </Button>
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
-            {listFormsError ? (
-              <Alert variant="destructive">
-                <AlertTitle>Could not load forms</AlertTitle>
-                <AlertDescription>{listFormsError.message}</AlertDescription>
-              </Alert>
-            ) : null}
+      {listFormsError ? (
+        <Alert variant="destructive" className="rounded-xl border-red-200 bg-red-50 text-red-900">
+          <AlertTitle className="font-medium">Could not load forms</AlertTitle>
+          <AlertDescription className="text-xs">{listFormsError.message}</AlertDescription>
+        </Alert>
+      ) : null}
 
-            {deleteFormError ? (
-              <Alert variant="destructive">
-                <AlertTitle>Could not delete form</AlertTitle>
-                <AlertDescription>{deleteFormError.message}</AlertDescription>
-              </Alert>
-            ) : null}
+      {deleteFormError ? (
+        <Alert variant="destructive" className="rounded-xl border-red-200 bg-red-50 text-red-900">
+          <AlertTitle className="font-medium">Could not delete form</AlertTitle>
+          <AlertDescription className="text-xs">{deleteFormError.message}</AlertDescription>
+        </Alert>
+      ) : null}
 
-            <div className="peak-reveal overflow-hidden rounded-xl border border-[#c3c8c1]/65 bg-white/78 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
-              <Table>
-                <TableHeader className="bg-[#edf1ec]">
-                    <TableRow>
-                      <TableHead>Form</TableHead>
-                      <TableHead className="w-40 text-center">Status</TableHead>
-                      <TableHead className="w-48 text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                  {isLoadingForms ? (
-                    Array.from({ length: 5 }).map((_, index) => (
-                      <TableRow key={`form-skeleton-${index}`}>
-                        <TableCell>
-                          <div className="grid gap-2">
-                            <Skeleton className="h-4 w-48 bg-[#d0e9d4]/70" />
-                            <Skeleton className="h-3 w-72 max-w-full bg-[#edf1ec]" />
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Skeleton className="mx-auto h-7 w-24 rounded-full bg-[#edf1ec]" />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex justify-end gap-2">
-                            <Skeleton className="h-9 w-20 bg-[#edf1ec]" />
-                            <Skeleton className="h-9 w-24 bg-[#edf1ec]" />
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : forms.length ? (
-                    forms.map((form) => {
-                      const formStatus = getFormStatus(form);
+      <div className="claude-card overflow-hidden rounded-2xl border border-[#E5DFD5] bg-[#FFFDF9] shadow-xs">
+        <Table>
+          <TableHeader className="bg-[#FAF7F2] border-b border-[#E5DFD5]">
+            <TableRow>
+              <TableHead className="text-xs font-mono text-[#78726A]">Form Details</TableHead>
+              <TableHead className="w-36 text-center text-xs font-mono text-[#78726A]">Status</TableHead>
+              <TableHead className="w-48 text-right text-xs font-mono text-[#78726A]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoadingForms ? (
+              Array.from({ length: 5 }).map((_, index) => (
+                <TableRow key={`form-skeleton-${index}`}>
+                  <TableCell>
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-48 bg-[#E5DFD5]/60" />
+                      <Skeleton className="h-3 w-72 bg-[#E5DFD5]/40" />
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Skeleton className="mx-auto h-6 w-20 rounded-md bg-[#E5DFD5]/60" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-2">
+                      <Skeleton className="h-8 w-16 bg-[#E5DFD5]/60" />
+                      <Skeleton className="h-8 w-20 bg-[#E5DFD5]/60" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : forms.length ? (
+              forms.map((form) => {
+                const formStatus = getFormStatus(form);
 
-                      return (
-                        <TableRow key={form.id} className="transition-colors hover:bg-[#edf1ec]/65">
-                          <TableCell>
-                            <div className="grid gap-1">
-                              <Link
-                                href={`/dashboard/forms/${form.id}`}
-                                className="font-medium text-[#2f5d3b] transition hover:text-[#4d6453]"
-                              >
-                                {form.title}
-                              </Link>
-                              {form.description ? (
-                                <p className="max-w-[28rem] truncate text-sm text-muted-foreground">
-                                  {form.description}
-                                </p>
-                              ) : null}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge
-                              className="min-w-24 justify-center"
-                              variant={
-                                formStatus === "Published"
-                                  ? "default"
-                                  : formStatus === "Archived"
-                                    ? "secondary"
-                                    : "outline"
-                              }
-                            >
-                              {formStatus}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button size="sm" variant="outline" asChild>
-                                <Link href={`/dashboard/forms/${form.id}`}>
-                                  <PencilIcon />
-                                  Edit
-                                </Link>
-                              </Button>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button size="sm" variant="destructive" disabled={isDeleting}>
-                                    <Trash2Icon />
-                                    Remove
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete form?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      This will permanently delete{" "}
-                                      <span className="font-medium">{form.title}</span> and all
-                                      of its fields and submissions.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel disabled={deletingFormId === form.id}>
-                                      Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                      className={buttonVariants({ variant: "destructive" })}
-                                      disabled={deletingFormId === form.id}
-                                      onClick={() => void onDeleteForm(form.id)}
-                                    >
-                                      {deletingFormId === form.id ? "Removing..." : "Remove form"}
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={3} className="h-32 text-center">
-                        <div className="mx-auto flex max-w-md flex-col items-center gap-2">
-                          <h3 className="text-base font-medium">No forms yet</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Start by creating a form, then add questions and publish it when ready.
+                return (
+                  <TableRow key={form.id} className="transition-colors hover:bg-[#FAF7F2]">
+                    <TableCell>
+                      <div className="space-y-0.5">
+                        <Link
+                          href={`/dashboard/forms/${form.id}`}
+                          className="peak-serif text-base font-medium text-[#2D2926] transition hover:text-[#DA7756]"
+                        >
+                          {form.title}
+                        </Link>
+                        {form.description ? (
+                          <p className="max-w-[28rem] truncate text-xs text-[#78726A]">
+                            {form.description}
                           </p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                        ) : null}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <span
+                        className={`inline-block min-w-20 rounded-md px-2 py-0.5 text-center text-[11px] font-mono capitalize ${
+                          formStatus === "Published"
+                            ? "bg-[#F7EBE1] text-[#DA7756]"
+                            : formStatus === "Archived"
+                            ? "bg-[#E5DFD5] text-[#78726A]"
+                            : "bg-[#FAF7F2] text-[#78726A] border border-[#E5DFD5]"
+                        }`}
+                      >
+                        {formStatus}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="outline" asChild className="border-[#E5DFD5] bg-white text-xs text-[#2D2926] hover:bg-[#F2ECE1] rounded-xl">
+                          <Link href={`/dashboard/forms/${form.id}`}>
+                            <PencilIcon className="mr-1 size-3.5" />
+                            Edit
+                          </Link>
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="outline" disabled={isDeleting} className="border-red-200 text-xs text-red-600 hover:bg-red-50 rounded-xl">
+                              <Trash2Icon className="mr-1 size-3.5" />
+                              Remove
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="rounded-2xl border-[#E5DFD5] bg-[#FFFDF9]">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="peak-serif text-2xl font-medium text-[#2D2926]">
+                                Delete form?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription className="text-xs text-[#78726A]">
+                                This will permanently delete{" "}
+                                <span className="font-medium text-[#2D2926]">{form.title}</span> and all
+                                of its fields and submissions.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel disabled={deletingFormId === form.id} className="border-[#E5DFD5] text-xs">
+                                Cancel
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                className={buttonVariants({ variant: "destructive" })}
+                                disabled={deletingFormId === form.id}
+                                onClick={() => void onDeleteForm(form.id)}
+                              >
+                                {deletingFormId === form.id ? "Removing..." : "Remove Form"}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={3} className="h-36 text-center">
+                  <div className="mx-auto flex max-w-sm flex-col items-center gap-2">
+                    <h3 className="peak-serif text-lg font-medium text-[#2D2926]">No forms yet</h3>
+                    <p className="text-xs text-[#78726A]">
+                      Start by creating a form, then add questions and publish it when ready.
+                    </p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
-            {isFetchingForms && !isLoadingForms ? (
-              <p className="text-sm text-muted-foreground">Refreshing forms...</p>
-            ) : null}
-          </div>
+      {isFetchingForms && !isLoadingForms ? (
+        <p className="text-xs font-mono text-[#9E978F]">Refreshing forms...</p>
+      ) : null}
+    </div>
   );
 }
