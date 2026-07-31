@@ -8,7 +8,7 @@ function loadRootEnvFile() {
 
   for (const line of readFileSync(envPath, "utf8").split(/\r?\n/)) {
     const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
-    if (!match || match[1].startsWith("#")) continue;
+    if (!match || match[1]?.startsWith("#")) continue;
 
     const key = match[1];
     const rawValue = match[2] ?? "";
