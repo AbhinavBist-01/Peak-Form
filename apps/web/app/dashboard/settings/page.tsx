@@ -1,23 +1,22 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { IconLogout, IconUserCircle } from "@tabler/icons-react";
 
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Skeleton } from "~/components/ui/skeleton";
-import { useLogout, useUser } from "~/hooks/api/auth";
+import { useUser } from "~/hooks/api/auth";
+import { getApiOrigin } from "~/lib/api-url";
 
 export default function SettingsPage() {
-  const router = useRouter();
   const { user, error, isLoading, isFetching } = useUser();
-  const { logoutAsync, status } = useLogout();
-  const isLoggingOut = status === "pending";
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  async function onLogout() {
-    await logoutAsync();
-    router.replace("/login");
+  function onLogout() {
+    setIsLoggingOut(true);
+    window.location.href = new URL("/auth/logout", getApiOrigin()).toString();
   }
 
   return (

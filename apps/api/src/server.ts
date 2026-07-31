@@ -112,6 +112,17 @@ function getFrontendRedirect(nextPath: string) {
   return new URL(nextPath, env.FRONTEND_URL ?? "http://localhost:3000").toString();
 }
 
+function clearAuthCookies(res: express.Response) {
+  const options = {
+    path: "/",
+    secure: isProduction(),
+    sameSite: isProduction() ? ("none" as const) : ("lax" as const),
+  };
+
+  res.clearCookie(AUTHENTICATION_COOKIE_NAME, options);
+  res.clearCookie(GOOGLE_OAUTH_STATE_COOKIE_NAME, options);
+}
+
 app.get("/", (req, res) => {
   return res.json({ message: "PeakForm is up and running..." });
 });
@@ -166,6 +177,14 @@ app.get("/auth/google", startGoogleAuth);
 app.get("/api/auth/google", startGoogleAuth);
 app.get("/auth/google/callback", handleGoogleCallback);
 app.get("/api/auth/google/callback", handleGoogleCallback);
+app.get("/auth/logout", (req, res) => {
+  clearAuthCookies(res);
+  return res.redirect(getFrontendRedirect("/login"));
+});
+app.get("/api/auth/logout", (req, res) => {
+  clearAuthCookies(res);
+  return res.redirect(getFrontendRedirect("/login"));
+});
 
 logger.debug(`openapi.json: ${env.BASE_URL}/openapi.json`);
 app.get("/openapi.json", (req, res) => {

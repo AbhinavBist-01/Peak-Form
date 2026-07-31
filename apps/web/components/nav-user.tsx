@@ -7,7 +7,7 @@ import {
   IconUserCircle,
 } from "@tabler/icons-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 import { Avatar, AvatarFallback } from "~/components/ui/avatar"
 import {
@@ -23,7 +23,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar"
-import { useLogout } from "~/hooks/api/auth"
+import { getApiOrigin } from "~/lib/api-url"
 
 export function NavUser({
   user,
@@ -34,13 +34,11 @@ export function NavUser({
     avatar: string
   }
 }) {
-  const router = useRouter()
-  const { logoutAsync, status } = useLogout()
-  const isLoggingOut = status === "pending"
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-  async function onLogout() {
-    await logoutAsync()
-    router.replace("/login")
+  function onLogout() {
+    setIsLoggingOut(true)
+    window.location.href = new URL("/auth/logout", getApiOrigin()).toString()
   }
 
   return (
@@ -91,7 +89,7 @@ export function NavUser({
               className="cursor-pointer rounded-lg px-3 py-2 text-[#3b463d] focus:bg-[#d0e9d4]/75 focus:text-[#2f5d3b]"
               onSelect={(event) => {
                 event.preventDefault()
-                void onLogout()
+                onLogout()
               }}
             >
               <IconLogout className="size-4" />

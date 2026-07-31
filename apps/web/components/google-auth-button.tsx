@@ -1,12 +1,7 @@
 "use client";
 
 import { Button } from "~/components/ui/button";
-import { env } from "~/env.js";
-
-function getApiOrigin() {
-  const apiUrl = env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/trpc";
-  return apiUrl.replace(/\/trpc\/?$/, "");
-}
+import { getApiOrigin } from "~/lib/api-url";
 
 export function GoogleAuthButton() {
   function continueWithGoogle() {
