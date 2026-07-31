@@ -500,97 +500,108 @@ export default function Page() {
 
   return (
     <>
-      <div className="@container/main peak-topography peak-topography-motion flex flex-1 flex-col gap-6 p-4 md:p-6">
-            <div className="peak-glass peak-reveal peak-shine grid gap-5 rounded-xl p-5 xl:grid-cols-[1fr_auto] xl:items-center">
-              <div className="space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  {isLoadingForm ? (
-                    <>
-                      <Skeleton className="h-10 w-56 bg-[#d0e9d4]/70" />
-                      <Skeleton className="h-6 w-20 rounded-full bg-[#edf1ec]" />
-                    </>
+      <div className="flex flex-1 flex-col gap-6 p-5 md:p-8 bg-[#FAF7F2] text-[#2D2926]">
+        <div className="claude-card rounded-2xl bg-[#FFFDF9] border border-[#E5DFD5] p-6 shadow-xs flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              {isLoadingForm ? (
+                <>
+                  <Skeleton className="h-8 w-48 bg-[#E5DFD5]/60" />
+                  <Skeleton className="h-6 w-20 rounded-md bg-[#E5DFD5]/60" />
+                </>
+              ) : (
+                <>
+                  <h2 className="peak-serif text-3xl font-medium tracking-tight text-[#2D2926]">
+                    {editorFormData?.title ?? "Edit Form"}
+                  </h2>
+                  <span
+                    className={`rounded-md px-2.5 py-0.5 text-xs font-mono capitalize ${
+                      isPublished
+                        ? "bg-[#F7EBE1] text-[#DA7756]"
+                        : "bg-[#FAF7F2] text-[#78726A] border border-[#E5DFD5]"
+                    }`}
+                  >
+                    {getFormStatusLabel(editorFormData)}
+                  </span>
+                </>
+              )}
+              {editorFormData ? (
+                <span className="inline-flex items-center gap-1 rounded-md border border-[#E5DFD5] bg-[#FAF7F2] px-2 py-0.5 text-xs font-mono text-[#78726A] capitalize">
+                  {editorFormData.visibility === "public" ? (
+                    <GlobeIcon className="size-3" />
                   ) : (
-                    <>
-                      <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#2f5d3b]">
-                        {editorFormData?.title ?? "Edit form"}
-                      </h2>
-                      <Badge variant={isPublished ? "default" : "outline"}>
-                        {getFormStatusLabel(editorFormData)}
-                      </Badge>
-                    </>
+                    <EyeOffIcon className="size-3" />
                   )}
-                  {editorFormData ? (
-                    <Badge variant="outline" className="gap-1 capitalize">
-                      {editorFormData.visibility === "public" ? (
-                        <GlobeIcon className="size-3" />
-                      ) : (
-                        <EyeOffIcon className="size-3" />
-                      )}
-                      {editorFormData.visibility}
-                    </Badge>
-                  ) : null}
-                </div>
-                <p className="text-sm text-[#59645b]">Form ID: {formId}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" asChild>
-                  <Link href="/dashboard/forms">
-                    <ArrowLeftIcon />
-                    Back
-                  </Link>
+                  {editorFormData.visibility}
+                </span>
+              ) : null}
+            </div>
+            <p className="text-xs text-[#78726A] font-mono">Form ID: {formId}</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" asChild className="border-[#E5DFD5] bg-white text-xs text-[#2D2926] hover:bg-[#F2ECE1] rounded-xl">
+              <Link href="/dashboard/forms">
+                <ArrowLeftIcon className="mr-1 size-3.5" />
+                Back
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild className="border-[#E5DFD5] bg-white text-xs text-[#2D2926] hover:bg-[#F2ECE1] rounded-xl">
+              <Link href={`/dashboard/forms/${formId}/submissions`}>
+                <InboxIcon className="mr-1 size-3.5" />
+                Submissions
+              </Link>
+            </Button>
+            {isPublished ? (
+              <Button variant="outline" size="sm" asChild className="border-[#E5DFD5] bg-white text-xs text-[#2D2926] hover:bg-[#F2ECE1] rounded-xl">
+                <Link href={`/form/${editorFormData?.slug ?? formId}`}>
+                  <ExternalLinkIcon className="mr-1 size-3.5" />
+                  Public Link
+                </Link>
+              </Button>
+            ) : null}
+            <Button variant="outline" size="sm" disabled={isCloning} onClick={() => void onCloneForm()} className="border-[#E5DFD5] bg-white text-xs text-[#2D2926] hover:bg-[#F2ECE1] rounded-xl">
+              <CopyIcon className="mr-1 size-3.5" />
+              {isCloning ? "Cloning..." : "Clone"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isArchiving || editorFormData?.status === "archived"}
+              onClick={() => void onArchiveForm()}
+              className="border-[#E5DFD5] bg-white text-xs text-[#78726A] hover:bg-[#F2ECE1] rounded-xl"
+            >
+              <ArchiveIcon className="mr-1 size-3.5" />
+              {isArchiving ? "Archiving..." : "Archive"}
+            </Button>
+            {isPublished ? (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isUnpublishing}
+                onClick={() => void unpublishFormAsync({ formId })}
+                className="border-[#E5DFD5] bg-white text-xs text-[#78726A] hover:bg-[#F2ECE1] rounded-xl"
+              >
+                <EyeOffIcon className="mr-1 size-3.5" />
+                {isUnpublishing ? "Unpublishing..." : "Unpublish"}
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                disabled={isPublishing}
+                onClick={() => void publishFormAsync({ formId })}
+                className="rounded-xl bg-[#DA7756] text-xs font-medium text-white hover:bg-[#C66545]"
+              >
+                <RocketIcon className="mr-1 size-3.5" />
+                {isPublishing ? "Publishing..." : "Publish"}
+              </Button>
+            )}
+            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="rounded-xl bg-[#DA7756] text-xs font-medium text-white hover:bg-[#C66545]">
+                  <PlusIcon className="mr-1 size-3.5" />
+                  Add Field
                 </Button>
-                <Button variant="outline" asChild>
-                  <Link href={`/dashboard/forms/${formId}/submissions`}>
-                    <InboxIcon />
-                    Submissions
-                  </Link>
-                </Button>
-                {isPublished ? (
-                  <Button variant="outline" asChild>
-                    <Link href={`/form/${editorFormData?.slug ?? formId}`}>
-                      <ExternalLinkIcon />
-                      View
-                    </Link>
-                  </Button>
-                ) : null}
-                <Button variant="outline" disabled={isCloning} onClick={() => void onCloneForm()}>
-                  <CopyIcon />
-                  {isCloning ? "Cloning..." : "Clone"}
-                </Button>
-                <Button
-                  variant="outline"
-                  disabled={isArchiving || editorFormData?.status === "archived"}
-                  onClick={() => void onArchiveForm()}
-                >
-                  <ArchiveIcon />
-                  {isArchiving ? "Archiving..." : "Archive"}
-                </Button>
-                {isPublished ? (
-                  <Button
-                    variant="outline"
-                    disabled={isUnpublishing}
-                    onClick={() => void unpublishFormAsync({ formId })}
-                  >
-                    <EyeOffIcon />
-                    {isUnpublishing ? "Unpublishing..." : "Unpublish"}
-                  </Button>
-                ) : (
-                  <Button
-                    variant="outline"
-                    disabled={isPublishing}
-                    onClick={() => void publishFormAsync({ formId })}
-                  >
-                    <RocketIcon />
-                    {isPublishing ? "Publishing..." : "Publish"}
-                  </Button>
-                )}
-                <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-[#2f5d3b] text-white hover:bg-[#3f744b]">
-                      <PlusIcon />
-                      Add field
-                    </Button>
-                  </DialogTrigger>
+              </DialogTrigger>
                   <DialogContent className="max-h-[88svh] gap-0 overflow-hidden p-0 sm:max-w-2xl">
                     <DialogHeader className="px-6 pb-4 pt-6 pr-12">
                       <DialogTitle>Add field</DialogTitle>

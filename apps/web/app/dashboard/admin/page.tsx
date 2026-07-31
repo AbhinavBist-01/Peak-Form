@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ShieldCheckIcon } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import {
@@ -46,52 +45,52 @@ export default function Page() {
   ];
 
   return (
-    <div className="@container/main peak-topography peak-topography-motion flex flex-1 flex-col gap-6 p-4 md:p-6">
-      <div className="peak-glass peak-reveal grid gap-4 rounded-xl p-5 md:grid-cols-[1fr_auto] md:items-center">
+    <div className="flex flex-1 flex-col gap-6 p-5 md:p-8 bg-[#FAF7F2] text-[#2D2926]">
+      <div className="claude-card rounded-2xl bg-[#FFFDF9] border border-[#E5DFD5] p-6 shadow-xs flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <ShieldCheckIcon className="size-5 text-[#2f5d3b]" />
-            <h2 className="peak-serif text-3xl font-semibold tracking-normal text-[#2f5d3b]">
-              Admin
+            <ShieldCheckIcon className="size-5 text-[#DA7756]" />
+            <h2 className="peak-serif text-3xl font-medium tracking-tight text-[#2D2926]">
+              Admin Workspace
             </h2>
           </div>
-          <p className="max-w-2xl text-sm leading-6 text-[#59645b]">
-            Platform-level snapshot for demo review, moderation, and form operations.
+          <p className="max-w-2xl text-xs text-[#78726A]">
+            Platform-level snapshot for form operations, creator accounts, and system analytics.
           </p>
         </div>
-        <Button variant="outline" asChild>
-          <Link href="/dashboard/forms">Manage forms</Link>
+        <Button variant="outline" asChild className="border-[#E5DFD5] bg-white text-xs text-[#2D2926] hover:bg-[#F2ECE1] rounded-xl">
+          <Link href="/dashboard/forms">Manage Forms</Link>
         </Button>
       </div>
 
       {error ? (
-        <Alert variant="destructive">
-          <AlertTitle>Admin access unavailable</AlertTitle>
-          <AlertDescription>{error.message}</AlertDescription>
+        <Alert variant="destructive" className="rounded-xl border-red-200 bg-red-50 text-red-900">
+          <AlertTitle className="font-medium">Admin access unavailable</AlertTitle>
+          <AlertDescription className="text-xs">{error.message}</AlertDescription>
         </Alert>
       ) : null}
 
-      <section className="peak-stagger grid gap-3 md:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-4">
         {metrics.map((metric) => (
-          <div key={metric.label} className="peak-glass peak-lift rounded-xl p-4">
-            <p className="text-sm text-[#59645b]">{metric.label}</p>
+          <div key={metric.label} className="claude-card rounded-2xl bg-[#FFFDF9] border border-[#E5DFD5] p-5 shadow-xs">
+            <p className="text-xs text-[#78726A]">{metric.label}</p>
             {isLoading ? (
-              <Skeleton className="mt-2 h-8 w-20 bg-[#d0e9d4]/70" />
+              <Skeleton className="mt-2 h-8 w-20 bg-[#E5DFD5]/60" />
             ) : (
-              <p className="mt-1 text-3xl font-semibold text-[#2f5d3b]">{metric.value}</p>
+              <p className="mt-1 text-3xl font-serif font-medium text-[#2D2926]">{metric.value}</p>
             )}
           </div>
         ))}
       </section>
 
-      <section className="peak-reveal overflow-hidden rounded-xl border border-[#c3c8c1]/65 bg-white/78 shadow-xl shadow-[#4c616c]/10 backdrop-blur-xl">
+      <section className="claude-card overflow-hidden rounded-2xl border border-[#E5DFD5] bg-[#FFFDF9] shadow-xs">
         <Table>
-          <TableHeader className="bg-[#edf1ec]">
+          <TableHeader className="bg-[#FAF7F2] border-b border-[#E5DFD5]">
             <TableRow>
-              <TableHead>Recent form</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Creator</TableHead>
-              <TableHead className="text-right">Created</TableHead>
+              <TableHead className="text-xs font-mono text-[#78726A]">Recent Form</TableHead>
+              <TableHead className="text-xs font-mono text-[#78726A]">Status & Visibility</TableHead>
+              <TableHead className="text-xs font-mono text-[#78726A]">Creator Email</TableHead>
+              <TableHead className="text-right text-xs font-mono text-[#78726A]">Created At</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -99,51 +98,59 @@ export default function Page() {
               Array.from({ length: 5 }).map((_, index) => (
                 <TableRow key={`admin-skeleton-${index}`}>
                   <TableCell>
-                    <Skeleton className="h-4 w-48 bg-[#d0e9d4]/70" />
+                    <Skeleton className="h-4 w-48 bg-[#E5DFD5]/60" />
                   </TableCell>
                   <TableCell>
-                    <Skeleton className="h-6 w-24 rounded-full bg-[#edf1ec]" />
+                    <Skeleton className="h-6 w-24 rounded-md bg-[#E5DFD5]/60" />
                   </TableCell>
                   <TableCell>
-                    <Skeleton className="h-4 w-40 bg-[#edf1ec]" />
+                    <Skeleton className="h-4 w-40 bg-[#E5DFD5]/40" />
                   </TableCell>
                   <TableCell>
-                    <Skeleton className="ml-auto h-4 w-28 bg-[#edf1ec]" />
+                    <Skeleton className="ml-auto h-4 w-28 bg-[#E5DFD5]/40" />
                   </TableCell>
                 </TableRow>
               ))
             ) : overview?.recentForms.length ? (
               overview.recentForms.map((form) => (
-                <TableRow key={form.id}>
+                <TableRow key={form.id} className="transition-colors hover:bg-[#FAF7F2]">
                   <TableCell>
                     <Link
                       href={`/dashboard/forms/${form.id}`}
-                      className="font-medium text-[#2f5d3b] hover:underline"
+                      className="peak-serif text-base font-medium text-[#2D2926] transition hover:text-[#DA7756]"
                     >
                       {form.title}
                     </Link>
-                    <p className="text-xs text-muted-foreground">{form.slug ?? form.id}</p>
+                    <p className="text-[11px] font-mono text-[#9E978F]">{form.slug ?? form.id}</p>
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant={form.status === "published" ? "default" : "outline"}>
+                    <div className="flex flex-wrap gap-1.5">
+                      <span
+                        className={`rounded-md px-2 py-0.5 text-[11px] font-mono capitalize ${
+                          form.status === "published"
+                            ? "bg-[#F7EBE1] text-[#DA7756]"
+                            : "bg-[#FAF7F2] text-[#78726A] border border-[#E5DFD5]"
+                        }`}
+                      >
                         {form.status}
-                      </Badge>
-                      <Badge variant="secondary">{form.visibility}</Badge>
+                      </span>
+                      <span className="rounded-md border border-[#E5DFD5] bg-[#FAF7F2] px-2 py-0.5 text-[11px] font-mono text-[#78726A]">
+                        {form.visibility}
+                      </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className="text-xs text-[#78726A] font-mono">
                     {form.creatorEmail}
                   </TableCell>
-                  <TableCell className="text-right text-sm text-muted-foreground">
+                  <TableCell className="text-right text-xs text-[#78726A] font-mono">
                     {formatDate(form.createdAt)}
                   </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center text-sm text-muted-foreground">
-                  No forms yet.
+                <TableCell colSpan={4} className="h-28 text-center text-xs text-[#78726A]">
+                  No forms created yet.
                 </TableCell>
               </TableRow>
             )}
@@ -152,7 +159,7 @@ export default function Page() {
       </section>
 
       {isFetching && !isLoading ? (
-        <p className="text-sm text-muted-foreground">Refreshing admin overview...</p>
+        <p className="text-xs font-mono text-[#9E978F]">Refreshing admin overview...</p>
       ) : null}
     </div>
   );

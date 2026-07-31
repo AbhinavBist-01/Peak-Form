@@ -24,7 +24,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -100,8 +99,8 @@ function getSubmissionValue(submission: FormSubmission | undefined, field: FormF
   return value;
 }
 
-function downloadCsv(fileName: string, mimeType: string, csv: string) {
-  const blob = new Blob([csv], { type: mimeType });
+function downloadCsv(fileName: string, mimeType: string, content: string) {
+  const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
@@ -180,434 +179,329 @@ export default function Page() {
 
   return (
     <>
-      <div className="@container/main peak-topography peak-topography-motion flex flex-1 flex-col gap-6 p-4 md:p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="space-y-1">
-                <h2 className="text-2xl font-semibold tracking-normal">Submissions</h2>
-                <p className="text-sm text-muted-foreground">
-                  Form ID: {formId}
-                  {submissionPage ? ` · ${submissionPage.total} matching responses` : ""}
-                </p>
+      <div className="flex flex-1 flex-col gap-6 p-5 md:p-8 bg-[#FAF7F2] text-[#2D2926]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <h2 className="peak-serif text-3xl font-medium tracking-tight text-[#2D2926]">
+              Submissions & Analytics
+            </h2>
+            <p className="text-xs text-[#78726A] font-mono">
+              Form ID: {formId}
+              {submissionPage ? ` · ${submissionPage.total} total responses` : ""}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              className="claude-button rounded-xl bg-[#DA7756] px-4 text-xs font-medium text-white hover:bg-[#C66545]"
+              disabled={!submissions.length || isExporting}
+              onClick={() => void onExportCsv()}
+            >
+              <DownloadIcon className="mr-1.5 size-3.5" />
+              {isExporting ? "Exporting..." : "CSV Export"}
+            </Button>
+            <Button variant="outline" asChild className="border-[#E5DFD5] bg-white text-xs text-[#2D2926] hover:bg-[#F2ECE1] rounded-xl">
+              <Link href={`/dashboard/forms/${formId}`}>
+                <ArrowLeftIcon className="mr-1 size-3.5" />
+                Back to Editor
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {[fieldsError, submissionsError, analyticsError, deleteSubmissionError].map((error) =>
+          error ? (
+            <Alert key={error.message} variant="destructive" className="rounded-xl border-red-200 bg-red-50 text-red-900">
+              <AlertTitle className="font-medium">Something went wrong</AlertTitle>
+              <AlertDescription className="text-xs">{error.message}</AlertDescription>
+            </Alert>
+          ) : null,
+        )}
+
+        <section className="grid gap-4 md:grid-cols-4">
+          <Metric
+            icon={<BarChart3Icon className="size-4 text-[#DA7756]" />}
+            label="Responses"
+            value={analytics?.responseCount ?? submissions.length}
+            isLoading={isLoading}
+          />
+          <Metric label="Fields" value={fields.length} isLoading={isLoading} />
+          <Metric
+            label="Trend Days"
+            value={analytics?.completionTrend.length ?? 0}
+            isLoading={isLoading}
+          />
+          <Metric label="Rating Fields" value={ratingSummaries.length} isLoading={isLoading} />
+        </section>
+
+        <section className="claude-card rounded-2xl bg-[#FFFDF9] border border-[#E5DFD5] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+          <Input
+            value={search}
+            placeholder="Search responses by answer or date..."
+            onChange={(event) => setSearch(event.target.value)}
+            className="h-10 rounded-xl border-[#E5DFD5] bg-white text-xs text-[#2D2926] placeholder:text-[#9E978F] focus:border-[#DA7756]"
+          />
+          <div className="flex items-center justify-end gap-2 shrink-0">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={!submissionPage || submissionPage.page <= 1}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+              className="border-[#E5DFD5] bg-white text-xs text-[#78726A] hover:bg-[#F2ECE1]"
+            >
+              Previous
+            </Button>
+            <span className="font-mono text-xs text-[#78726A] px-2">
+              Page {submissionPage?.page ?? page} of {submissionPage?.totalPages ?? 1}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={!submissionPage || submissionPage.page >= submissionPage.totalPages}
+              onClick={() => setPage((current) => current + 1)}
+              className="border-[#E5DFD5] bg-white text-xs text-[#78726A] hover:bg-[#F2ECE1]"
+            >
+              Next
+            </Button>
+          </div>
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-12 items-start">
+          <div className="xl:col-span-8 space-y-6">
+            <div className="claude-card rounded-2xl bg-[#FFFDF9] border border-[#E5DFD5] p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-[#E5DFD5] pb-3">
+                <div>
+                  <h3 className="peak-serif text-xl font-medium text-[#2D2926]">Completion Trend</h3>
+                  <p className="text-xs text-[#78726A]">Responses grouped by date.</p>
+                </div>
+                <span className="font-mono text-xs text-[#DA7756] bg-[#F7EBE1] px-2.5 py-0.5 rounded-md font-medium">
+                  {analytics?.completionTrend.length ?? 0} days
+                </span>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  variant="outline"
-                  disabled={!submissions.length || isExporting}
-                  onClick={() => void onExportCsv()}
-                >
-                  <DownloadIcon />
-                  {isExporting ? "Exporting..." : "CSV export"}
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link href={`/dashboard/forms/${formId}`}>
-                    <ArrowLeftIcon />
-                    Back to editor
-                  </Link>
-                </Button>
+              <div className="space-y-3">
+                {isLoading ? (
+                  Array.from({ length: 4 }).map((_, index) => (
+                    <div key={`trend-skeleton-${index}`} className="space-y-1.5">
+                      <Skeleton className="h-4 w-28 bg-[#E5DFD5]/60" />
+                      <Skeleton className="h-2 w-full rounded-full bg-[#E5DFD5]/40" />
+                    </div>
+                  ))
+                ) : analytics?.completionTrend.length ? (
+                  analytics.completionTrend.map((entry) => (
+                    <div key={entry.date} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs text-[#2D2926]">
+                        <span>{entry.date}</span>
+                        <span className="font-mono font-medium">{entry.count}</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-[#FAF7F2]">
+                        <div
+                          className="h-full rounded-full bg-[#DA7756]"
+                          style={{
+                            width: `${Math.max(
+                              6,
+                              (entry.count /
+                                Math.max(
+                                  ...analytics.completionTrend.map((trend) => trend.count),
+                                  1,
+                                )) *
+                                100,
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-[#78726A]">No response data yet.</p>
+                )}
               </div>
             </div>
 
-            {[fieldsError, submissionsError, analyticsError, deleteSubmissionError].map((error) =>
-              error ? (
-                <Alert key={error.message} variant="destructive">
-                  <AlertTitle>Something went wrong</AlertTitle>
-                  <AlertDescription>{error.message}</AlertDescription>
-                </Alert>
-              ) : null,
-            )}
-
-            <section className="peak-stagger grid gap-3 md:grid-cols-4">
-              <Metric
-                icon={<BarChart3Icon className="size-4" />}
-                label="Responses"
-                value={analytics?.responseCount ?? submissions.length}
-                isLoading={isLoading}
-              />
-              <Metric label="Fields" value={fields.length} isLoading={isLoading} />
-              <Metric
-                label="Trend days"
-                value={analytics?.completionTrend.length ?? 0}
-                isLoading={isLoading}
-              />
-              <Metric label="Rating fields" value={ratingSummaries.length} isLoading={isLoading} />
-            </section>
-
-            <section className="peak-glass grid gap-3 rounded-xl p-4 sm:grid-cols-[1fr_auto] sm:items-center">
-              <Input
-                value={search}
-                placeholder="Filter by answer, submission ID, or date"
-                onChange={(event) => setSearch(event.target.value)}
-              />
-              <div className="flex items-center justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={!submissionPage || submissionPage.page <= 1}
-                  onClick={() => setPage((current) => Math.max(1, current - 1))}
-                >
-                  Previous
-                </Button>
-                <Badge variant="outline">
-                  Page {submissionPage?.page ?? page} of {submissionPage?.totalPages ?? 1}
-                </Badge>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={!submissionPage || submissionPage.page >= submissionPage.totalPages}
-                  onClick={() => setPage((current) => current + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            </section>
-
-            <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
-              <div className="grid gap-4">
-                <div className="peak-lift rounded-lg border p-4">
-                  <div className="mb-4 flex items-center justify-between gap-3">
-                    <div>
-                      <h3 className="text-base font-semibold tracking-normal">Completion trend</h3>
-                      <p className="text-sm text-muted-foreground">Responses by submission date.</p>
-                    </div>
-                    <Badge variant="outline">{analytics?.completionTrend.length ?? 0} days</Badge>
-                  </div>
-                  <div className="grid gap-2">
-                    {isLoading ? (
-                      Array.from({ length: 4 }).map((_, index) => (
-                        <div key={`trend-skeleton-${index}`} className="grid gap-2">
-                          <div className="flex items-center justify-between gap-4">
-                            <Skeleton className="h-4 w-28 bg-[#edf1ec]" />
-                            <Skeleton className="h-4 w-8 bg-[#edf1ec]" />
-                          </div>
-                          <Skeleton className="h-2 w-full rounded-full bg-[#edf1ec]" />
-                        </div>
-                      ))
-                    ) : analytics?.completionTrend.length ? (
-                      analytics.completionTrend.map((entry) => (
-                        <div key={entry.date} className="grid gap-1">
-                          <div className="flex items-center justify-between text-sm">
-                            <span>{entry.date}</span>
-                            <span className="font-medium">{entry.count}</span>
-                          </div>
-                          <div className="h-2 overflow-hidden rounded-full bg-muted">
-                            <div
-                              className="h-full rounded-full bg-primary"
-                              style={{
-                                width: `${Math.max(
-                                  6,
-                                  (entry.count /
-                                    Math.max(
-                                      ...analytics.completionTrend.map((trend) => trend.count),
-                                      1,
-                                    )) *
-                                    100,
-                                )}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No responses yet.</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto rounded-lg border">
-                  <Table>
-                    <TableHeader className="bg-muted">
-                      <TableRow>
-                        <TableHead className="min-w-48">Submitted</TableHead>
-                        {isLoading
-                          ? Array.from({ length: 4 }).map((_, index) => (
-                              <TableHead key={`field-head-skeleton-${index}`} className="min-w-48">
-                                <Skeleton className="h-4 w-24 bg-[#d0e9d4]/70" />
-                              </TableHead>
-                            ))
-                          : fields.slice(0, 4).map((field) => (
-                              <TableHead key={field.id} className="min-w-48">
-                                <div className="grid gap-1">
-                                  <span>{field.label}</span>
-                                  <span className="font-mono text-xs font-normal text-muted-foreground">
-                                    {field.labelKey}
-                                  </span>
-                                </div>
-                              </TableHead>
-                            ))}
-                        <TableHead className="w-32 text-right">Actions</TableHead>
+            <div className="claude-card overflow-hidden rounded-2xl border border-[#E5DFD5] bg-[#FFFDF9] shadow-xs">
+              <Table>
+                <TableHeader className="bg-[#FAF7F2] border-b border-[#E5DFD5]">
+                  <TableRow>
+                    <TableHead className="min-w-48 text-xs font-mono text-[#78726A]">Submitted</TableHead>
+                    {isLoading
+                      ? Array.from({ length: 4 }).map((_, index) => (
+                          <TableHead key={`field-head-skeleton-${index}`} className="min-w-48">
+                            <Skeleton className="h-4 w-24 bg-[#E5DFD5]/60" />
+                          </TableHead>
+                        ))
+                      : fields.slice(0, 4).map((field) => (
+                          <TableHead key={field.id} className="min-w-48 text-xs font-mono text-[#78726A]">
+                            <span>{field.label}</span>
+                          </TableHead>
+                        ))}
+                    <TableHead className="w-28 text-right text-xs font-mono text-[#78726A]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <TableRow key={`submission-skeleton-${index}`}>
+                        <TableCell>
+                          <Skeleton className="h-4 w-36 bg-[#E5DFD5]/60" />
+                        </TableCell>
+                        {Array.from({ length: 4 }).map((__, cellIndex) => (
+                          <TableCell key={`submission-cell-skeleton-${cellIndex}`}>
+                            <Skeleton className="h-4 w-full bg-[#E5DFD5]/40" />
+                          </TableCell>
+                        ))}
+                        <TableCell>
+                          <Skeleton className="h-8 w-16 bg-[#E5DFD5]/60 ml-auto" />
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {isLoading ? (
-                        Array.from({ length: 5 }).map((_, index) => (
-                          <TableRow key={`submission-skeleton-${index}`}>
-                            <TableCell>
-                              <Skeleton className="h-4 w-36 bg-[#edf1ec]" />
-                            </TableCell>
-                            {Array.from({ length: 4 }).map((__, cellIndex) => (
-                              <TableCell key={`submission-cell-skeleton-${cellIndex}`}>
-                                <div className="grid gap-2">
-                                  <Skeleton className="h-4 w-full bg-[#edf1ec]" />
-                                  <Skeleton className="h-3 w-2/3 bg-[#edf1ec]" />
-                                </div>
-                              </TableCell>
-                            ))}
-                            <TableCell>
-                              <div className="flex justify-end gap-2">
-                                <Skeleton className="size-9 bg-[#edf1ec]" />
-                                <Skeleton className="size-9 bg-[#edf1ec]" />
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : !fields.length ? (
-                        <TableRow>
-                          <TableCell className="h-32 text-center text-muted-foreground">
-                            Add fields before reviewing submissions.
-                          </TableCell>
-                        </TableRow>
-                      ) : submissions.length ? (
-                        submissions.map((submission) => (
-                          <TableRow key={submission.id}>
-                            <TableCell className="whitespace-nowrap text-muted-foreground">
-                              {formatDate(submission.createdAt)}
-                            </TableCell>
-                            {fields.slice(0, 4).map((field) => (
-                              <TableCell key={field.id} className="max-w-80 align-top">
-                                <span className="line-clamp-3 break-words">
-                                  {getSubmissionValue(submission, field)}
-                                </span>
-                              </TableCell>
-                            ))}
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
-                                <Button
-                                  size="icon"
-                                  variant="outline"
-                                  onClick={() => setSelectedSubmissionId(submission.id)}
-                                >
-                                  <EyeIcon />
-                                  <span className="sr-only">View response</span>
-                                </Button>
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button size="icon" variant="outline">
-                                      <Trash2Icon />
-                                      <span className="sr-only">Delete response</span>
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Delete response</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        This permanently removes the selected response.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel disabled={isDeleting}>
-                                        Cancel
-                                      </AlertDialogCancel>
-                                      <AlertDialogAction
-                                        disabled={isDeleting}
-                                        onClick={() =>
-                                          void deleteFormSubmissionAsync({
-                                            submissionId: submission.id,
-                                          })
-                                        }
-                                      >
-                                        Delete
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell
-                            colSpan={fields.length + 2}
-                            className="h-32 text-center text-muted-foreground"
-                          >
-                            No submissions yet.
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-
-              <aside className="grid content-start gap-4">
-                <div className="peak-lift rounded-lg border p-4">
-                  <h3 className="mb-3 text-base font-semibold tracking-normal">Rating averages</h3>
-                  <div className="grid gap-3">
-                    {isLoading ? (
-                      Array.from({ length: 3 }).map((_, index) => (
-                        <div key={`rating-skeleton-${index}`} className="flex items-center justify-between gap-3">
-                          <div className="grid flex-1 gap-2">
-                            <Skeleton className="h-4 w-36 bg-[#edf1ec]" />
-                            <Skeleton className="h-3 w-20 bg-[#edf1ec]" />
-                          </div>
-                          <Skeleton className="h-6 w-16 rounded-full bg-[#edf1ec]" />
-                        </div>
-                      ))
-                    ) : ratingSummaries.length ? (
-                      ratingSummaries.map((summary) => (
-                        <div key={summary.fieldId} className="flex items-center justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-medium">{summary.label}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {summary.totalAnswers} answers
-                            </p>
-                          </div>
-                          <Badge variant="secondary" className="gap-1">
-                            <StarIcon className="size-3" />
-                            {summary.ratingAverage}
-                          </Badge>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No rating answers yet.</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="rounded-lg border p-4">
-                  <h3 className="mb-3 text-base font-semibold tracking-normal">Field summaries</h3>
-                  <div className="grid gap-4">
-                    {isLoading ? (
-                      Array.from({ length: 4 }).map((_, index) => (
-                        <div key={`summary-skeleton-${index}`} className="grid gap-2">
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="grid flex-1 gap-2">
-                              <Skeleton className="h-4 w-36 bg-[#edf1ec]" />
-                              <Skeleton className="h-3 w-44 bg-[#edf1ec]" />
-                            </div>
-                            <Skeleton className="h-6 w-16 rounded-full bg-[#edf1ec]" />
-                          </div>
-                          <Skeleton className="h-2 w-full rounded-full bg-[#edf1ec]" />
-                        </div>
-                      ))
-                    ) : analytics?.fieldSummaries.length ? (
-                      analytics.fieldSummaries.map((summary) => (
-                        <div key={summary.fieldId} className="grid gap-2">
-                          <div className="flex items-center justify-between gap-3">
-                            <div>
-                              <p className="text-sm font-medium">{summary.label}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {summary.totalAnswers} answers, {summary.completionRate}%
-                                completion
-                              </p>
-                            </div>
-                            <Badge variant="outline">{summary.type}</Badge>
-                          </div>
-                          {summary.distribution.length ? (
-                            <div className="grid gap-2">
-                              {summary.distribution.slice(0, 5).map((entry) => (
-                                <div key={entry.value} className="grid gap-1">
-                                  <div className="flex items-center justify-between text-xs">
-                                    <span className="truncate">{entry.value}</span>
-                                    <span>{entry.count}</span>
-                                  </div>
-                                  <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                                    <div
-                                      className="h-full rounded-full bg-primary"
-                                      style={{ width: `${Math.max(4, entry.percentage)}%` }}
-                                    />
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : null}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No field data yet.</p>
-                    )}
-                  </div>
-                </div>
-              </aside>
-            </section>
-
-            {distributionSummaries.length ? (
-              <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {distributionSummaries.map((summary) => (
-                  <div key={summary.fieldId} className="peak-lift rounded-lg border p-4">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <h3 className="text-base font-semibold tracking-normal">{summary.label}</h3>
-                      <Badge variant="outline">{summary.type}</Badge>
-                    </div>
-                    <div className="grid gap-2">
-                      {summary.distribution.map((entry) => (
-                        <div key={entry.value} className="grid gap-1">
-                          <div className="flex items-center justify-between text-sm">
-                            <span>{entry.value}</span>
-                            <span className="text-muted-foreground">
-                              {entry.count} / {entry.percentage}%
+                    ))
+                  ) : !fields.length ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-32 text-center text-xs text-[#78726A]">
+                        Add fields to review submission table.
+                      </TableCell>
+                    </TableRow>
+                  ) : submissions.length ? (
+                    submissions.map((submission) => (
+                      <TableRow key={submission.id} className="transition-colors hover:bg-[#FAF7F2]">
+                        <TableCell className="whitespace-nowrap text-xs font-mono text-[#78726A]">
+                          {formatDate(submission.createdAt)}
+                        </TableCell>
+                        {fields.slice(0, 4).map((field) => (
+                          <TableCell key={field.id} className="max-w-80 text-xs text-[#2D2926]">
+                            <span className="line-clamp-2">
+                              {getSubmissionValue(submission, field)}
                             </span>
+                          </TableCell>
+                        ))}
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1.5">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedSubmissionId(submission.id)}
+                              className="border-[#E5DFD5] text-xs text-[#2D2926] hover:bg-[#F2ECE1] rounded-lg"
+                            >
+                              <EyeIcon className="size-3.5" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="outline" className="border-red-200 text-xs text-red-600 hover:bg-red-50 rounded-lg">
+                                  <Trash2Icon className="size-3.5" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="rounded-2xl border-[#E5DFD5] bg-[#FFFDF9]">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="peak-serif text-xl font-medium text-[#2D2926]">
+                                    Delete response?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription className="text-xs text-[#78726A]">
+                                    This permanently removes the selected response.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel disabled={isDeleting} className="border-[#E5DFD5] text-xs">
+                                    Cancel
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    disabled={isDeleting}
+                                    onClick={() =>
+                                      void deleteFormSubmissionAsync({
+                                        submissionId: submission.id,
+                                      })
+                                    }
+                                    className="bg-red-600 text-xs font-medium text-white hover:bg-red-700"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
-                          <div className="h-2 overflow-hidden rounded-full bg-muted">
-                            <div
-                              className="h-full rounded-full bg-primary"
-                              style={{ width: `${Math.max(4, entry.percentage)}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </section>
-            ) : null}
-
-            {isRefreshing && !isLoading ? (
-              <p className="text-sm text-muted-foreground">Refreshing submissions...</p>
-            ) : null}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={fields.length + 2}
+                        className="h-32 text-center text-xs text-[#78726A]"
+                      >
+                        No submissions yet.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
 
-        <Dialog
-          open={Boolean(selectedSubmissionId)}
-          onOpenChange={(open) => !open && setSelectedSubmissionId(null)}
-        >
-          <DialogContent className="max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Response detail</DialogTitle>
-              <DialogDescription>
-                {selectedSubmission
-                  ? `Submitted ${formatDate(selectedSubmission.createdAt)}`
-                  : "Loading response..."}
-              </DialogDescription>
-            </DialogHeader>
-            {isLoadingSelectedSubmission ? (
-              <div className="grid gap-3">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <div key={`response-detail-skeleton-${index}`} className="rounded-lg border p-3">
-                    <div className="mb-3 flex items-center justify-between gap-2">
-                      <Skeleton className="h-4 w-36 bg-[#edf1ec]" />
-                      <Skeleton className="h-6 w-16 rounded-full bg-[#edf1ec]" />
+          <aside className="xl:col-span-4 space-y-6">
+            <div className="claude-card rounded-2xl bg-[#FFFDF9] border border-[#E5DFD5] p-6 shadow-xs space-y-4">
+              <h3 className="peak-serif text-lg font-medium text-[#2D2926] border-b border-[#E5DFD5] pb-3">
+                Rating Averages
+              </h3>
+              <div className="space-y-3">
+                {isLoading ? (
+                  Array.from({ length: 3 }).map((_, index) => (
+                    <Skeleton key={index} className="h-10 w-full bg-[#E5DFD5]/60" />
+                  ))
+                ) : ratingSummaries.length ? (
+                  ratingSummaries.map((summary) => (
+                    <div key={summary.fieldId} className="rounded-xl border border-[#E5DFD5] bg-[#FAF7F2] p-3 flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-medium text-[#2D2926]">{summary.label}</span>
+                        <div className="flex items-center gap-1 text-[#DA7756] mt-0.5">
+                          <StarIcon className="size-3.5 fill-[#DA7756]" />
+                          <span className="font-mono text-xs font-medium">{summary.ratingAverage}</span>
+                        </div>
+                      </div>
+                      <span className="text-[11px] font-mono text-[#78726A]">{summary.totalAnswers} answers</span>
                     </div>
-                    <Skeleton className="h-4 w-3/4 bg-[#edf1ec]" />
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-xs text-[#78726A]">No rating fields configured.</p>
+                )}
               </div>
-            ) : selectedSubmission ? (
-              <div className="grid gap-3">
-                {fields.map((field) => (
-                  <div key={field.id} className="rounded-lg border p-3">
-                    <div className="mb-1 flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium">{field.label}</p>
-                      <Badge variant="outline">{field.type}</Badge>
-                    </div>
-                    <p className="break-words text-sm text-muted-foreground">
-                      {getSubmissionValue(selectedSubmission, field)}
-                    </p>
+            </div>
+          </aside>
+        </section>
+      </div>
+
+      <Dialog
+        open={Boolean(selectedSubmissionId)}
+        onOpenChange={(open) => !open && setSelectedSubmissionId(null)}
+      >
+        <DialogContent className="max-h-[80vh] overflow-y-auto rounded-2xl border-[#E5DFD5] bg-[#FFFDF9] p-6">
+          <DialogHeader>
+            <DialogTitle className="peak-serif text-2xl font-medium text-[#2D2926]">Response Detail</DialogTitle>
+            <DialogDescription className="text-xs text-[#78726A]">
+              {selectedSubmission
+                ? `Submitted ${formatDate(selectedSubmission.createdAt)}`
+                : "Loading response..."}
+            </DialogDescription>
+          </DialogHeader>
+          {isLoadingSelectedSubmission ? (
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-12 w-full bg-[#E5DFD5]/60" />
+              ))}
+            </div>
+          ) : selectedSubmission ? (
+            <div className="space-y-3 pt-2">
+              {fields.map((field) => (
+                <div key={field.id} className="rounded-xl border border-[#E5DFD5] bg-[#FAF7F2] p-3.5 space-y-1">
+                  <div className="flex items-center justify-between text-xs font-medium text-[#2D2926]">
+                    <span>{field.label}</span>
+                    <span className="font-mono text-[10px] text-[#DA7756] bg-[#F7EBE1] px-2 py-0.5 rounded-md">{field.type}</span>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">Response not found.</p>
+                  <p className="text-xs text-[#78726A] break-words">
+                    {getSubmissionValue(selectedSubmission, field)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-[#78726A]">Response not found.</p>
           )}
         </DialogContent>
       </Dialog>
@@ -627,15 +521,19 @@ function Metric({
   value: number;
 }) {
   return (
-    <div className="peak-lift rounded-lg border bg-white/70 p-4 backdrop-blur">
-      <div className="mb-3 flex items-center justify-between gap-3 text-muted-foreground">
-        <span className="text-sm">{label}</span>
-        {icon}
+    <div className="claude-card rounded-2xl bg-[#FFFDF9] border border-[#E5DFD5] p-5 shadow-xs flex items-center justify-between">
+      <div>
+        <span className="text-xs text-[#78726A]">{label}</span>
+        {isLoading ? (
+          <Skeleton className="h-8 w-14 bg-[#E5DFD5]/60 mt-1" />
+        ) : (
+          <div className="mt-1 text-3xl font-serif font-medium text-[#2D2926]">{value}</div>
+        )}
       </div>
-      {isLoading ? (
-        <Skeleton className="h-8 w-14 bg-[#edf1ec]" />
-      ) : (
-        <p className="text-2xl font-semibold tracking-normal">{value}</p>
+      {icon && (
+        <div className="grid size-10 place-items-center rounded-xl bg-[#F7EBE1]">
+          {icon}
+        </div>
       )}
     </div>
   );
