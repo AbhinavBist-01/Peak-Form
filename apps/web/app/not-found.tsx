@@ -1,102 +1,53 @@
-import { ArrowLeft, Home, LogIn, Search } from "lucide-react";
+import { ArrowLeft, Home, LogIn } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
-const navItems = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Forms", href: "/dashboard/forms" },
-  { label: "Explore", href: "/explore" },
-];
-
 export default function NotFound() {
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-950 px-4 py-8 text-white sm:px-6">
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 scale-105 bg-cover bg-center opacity-45 blur-sm"
-        style={{ backgroundImage: 'url("/not-found-mountains.png")' }}
-      />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,10,18,0.24),rgba(6,10,18,0.86))]" />
-
-      <section className="peak-reveal relative w-full max-w-5xl rounded-xl bg-white p-3 shadow-2xl shadow-black/45 sm:p-5">
-        <div className="relative min-h-[560px] overflow-hidden rounded-md bg-zinc-950 sm:min-h-[620px]">
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 scale-110 bg-cover bg-center opacity-70 blur-md"
-            style={{ backgroundImage: 'url("/not-found-mountains.png")' }}
+    <main className="flex min-h-screen items-center justify-center bg-[#FAF7F2] px-5 py-8 text-[#2D2926]">
+      <div className="w-full max-w-2xl rounded-2xl border border-[#E5DFD5] bg-[#FFFDF9] p-8 md:p-12 shadow-xs text-center space-y-8">
+        <Link href="/" className="inline-flex items-center gap-3">
+          <Image
+            src="/peakform-logo.svg"
+            alt="PeakForms"
+            width={36}
+            height={36}
+            className="size-9 opacity-90"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(47,93,59,0.76),rgba(47,93,59,0.34)_42%,rgba(47,93,59,0.92))]" />
-          <div className="absolute inset-0 peak-topography peak-topography-motion opacity-25" />
+          <span className="peak-serif text-3xl font-medium tracking-tight text-[#2D2926]">
+            PeakForms
+          </span>
+        </Link>
 
-          <header className="relative z-10 flex items-center justify-between gap-4 px-4 py-4 sm:px-6">
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-sm font-semibold text-white"
-            >
-              <Image
-                src="/peakform-logo.svg"
-                alt="PeakForm"
-                width={32}
-                height={32}
-                className="size-8 opacity-90"
-              />
-              <span>PeakForm</span>
-            </Link>
-
-            <nav className="hidden items-center gap-2 lg:flex" aria-label="404 navigation">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-full border border-white/45 bg-white/10 px-4 py-1.5 text-xs font-medium text-white shadow-sm backdrop-blur transition hover:bg-white/20"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-
-            <Link
-              href="/login"
-              className="peak-button-motion inline-flex items-center gap-2 rounded-full bg-[#d0e9d4] px-4 py-2 text-xs font-bold text-[#2f5d3b] shadow-lg shadow-black/20 transition hover:bg-white"
-            >
-              <LogIn className="size-4" />
-              Login
-            </Link>
-          </header>
-
-          <div className="relative z-10 flex min-h-[460px] flex-col items-center justify-center px-5 pb-10 pt-12 text-center sm:min-h-[500px] sm:px-8">
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/10 px-4 py-1.5 text-xs font-medium text-white/90 backdrop-blur">
-              <Search className="size-3.5" />
-              Page not found
-            </p>
-
-            <h1 className="text-8xl font-black leading-none text-white drop-shadow-[0_10px_28px_rgba(0,0,0,0.55)] sm:text-9xl">
-              404
-            </h1>
-
-            <p className="mt-6 max-w-3xl text-3xl font-black uppercase leading-tight text-white drop-shadow-[0_6px_18px_rgba(0,0,0,0.55)] sm:text-5xl">
-              Oops! Looks like this page got lost in the mountains.
-            </p>
-
-            <div className="peak-stagger mt-10 flex flex-col items-center gap-3 sm:flex-row">
-              <Link
-                href="/dashboard"
-                className="peak-button-motion inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#d0e9d4] px-6 text-sm font-bold text-[#2f5d3b] shadow-lg shadow-black/25 transition hover:bg-white"
-              >
-                <Home className="size-4" />
-                Dashboard
-              </Link>
-              <Link
-                href="/"
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/45 bg-white/10 px-6 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
-              >
-                <ArrowLeft className="size-4" />
-                Back home
-              </Link>
-            </div>
-          </div>
+        <div className="space-y-4">
+          <span className="inline-block rounded-full bg-[#F7EBE1] px-3.5 py-1 text-xs font-mono text-[#DA7756] font-medium">
+            404 — PAGE NOT FOUND
+          </span>
+          <h1 className="peak-serif text-4xl font-medium tracking-tight text-[#2D2926] md:text-5xl">
+            This form or page does not exist.
+          </h1>
+          <p className="mx-auto max-w-md text-sm text-[#78726A] leading-relaxed">
+            The link you followed may be expired, unlisted, or mistyped.
+          </p>
         </div>
-      </section>
+
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <Link
+            href="/dashboard"
+            className="claude-button inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#DA7756] px-6 text-xs font-medium text-white hover:bg-[#C66545]"
+          >
+            <Home className="size-4" />
+            Go to Dashboard
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#E5DFD5] bg-white px-6 text-xs font-medium text-[#2D2926] hover:bg-[#F2ECE1]"
+          >
+            <ArrowLeft className="size-4" />
+            Back to Home
+          </Link>
+        </div>
+      </div>
     </main>
   );
 }
