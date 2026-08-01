@@ -257,21 +257,6 @@ Forms marked as password-protected generate a salted hash. Respondents must subm
 
 ---
 
-## 🗺️ Roadmap
-
-- [x] **Claude Minimal Theme Redesign** (`#FAF7F2` cream, `#DA7756` terracotta, `Source Serif 4`)
-- [x] **Interactive Drag-and-Drop Form Builder**
-- [x] **Smart If/Then Branching Rules Engine**
-- [x] **Password-Protected & Unlisted Form Access**
-- [x] **Real-Time Analytics Dashboard & CSV Export**
-- [x] **Scalar Interactive OpenAPI Documentation**
-- [x] **Production Cloud Deployment (Vercel & Render)**
-- [ ] **Multi-User Workspace Collaboration & Invites**
-- [ ] **Custom CNAME Domain Routing**
-- [ ] **Webhook Trigger Subscriptions for Submissions**
-
----
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please follow these simple steps:
