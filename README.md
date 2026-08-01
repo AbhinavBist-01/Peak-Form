@@ -25,7 +25,7 @@
 
 ![PeakForms Builder Preview](apps/web/public/peakforms-builder-preview.png)
 
-🌐 **Live Demo**: [https://peakforms.vercel.app](https://peakforms.vercel.app)  
+🌐 **Live Demo**: [https://peak-form-web.vercel.app](https://peak-form-web.vercel.app)  
 📖 **API Documentation**: [https://peakforms-api.onrender.com/docs](https://peakforms-api.onrender.com/docs)  
 
 ---
